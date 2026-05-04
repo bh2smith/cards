@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#145530"/>
+  <text x="256" y="200" text-anchor="middle" font-size="120" font-family="Georgia,serif" fill="#fff" font-weight="bold">C</text>
+  <text x="180" y="360" text-anchor="middle" font-size="100" fill="#dc2626">♥</text>
+  <text x="332" y="360" text-anchor="middle" font-size="100" fill="#fff">♠</text>
+</svg>
