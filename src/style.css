@@ -624,6 +624,63 @@ body {
   color: var(--cream-dim);
 }
 
+/* ── GOLF SOLITAIRE ── */
+
+.golf-tableau {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding: 4px 0;
+}
+
+.golf-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.golf-column .golf-cell:not(:first-child) {
+  margin-top: -60px;
+}
+
+.golf-column.playable {
+  cursor: pointer;
+}
+
+.golf-column.playable .golf-cell:last-child .card {
+  box-shadow: 0 0 0 2px var(--gold), 0 4px 14px rgba(201, 162, 39, 0.4);
+}
+
+.golf-column.playable .golf-cell:last-child .card:hover {
+  transform: translateY(-7px);
+  box-shadow: 0 0 0 2px var(--gold-light), 0 10px 28px rgba(201, 162, 39, 0.5);
+}
+
+#golf-waste,
+#golf-stock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.pile-label {
+  font-family: "Cinzel", serif;
+  font-size: 7px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.card-slot {
+  width: var(--card-width);
+  height: var(--card-height);
+  border-radius: 6px;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.15);
+}
+
 /* ── RESPONSIVE ── */
 
 @media (min-width: 420px) {
