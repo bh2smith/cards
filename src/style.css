@@ -671,8 +671,24 @@ body {
 .golf-tableau {
   display: flex;
   justify-content: center;
-  gap: 4px;
+  gap: 3px;
   padding: 4px 0;
+  --golf-card-width: 46px;
+  --golf-card-height: 66px;
+  --golf-overlap: -48px;
+}
+
+.golf-tableau .card {
+  width: var(--golf-card-width);
+  height: var(--golf-card-height);
+}
+
+.golf-tableau .card-corner {
+  font-size: 8px;
+}
+
+.golf-tableau .card-center {
+  font-size: 14px;
 }
 
 .golf-column {
@@ -682,7 +698,7 @@ body {
 }
 
 .golf-column .golf-cell:not(:first-child) {
-  margin-top: -60px;
+  margin-top: var(--golf-overlap);
 }
 
 .golf-column.playable {
@@ -741,5 +757,20 @@ body {
 
   .card-center {
     font-size: 26px;
+  }
+
+  .golf-tableau {
+    gap: 4px;
+    --golf-card-width: 54px;
+    --golf-card-height: 78px;
+    --golf-overlap: -58px;
+  }
+
+  .golf-tableau .card-corner {
+    font-size: 10px;
+  }
+
+  .golf-tableau .card-center {
+    font-size: 18px;
   }
 }
