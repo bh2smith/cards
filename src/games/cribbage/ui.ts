@@ -1,10 +1,6 @@
 import { type PlayingCard } from "typedeck";
 import { CribbageGame } from "./game";
-import {
-  peggingValue,
-  type Player,
-  type GamePhase,
-} from "./types";
+import { peggingValue, type Player, type GamePhase } from "./types";
 import { canPlay } from "./scoring";
 import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
 
@@ -324,9 +320,7 @@ export class CribbageUI {
 
     container.innerHTML = state.computerHand
       .map((card, i) =>
-        showCards
-          ? renderCard(card, { index: i })
-          : renderFaceDownCard(i),
+        showCards ? renderCard(card, { index: i }) : renderFaceDownCard(i),
       )
       .join("");
   }

@@ -39,3 +39,4 @@ memory/
 
 # Cursor IDE
 .cursor/
+.vercel

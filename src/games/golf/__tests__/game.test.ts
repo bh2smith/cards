@@ -41,7 +41,10 @@ describe("GolfGame", () => {
     game.deal();
     const state = game.getState();
 
-    const tableauCount = state.tableau.reduce((sum, col) => sum + col.length, 0);
+    const tableauCount = state.tableau.reduce(
+      (sum, col) => sum + col.length,
+      0,
+    );
     expect(tableauCount).toBe(35);
     expect(state.waste).not.toBeNull();
     expect(state.stock.length).toBe(16);
@@ -53,11 +56,7 @@ describe("GolfGame", () => {
     game.deal();
     const state = game.getState();
 
-    const allCards = [
-      ...state.tableau.flat(),
-      ...state.stock,
-      state.waste!,
-    ];
+    const allCards = [...state.tableau.flat(), ...state.stock, state.waste!];
     expect(allCards.length).toBe(52);
 
     const keys = new Set(allCards.map(cardKey));
@@ -93,7 +92,9 @@ describe("canPlay", () => {
   test("non-adjacent rank returns false", () => {
     const game = new GolfGame();
     game.deal();
-    expect(game.canPlay(card(CardName.Three), card(CardName.Seven))).toBe(false);
+    expect(game.canPlay(card(CardName.Three), card(CardName.Seven))).toBe(
+      false,
+    );
   });
 
   test("Ace is playable on King with wrap enabled (default)", () => {
@@ -227,10 +228,7 @@ describe("hasAnyMove", () => {
     const game = gameWithState({
       stock: [],
       waste: card(CardName.Seven),
-      tableau: [
-        [card(CardName.Two)],
-        [card(CardName.Four)],
-      ],
+      tableau: [[card(CardName.Two)], [card(CardName.Four)]],
     });
     expect(game.hasAnyMove()).toBe(false);
   });
@@ -239,9 +237,7 @@ describe("hasAnyMove", () => {
     const game = gameWithState({
       stock: [],
       waste: card(CardName.Seven),
-      tableau: [
-        [card(CardName.Eight)],
-      ],
+      tableau: [[card(CardName.Eight)]],
     });
     expect(game.hasAnyMove()).toBe(true);
   });
@@ -297,10 +293,7 @@ describe("end conditions", () => {
 
   test("game continues when moves remain after playCard", () => {
     const game = gameWithState({
-      tableau: [
-        [card(CardName.Five)],
-        [card(CardName.Six)],
-      ],
+      tableau: [[card(CardName.Five)], [card(CardName.Six)]],
       waste: card(CardName.Four),
       stock: [],
     });

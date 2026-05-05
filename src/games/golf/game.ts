@@ -96,7 +96,10 @@ export class GolfGame {
     if (this.state.stock.length > 0) return true;
     if (!this.state.waste) return false;
     for (const col of this.state.tableau) {
-      if (col.length > 0 && this.canPlay(col[col.length - 1]!, this.state.waste)) {
+      if (
+        col.length > 0 &&
+        this.canPlay(col[col.length - 1]!, this.state.waste)
+      ) {
         return true;
       }
     }
