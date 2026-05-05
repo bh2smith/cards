@@ -1,4 +1,5 @@
-import { CardName, Suit, type PlayingCard } from "typedeck";
+import { type PlayingCard, CardName } from "typedeck";
+import type { Player } from "../../shared/types";
 
 // -- cribbage-counter type declaration --
 
@@ -16,6 +17,16 @@ export interface ScoreResult {
 declare module "cribbage-counter" {
   export function scoreHand(hand: string, isCrib: boolean): ScoreResult;
 }
+
+// Re-export shared utilities so existing imports keep working
+export {
+  SUIT_SYMBOL,
+  RANK_DISPLAY,
+  isRed,
+  cardKey,
+  cardOrder,
+} from "../../shared/deck";
+export type { Player } from "../../shared/types";
 
 // -- Adapter: typedeck → cribbage-counter string format --
 
@@ -36,33 +47,10 @@ const RANK_TO_CHAR: Record<number, string> = {
 };
 
 const SUIT_TO_CHAR: Record<number, string> = {
-  [Suit.Clubs]: "C",
-  [Suit.Spades]: "S",
-  [Suit.Diamonds]: "D",
-  [Suit.Hearts]: "H",
-};
-
-export const SUIT_SYMBOL: Record<number, string> = {
-  [Suit.Clubs]: "♣",
-  [Suit.Spades]: "♠",
-  [Suit.Diamonds]: "♦",
-  [Suit.Hearts]: "♥",
-};
-
-export const RANK_DISPLAY: Record<number, string> = {
-  [CardName.Ace]: "A",
-  [CardName.Two]: "2",
-  [CardName.Three]: "3",
-  [CardName.Four]: "4",
-  [CardName.Five]: "5",
-  [CardName.Six]: "6",
-  [CardName.Seven]: "7",
-  [CardName.Eight]: "8",
-  [CardName.Nine]: "9",
-  [CardName.Ten]: "10",
-  [CardName.Jack]: "J",
-  [CardName.Queen]: "Q",
-  [CardName.King]: "K",
+  [0]: "C", // Clubs
+  [1]: "S", // Spades
+  [2]: "D", // Diamonds
+  [3]: "H", // Hearts
 };
 
 export function toCounterString(card: PlayingCard): string {
@@ -73,21 +61,7 @@ export function peggingValue(card: PlayingCard): number {
   return Math.min(card.cardName + 1, 10);
 }
 
-export function cardOrder(card: PlayingCard): number {
-  return card.cardName + 1; // A=1, 2=2, ..., K=13
-}
-
-export function isRed(card: PlayingCard): boolean {
-  return card.suit === Suit.Diamonds || card.suit === Suit.Hearts;
-}
-
-export function cardKey(card: PlayingCard): string {
-  return `${card.cardName}-${card.suit}`;
-}
-
 // -- Game types --
-
-export type Player = "player" | "computer";
 
 export type GamePhase =
   | "NEW_GAME"

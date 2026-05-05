@@ -9,14 +9,14 @@
     <meta name="theme-color" content="#145530" />
     <meta
       name="description"
-      content="Play cribbage against the computer - fully offline PWA"
+      content="A collection of card games — fully offline PWA"
     />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta
       name="apple-mobile-web-app-status-bar-style"
       content="black-translucent"
     />
-    <title>Cribbage</title>
+    <title>The Card Room</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="./style.css" />
@@ -25,56 +25,7 @@
     <link rel="apple-touch-icon" href="./icon.svg" />
   </head>
   <body>
-    <div id="app">
-      <div class="header">
-        <h1>Cribbage</h1>
-        <button id="new-game-btn">New Game</button>
-      </div>
-
-      <div class="scoreboard">
-        <div class="score-row">
-          <span>
-            <span class="score-label">You</span>
-            <span class="dealer-tag" id="player-dealer"></span>
-          </span>
-          <span class="score-value" id="player-score">0</span>
-        </div>
-        <div class="board-track">
-          <div class="board-peg" id="player-peg"></div>
-        </div>
-        <div class="score-row">
-          <span>
-            <span class="score-label">Computer</span>
-            <span class="dealer-tag" id="computer-dealer"></span>
-          </span>
-          <span class="score-value" id="computer-score">0</span>
-        </div>
-        <div class="board-track">
-          <div class="board-peg" id="computer-peg"></div>
-        </div>
-      </div>
-
-      <div class="hand-area" id="computer-hand"></div>
-
-      <div class="play-area">
-        <div id="starter-area"></div>
-        <div id="pegging-area"></div>
-        <div id="pegging-count"></div>
-      </div>
-
-      <div class="hand-area" id="player-hand"></div>
-
-      <div class="scoring-info">
-        <div id="scoring-details" class="hidden"></div>
-        <div id="scoring-total" class="hidden"></div>
-      </div>
-
-      <div class="message-bar" id="message">Welcome to Cribbage!</div>
-
-      <div class="action-area">
-        <button id="action-btn">Deal</button>
-      </div>
-    </div>
+    <div id="app"></div>
     <script type="module" src="./main.ts"></script>
   </body>
 </html>

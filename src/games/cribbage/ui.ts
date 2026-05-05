@@ -1,25 +1,85 @@
-import { type PlayingCard, Suit } from "typedeck";
+import { type PlayingCard } from "typedeck";
 import { CribbageGame } from "./game";
 import {
-  SUIT_SYMBOL,
-  RANK_DISPLAY,
-  isRed,
   peggingValue,
-  cardKey,
   type Player,
   type GamePhase,
 } from "./types";
 import { canPlay } from "./scoring";
+import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
 
 export class CribbageUI {
   private game: CribbageGame;
   private selectedIndices = new Set<number>();
   private animating = false;
+  private destroyed = false;
 
   constructor() {
+    document.getElementById("app")!.innerHTML = CribbageUI.template();
     this.game = new CribbageGame();
     this.bindEvents();
     this.render();
+  }
+
+  destroy(): void {
+    this.destroyed = true;
+    document.getElementById("app")!.innerHTML = "";
+  }
+
+  static template(): string {
+    return `
+      <div class="header">
+        <div class="header-left">
+          <a href="#" class="back-link">← Games</a>
+          <h1>Cribbage</h1>
+        </div>
+        <button id="new-game-btn">New Game</button>
+      </div>
+
+      <div class="scoreboard">
+        <div class="score-row">
+          <span>
+            <span class="score-label">You</span>
+            <span class="dealer-tag" id="player-dealer"></span>
+          </span>
+          <span class="score-value" id="player-score">0</span>
+        </div>
+        <div class="board-track">
+          <div class="board-peg" id="player-peg"></div>
+        </div>
+        <div class="score-row">
+          <span>
+            <span class="score-label">Computer</span>
+            <span class="dealer-tag" id="computer-dealer"></span>
+          </span>
+          <span class="score-value" id="computer-score">0</span>
+        </div>
+        <div class="board-track">
+          <div class="board-peg" id="computer-peg"></div>
+        </div>
+      </div>
+
+      <div class="hand-area" id="computer-hand"></div>
+
+      <div class="play-area">
+        <div id="starter-area"></div>
+        <div id="pegging-area"></div>
+        <div id="pegging-count"></div>
+      </div>
+
+      <div class="hand-area" id="player-hand"></div>
+
+      <div class="scoring-info">
+        <div id="scoring-details" class="hidden"></div>
+        <div id="scoring-total" class="hidden"></div>
+      </div>
+
+      <div class="message-bar" id="message">Welcome to Cribbage!</div>
+
+      <div class="action-area">
+        <button id="action-btn">Deal</button>
+      </div>
+    `;
   }
 
   private $(id: string): HTMLElement {
@@ -93,11 +153,13 @@ export class CribbageUI {
     this.render();
 
     while (!this.game.isPeggingDone()) {
+      if (this.destroyed) return;
       const state = this.game.getState();
       if (state.phase === "GAME_OVER") break;
 
       if (state.currentTurn === "computer") {
         await this.delay(600);
+        if (this.destroyed) return;
         const result = this.game.computerPlay();
         this.renderPeggingUpdate(
           result.card,
@@ -112,18 +174,14 @@ export class CribbageUI {
         continue;
       }
 
-      // Player's turn
       if (!canPlay(state.playerPeggingHand, state.peggingCount)) {
         const result = this.game.playerGo();
-        this.showMessage(
-          result.details.length > 0 ? result.details[0] : "You say Go",
-        );
+        this.showMessage(result.details[0] ?? "You say Go");
         this.render();
         await this.delay(600);
         continue;
       }
 
-      // Wait for player to click a card
       const card = await this.waitForPlayerPeggingCard();
       if (!card) continue;
 
@@ -140,8 +198,7 @@ export class CribbageUI {
       }
     }
 
-    // Award last card
-    if (this.game.getState().phase !== "GAME_OVER") {
+    if (!this.destroyed && this.game.getState().phase !== "GAME_OVER") {
       const lastCard = this.game.awardLastCard();
       if (lastCard) {
         this.showMessage(
@@ -156,7 +213,7 @@ export class CribbageUI {
     }
 
     this.animating = false;
-    this.render();
+    if (!this.destroyed) this.render();
   }
 
   private waitForPlayerPeggingCard(): Promise<PlayingCard | null> {
@@ -174,6 +231,7 @@ export class CribbageUI {
         if (idx < 0 || idx >= state.playerPeggingHand.length) return;
 
         const card = state.playerPeggingHand[idx];
+        if (!card) return;
         if (peggingValue(card) + state.peggingCount > 31) {
           this.showMessage("That card would exceed 31!");
           return;
@@ -226,36 +284,23 @@ export class CribbageUI {
   private render(): void {
     const state = this.game.getState();
 
-    // Scores
     this.$("player-score").textContent = String(state.playerScore);
     this.$("computer-score").textContent = String(state.computerScore);
     this.renderBoard(state.playerScore, state.computerScore);
 
-    // Dealer indicator
     this.$("player-dealer").textContent =
       state.dealer === "player" ? "(Dealer)" : "";
     this.$("computer-dealer").textContent =
       state.dealer === "computer" ? "(Dealer)" : "";
 
-    // Message
     this.$("message").textContent = state.message;
 
-    // Computer hand
     this.renderComputerHand(state);
-
-    // Starter
     this.renderStarter(state.starterCard);
-
-    // Pegging area
     this.renderPeggingArea(state);
-
-    // Player hand
     this.renderPlayerHand(state);
-
-    // Action button
     this.renderActionButton(state.phase);
 
-    // Scoring details
     if (
       state.phase !== "COUNTING_NONDEALER" &&
       state.phase !== "COUNTING_DEALER" &&
@@ -277,12 +322,11 @@ export class CribbageUI {
       state.phase === "ROUND_OVER" ||
       state.phase === "GAME_OVER";
 
-    const cards = state.computerHand;
-    container.innerHTML = cards
+    container.innerHTML = state.computerHand
       .map((card, i) =>
         showCards
-          ? this.renderCard(card, i, false, false)
-          : `<div class="card face-down" data-index="${i}"></div>`,
+          ? renderCard(card, { index: i })
+          : renderFaceDownCard(i),
       )
       .join("");
   }
@@ -291,10 +335,11 @@ export class CribbageUI {
     const container = this.$("starter-area");
     if (card) {
       container.innerHTML =
-        `<div class="starter-label">Starter</div>` +
-        this.renderCard(card, -1, false, false);
+        `<div class="starter-label">Starter</div>` + renderCard(card);
     } else {
-      container.innerHTML = `<div class="card face-down deck-placeholder"></div>`;
+      container.innerHTML = renderFaceDownCard(-1) + "";
+      // deck placeholder styling
+      container.querySelector(".card")!.classList.add("deck-placeholder");
     }
   }
 
@@ -307,7 +352,7 @@ export class CribbageUI {
     }
 
     container.innerHTML = state.peggingPile
-      .map((card, i) => this.renderCard(card, i, false, false, true))
+      .map((card, i) => renderCard(card, { index: i, small: true }))
       .join("");
 
     this.$("pegging-count").textContent =
@@ -327,7 +372,11 @@ export class CribbageUI {
           isPegging &&
           state.currentTurn === "player" &&
           peggingValue(card) + state.peggingCount <= 31;
-        return this.renderCard(card, i, selected, isPegging && !playable);
+        return renderCard(card, {
+          index: i,
+          selected,
+          dimmed: isPegging && !playable,
+        });
       })
       .join("");
 
@@ -349,40 +398,12 @@ export class CribbageUI {
     }
   }
 
-  private renderCard(
-    card: PlayingCard,
-    index: number,
-    selected: boolean,
-    dimmed: boolean,
-    small = false,
-  ): string {
-    const red = isRed(card);
-    const rank = RANK_DISPLAY[card.cardName];
-    const suit = SUIT_SYMBOL[card.suit];
-    const classes = [
-      "card",
-      red ? "red" : "black",
-      selected ? "selected" : "",
-      dimmed ? "dimmed" : "",
-      small ? "small" : "",
-    ]
-      .filter(Boolean)
-      .join(" ");
-
-    return `
-      <div class="${classes}" data-index="${index}" data-key="${cardKey(card)}">
-        <div class="card-corner top">${rank}<br>${suit}</div>
-        <div class="card-center">${suit}</div>
-        <div class="card-corner bottom">${rank}<br>${suit}</div>
-      </div>
-    `;
-  }
-
   private renderActionButton(phase: GamePhase): void {
     const btn = this.$("action-btn") as HTMLButtonElement;
     switch (phase) {
       case "NEW_GAME":
         btn.textContent = "Deal";
+        btn.disabled = false;
         btn.classList.remove("hidden");
         break;
       case "DISCARDING":
