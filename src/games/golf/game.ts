@@ -77,5 +77,47 @@ export class GolfGame {
     col.pop();
     this.state.waste = card;
     this.state.message = "Remove cards one rank above or below the waste card.";
+    this.checkEndConditions();
+  }
+
+  canDrawFromStock(): boolean {
+    return this.state.phase === "PLAYING" && this.state.stock.length > 0;
+  }
+
+  drawFromStock(): void {
+    if (!this.canDrawFromStock()) return;
+
+    this.state.waste = this.state.stock.pop()!;
+    this.state.message = "Remove cards one rank above or below the waste card.";
+    this.checkEndConditions();
+  }
+
+  hasAnyMove(): boolean {
+    if (this.state.stock.length > 0) return true;
+    if (!this.state.waste) return false;
+    for (const col of this.state.tableau) {
+      if (col.length > 0 && this.canPlay(col[col.length - 1]!, this.state.waste)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  cardsRemaining(): number {
+    return this.state.tableau.reduce((sum, col) => sum + col.length, 0);
+  }
+
+  private checkEndConditions(): void {
+    if (this.cardsRemaining() === 0) {
+      this.state.won = true;
+      this.state.phase = "GAME_OVER";
+      this.state.message = "You cleared the tableau! You win!";
+      return;
+    }
+    if (!this.hasAnyMove()) {
+      this.state.won = false;
+      this.state.phase = "GAME_OVER";
+      this.state.message = `No moves left. ${this.cardsRemaining()} cards remaining.`;
+    }
   }
 }

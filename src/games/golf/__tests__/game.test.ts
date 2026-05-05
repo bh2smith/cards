@@ -1,10 +1,19 @@
 import { test, expect, describe } from "bun:test";
 import { CardName, Suit, PlayingCard } from "typedeck";
 import { GolfGame } from "../game";
-import { cardKey } from "../../../shared/deck";
+import { cardKey, createDeck } from "../../../shared/deck";
+import type { GolfState } from "../types";
 
 function card(rank: CardName, suit: Suit = Suit.Spades): PlayingCard {
   return new PlayingCard(rank, suit);
+}
+
+function gameWithState(overrides: Partial<GolfState>): GolfGame {
+  const game = new GolfGame();
+  game.deal();
+  const state = game.getState() as GolfState;
+  Object.assign(state, overrides);
+  return game;
 }
 
 describe("GolfGame", () => {
@@ -177,5 +186,125 @@ describe("playCard", () => {
     const colLen = state.tableau[unplayableCol]!.length;
     game.playCard(unplayableCol);
     expect(state.tableau[unplayableCol]!.length).toBe(colLen);
+  });
+});
+
+describe("drawFromStock", () => {
+  test("pops top of stock and sets it as waste", () => {
+    const game = new GolfGame();
+    game.deal();
+    const state = game.getState();
+    const stockLen = state.stock.length;
+    const topStock = state.stock[state.stock.length - 1]!;
+
+    game.drawFromStock();
+
+    expect(game.getState().stock.length).toBe(stockLen - 1);
+    expect(cardKey(game.getState().waste!)).toBe(cardKey(topStock));
+  });
+
+  test("canDrawFromStock returns false when stock is empty", () => {
+    const game = gameWithState({ stock: [] });
+    expect(game.canDrawFromStock()).toBe(false);
+  });
+
+  test("does nothing when stock is empty", () => {
+    const game = gameWithState({ stock: [] });
+    const wasteBefore = game.getState().waste;
+    game.drawFromStock();
+    expect(cardKey(game.getState().waste!)).toBe(cardKey(wasteBefore!));
+  });
+});
+
+describe("hasAnyMove", () => {
+  test("returns true when stock is non-empty", () => {
+    const game = new GolfGame();
+    game.deal();
+    expect(game.hasAnyMove()).toBe(true);
+  });
+
+  test("returns false when stock empty and no tableau card is playable", () => {
+    const game = gameWithState({
+      stock: [],
+      waste: card(CardName.Seven),
+      tableau: [
+        [card(CardName.Two)],
+        [card(CardName.Four)],
+      ],
+    });
+    expect(game.hasAnyMove()).toBe(false);
+  });
+
+  test("returns true when stock empty but a tableau card is playable", () => {
+    const game = gameWithState({
+      stock: [],
+      waste: card(CardName.Seven),
+      tableau: [
+        [card(CardName.Eight)],
+      ],
+    });
+    expect(game.hasAnyMove()).toBe(true);
+  });
+});
+
+describe("cardsRemaining", () => {
+  test("returns total cards in tableau", () => {
+    const game = new GolfGame();
+    game.deal();
+    expect(game.cardsRemaining()).toBe(35);
+  });
+});
+
+describe("end conditions", () => {
+  test("win when tableau is cleared", () => {
+    const game = gameWithState({
+      tableau: [[card(CardName.Five)]],
+      waste: card(CardName.Four),
+      stock: [],
+    });
+    game.playCard(0);
+    const state = game.getState();
+    expect(state.phase).toBe("GAME_OVER");
+    expect(state.won).toBe(true);
+  });
+
+  test("loss when stock empty and no playable card after playCard", () => {
+    const game = gameWithState({
+      tableau: [
+        [card(CardName.Three), card(CardName.Five)],
+        [card(CardName.Nine)],
+      ],
+      waste: card(CardName.Four),
+      stock: [],
+    });
+    game.playCard(0);
+    const state = game.getState();
+    expect(state.phase).toBe("GAME_OVER");
+    expect(state.won).toBe(false);
+  });
+
+  test("loss when stock empty and no playable card after drawFromStock", () => {
+    const game = gameWithState({
+      tableau: [[card(CardName.Ten)]],
+      waste: card(CardName.Two),
+      stock: [card(CardName.Five)],
+    });
+    game.drawFromStock();
+    const state = game.getState();
+    expect(state.phase).toBe("GAME_OVER");
+    expect(state.won).toBe(false);
+  });
+
+  test("game continues when moves remain after playCard", () => {
+    const game = gameWithState({
+      tableau: [
+        [card(CardName.Five)],
+        [card(CardName.Six)],
+      ],
+      waste: card(CardName.Four),
+      stock: [],
+    });
+    game.playCard(0);
+    expect(game.getState().phase).toBe("PLAYING");
   });
 });
