@@ -56,7 +56,9 @@ export class GolfUI {
     this.$("new-game-btn").addEventListener("click", () => this.newGame());
     this.$("action-btn").addEventListener("click", () => this.newGame());
     this.$("golf-stock").addEventListener("click", () => this.onDrawStock());
-    this.$("golf-tableau").addEventListener("click", (e) => this.onTableauClick(e));
+    this.$("golf-tableau").addEventListener("click", (e) =>
+      this.onTableauClick(e),
+    );
   }
 
   private newGame(): void {
@@ -72,7 +74,9 @@ export class GolfUI {
   }
 
   private onTableauClick(e: Event): void {
-    const target = (e.target as HTMLElement).closest(".golf-column") as HTMLElement;
+    const target = (e.target as HTMLElement).closest(
+      ".golf-column",
+    ) as HTMLElement;
     if (!target) return;
     const colIndex = parseInt(target.dataset.col || "-1");
     if (colIndex < 0) return;
@@ -103,7 +107,11 @@ export class GolfUI {
         const cards = col
           .map((card, rowIdx) => {
             const isTop = rowIdx === topIdx;
-            const playable = isTop && isPlaying && state.waste !== null && this.game.canPlay(card, state.waste);
+            const playable =
+              isTop &&
+              isPlaying &&
+              state.waste !== null &&
+              this.game.canPlay(card, state.waste);
             return `<div class="golf-cell">${renderCard(card, {
               index: rowIdx,
               dimmed: isPlaying && !isTop,
@@ -111,7 +119,11 @@ export class GolfUI {
           })
           .join("");
 
-        const clickable = isPlaying && col.length > 0 && state.waste !== null && this.game.canPlay(col[topIdx]!, state.waste);
+        const clickable =
+          isPlaying &&
+          col.length > 0 &&
+          state.waste !== null &&
+          this.game.canPlay(col[topIdx]!, state.waste);
         return `<div class="golf-column ${clickable ? "playable" : ""}" data-col="${colIdx}">${cards}</div>`;
       })
       .join("");

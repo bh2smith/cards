@@ -45,23 +45,31 @@ function handle(): void {
 function renderLobby(): void {
   const app = document.getElementById("app")!;
 
-  const allGames: Array<{ id: string; label: string; description: string; available: boolean }> = [
+  const allGames: Array<{
+    id: string;
+    label: string;
+    description: string;
+    available: boolean;
+  }> = [
     {
       id: "cribbage",
       label: "Cribbage",
-      description: "Score points through pegging and showing your hand. First to 121 wins.",
+      description:
+        "Score points through pegging and showing your hand. First to 121 wins.",
       available: registry.get("cribbage")?.available ?? false,
     },
     {
       id: "golf",
       label: "Golf Solitaire",
-      description: "Clear the tableau by playing cards one rank above or below the waste top.",
+      description:
+        "Clear the tableau by playing cards one rank above or below the waste top.",
       available: registry.get("golf")?.available ?? false,
     },
     {
       id: "blackjack",
       label: "Blackjack",
-      description: "Beat the dealer. Get as close to 21 as you can without going bust.",
+      description:
+        "Beat the dealer. Get as close to 21 as you can without going bust.",
       available: false,
     },
     {
@@ -73,7 +81,8 @@ function renderLobby(): void {
     {
       id: "gin",
       label: "Gin Rummy",
-      description: "Form melds and knock before the bot does. Score runs and sets.",
+      description:
+        "Form melds and knock before the bot does. Score runs and sets.",
       available: false,
     },
     {
