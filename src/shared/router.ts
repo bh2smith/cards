@@ -56,7 +56,7 @@ function renderLobby(): void {
       id: "golf",
       label: "Golf Solitaire",
       description: "Clear the tableau by playing cards one rank above or below the waste top.",
-      available: false,
+      available: registry.get("golf")?.available ?? false,
     },
     {
       id: "blackjack",
