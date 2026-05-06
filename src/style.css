@@ -1206,7 +1206,7 @@ body {
   border: 1px solid var(--wood-border);
   border-radius: var(--radius);
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
+  grid-template-columns: auto 1fr auto;
   grid-template-rows: auto 1fr;
   grid-template-areas:
     ".    top   ."
@@ -1214,7 +1214,7 @@ body {
   gap: 4px;
   padding: 8px 6px;
   margin-bottom: 8px;
-  min-height: 240px;
+  min-height: 200px;
 }
 
 .hearts-seat {
@@ -1247,10 +1247,10 @@ body {
 
 .hearts-bot-hand {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
-  gap: 2px;
-  max-width: 100%;
+  align-items: center;
+  gap: 0;
 }
 
 .hearts-bot-hand .card {
@@ -1261,6 +1261,26 @@ body {
 .hearts-bot-hand .card-corner,
 .hearts-bot-hand .card-center {
   display: none;
+}
+
+.hearts-seat-top .hearts-bot-hand .card + .card {
+  margin-left: -14px;
+}
+
+.hearts-seat-left .hearts-bot-hand,
+.hearts-seat-right .hearts-bot-hand {
+  flex-direction: column;
+}
+
+.hearts-seat-left .hearts-bot-hand .card,
+.hearts-seat-right .hearts-bot-hand .card {
+  width: 34px;
+  height: 24px;
+}
+
+.hearts-seat-left .hearts-bot-hand .card + .card,
+.hearts-seat-right .hearts-bot-hand .card + .card {
+  margin-top: -14px;
 }
 
 .hearts-play-area {
