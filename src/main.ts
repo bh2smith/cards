@@ -3,6 +3,9 @@ import { CribbageUI } from "./games/cribbage/ui";
 import { GolfUI } from "./games/golf/ui";
 import { BlackjackUI } from "./games/blackjack/ui";
 import { PyramidUI } from "./games/pyramid/ui";
+import { initMiniapp } from "./shared/circles/miniapp";
+
+initMiniapp();
 
 router.register(
   "cribbage",
