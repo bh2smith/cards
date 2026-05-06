@@ -149,7 +149,9 @@ export class BlackjackGame {
     const hand = this.activeHandCards();
     const bet = this.activeBet();
     const val = handValue(hand);
-    return hand.length === 2 && val >= 8 && val <= 11 && this.state.chips >= bet;
+    return (
+      hand.length === 2 && val >= 8 && val <= 11 && this.state.chips >= bet
+    );
   }
 
   doubleDown(): void {
