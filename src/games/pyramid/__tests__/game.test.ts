@@ -208,13 +208,47 @@ describe("selectCard", () => {
   });
 
   test("selecting an exposed non-King sets selection", () => {
-    const game = new PyramidGame();
-    game.deal();
+    const game = gameWithState({
+      pyramid: [
+        [card(CardName.Ace)],
+        [card(CardName.Two), card(CardName.Three)],
+        [card(CardName.Four), card(CardName.Five), card(CardName.Six)],
+        [
+          card(CardName.Seven),
+          card(CardName.Eight),
+          card(CardName.Nine),
+          card(CardName.Ten),
+        ],
+        [
+          card(CardName.Jack),
+          card(CardName.Queen),
+          card(CardName.Two, Suit.Hearts),
+          card(CardName.Three, Suit.Hearts),
+          card(CardName.Four, Suit.Hearts),
+        ],
+        [
+          card(CardName.Five, Suit.Hearts),
+          card(CardName.Six, Suit.Hearts),
+          card(CardName.Seven, Suit.Hearts),
+          card(CardName.Eight, Suit.Hearts),
+          card(CardName.Nine, Suit.Hearts),
+          card(CardName.Ten, Suit.Hearts),
+        ],
+        [
+          card(CardName.Ace, Suit.Hearts),
+          card(CardName.Two, Suit.Diamonds),
+          card(CardName.Three, Suit.Diamonds),
+          card(CardName.Four, Suit.Diamonds),
+          card(CardName.Five, Suit.Diamonds),
+          card(CardName.Six, Suit.Diamonds),
+          card(CardName.Seven, Suit.Diamonds),
+        ],
+      ],
+      stock: [],
+    });
     game.selectCard(6, 0);
     const state = game.getState();
-    if (cardOrder(state.pyramid[6]![0]!) !== 13) {
-      expect(state.selected).toEqual([6, 0]);
-    }
+    expect(state.selected).toEqual([6, 0]);
   });
 
   test("selecting the same card twice clears selection", () => {
