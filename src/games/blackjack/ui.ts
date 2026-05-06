@@ -1,12 +1,14 @@
 import { BlackjackGame, handValue, isBlackjack, isBust } from "./game";
 import { BET_OPTIONS } from "./types";
 import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
+import { optimalAction, type Action } from "./strategy";
 
 const DEALER_DELAY_MS = 600;
 
 export class BlackjackUI {
   private game: BlackjackGame;
   private destroyed = false;
+  private pendingNonOptimal: (() => void) | null = null;
 
   constructor() {
     document.getElementById("app")!.innerHTML = BlackjackUI.template();
@@ -44,9 +46,16 @@ export class BlackjackUI {
       <div class="bj-table">
         <div class="bj-hand-section">
           <div class="bj-hand-label">Dealer <span class="bj-hand-value" id="dealer-value"></span></div>
+          <div class="bj-rule-label">Dealer hits soft 17</div>
           <div class="bj-hand" id="dealer-hand"></div>
         </div>
         <div id="player-hands"></div>
+      </div>
+
+      <div id="bj-confirm" class="bj-confirm hidden">
+        <span id="bj-confirm-text"></span>
+        <button id="bj-confirm-yes">Yes</button>
+        <button id="bj-confirm-no">No</button>
       </div>
 
       <div class="message-bar" id="message"></div>
@@ -87,30 +96,85 @@ export class BlackjackUI {
       this.afterPlayerAction();
     });
 
-    this.$("hit-btn").addEventListener("click", () => {
-      this.game.hit();
-      this.afterPlayerAction();
-    });
+    this.$("hit-btn").addEventListener("click", () =>
+      this.tryAction("hit", () => {
+        this.game.hit();
+        this.afterPlayerAction();
+      }),
+    );
 
-    this.$("stand-btn").addEventListener("click", () => {
-      this.game.stand();
-      this.afterPlayerAction();
-    });
+    this.$("stand-btn").addEventListener("click", () =>
+      this.tryAction("stand", () => {
+        this.game.stand();
+        this.afterPlayerAction();
+      }),
+    );
 
-    this.$("double-btn").addEventListener("click", () => {
-      this.game.doubleDown();
-      this.afterPlayerAction();
-    });
+    this.$("double-btn").addEventListener("click", () =>
+      this.tryAction("double", () => {
+        this.game.doubleDown();
+        this.afterPlayerAction();
+      }),
+    );
 
-    this.$("split-btn").addEventListener("click", () => {
-      this.game.split();
-      this.render();
-    });
+    this.$("split-btn").addEventListener("click", () =>
+      this.tryAction("split", () => {
+        this.game.split();
+        this.render();
+      }),
+    );
 
     this.$("next-round-btn").addEventListener("click", () => {
       this.game.newRound();
       this.render();
     });
+
+    this.$("bj-confirm-yes").addEventListener("click", () => {
+      const fn = this.pendingNonOptimal;
+      this.pendingNonOptimal = null;
+      this.$("bj-confirm").classList.add("hidden");
+      if (fn) fn();
+    });
+
+    this.$("bj-confirm-no").addEventListener("click", () => {
+      this.pendingNonOptimal = null;
+      this.$("bj-confirm").classList.add("hidden");
+    });
+  }
+
+  private getOptimal(): Action | null {
+    const state = this.game.getState();
+    if (state.phase !== "PLAYER_TURN" || state.dealerHand.length === 0)
+      return null;
+    const hand =
+      state.activeHand === 1 && state.splitHand !== null
+        ? state.splitHand
+        : state.playerHand;
+    if (isBlackjack(hand)) return null;
+    return optimalAction(
+      hand,
+      state.dealerHand[0]!,
+      this.game.canSplit(),
+      this.game.canDoubleDown(),
+    );
+  }
+
+  private tryAction(action: Action, fn: () => void): void {
+    const optimal = this.getOptimal();
+    if (optimal && action !== optimal) {
+      this.pendingNonOptimal = fn;
+      const names: Record<Action, string> = {
+        hit: "Hit",
+        stand: "Stand",
+        double: "Double",
+        split: "Split",
+      };
+      this.$("bj-confirm-text").textContent =
+        `Basic strategy says ${names[optimal]}. Proceed with ${names[action]}?`;
+      this.$("bj-confirm").classList.remove("hidden");
+      return;
+    }
+    fn();
   }
 
   private afterPlayerAction(): void {
@@ -254,6 +318,16 @@ export class BlackjackUI {
     playBtns.classList.add("hidden");
     nextBtn.classList.add("hidden");
 
+    const actionBtns: Record<Action, HTMLButtonElement> = {
+      hit: this.$("hit-btn") as HTMLButtonElement,
+      stand: this.$("stand-btn") as HTMLButtonElement,
+      double: this.$("double-btn") as HTMLButtonElement,
+      split: this.$("split-btn") as HTMLButtonElement,
+    };
+    for (const btn of Object.values(actionBtns)) {
+      btn.classList.remove("bj-optimal");
+    }
+
     if (state.phase === "BETTING") {
       betBtns.classList.remove("hidden");
       betBtns
@@ -272,6 +346,11 @@ export class BlackjackUI {
           !this.game.canDoubleDown();
         (this.$("split-btn") as HTMLButtonElement).disabled =
           !this.game.canSplit();
+
+        const optimal = this.getOptimal();
+        if (optimal && actionBtns[optimal]) {
+          actionBtns[optimal].classList.add("bj-optimal");
+        }
       }
     } else if (state.phase === "ROUND_OVER") {
       nextBtn.classList.remove("hidden");
