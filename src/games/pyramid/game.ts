@@ -96,7 +96,8 @@ export class PyramidGame {
     const [selRow, selCol] = this.state.selected;
     if (selRow === row && selCol === col) {
       this.state.selected = null;
-      this.state.message = "Pair exposed cards that sum to 13. Kings remove alone.";
+      this.state.message =
+        "Pair exposed cards that sum to 13. Kings remove alone.";
       return;
     }
 
@@ -135,7 +136,8 @@ export class PyramidGame {
 
     if (this.state.selected === "waste") {
       this.state.selected = null;
-      this.state.message = "Pair exposed cards that sum to 13. Kings remove alone.";
+      this.state.message =
+        "Pair exposed cards that sum to 13. Kings remove alone.";
       return;
     }
 
@@ -159,7 +161,8 @@ export class PyramidGame {
 
     this.state.waste.push(this.state.stock.pop()!);
     this.state.selected = null;
-    this.state.message = "Pair exposed cards that sum to 13. Kings remove alone.";
+    this.state.message =
+      "Pair exposed cards that sum to 13. Kings remove alone.";
     this.checkEndConditions();
   }
 
