@@ -46,10 +46,7 @@ export class BlackjackUI {
           <div class="bj-hand-label">Dealer <span class="bj-hand-value" id="dealer-value"></span></div>
           <div class="bj-hand" id="dealer-hand"></div>
         </div>
-        <div class="bj-hand-section">
-          <div class="bj-hand-label">You <span class="bj-hand-value" id="player-value"></span></div>
-          <div class="bj-hand" id="player-hand"></div>
-        </div>
+        <div id="player-hands"></div>
       </div>
 
       <div class="message-bar" id="message"></div>
@@ -62,6 +59,7 @@ export class BlackjackUI {
           <button id="hit-btn">Hit</button>
           <button id="stand-btn">Stand</button>
           <button id="double-btn">Double</button>
+          <button id="split-btn">Split</button>
         </div>
         <button class="hidden" id="next-round-btn">Next Round</button>
       </div>
@@ -79,40 +77,46 @@ export class BlackjackUI {
     });
 
     this.$("bet-buttons").addEventListener("click", (e) => {
-      const btn = (e.target as HTMLElement).closest(
-        "[data-amount]",
-      ) as HTMLElement | null;
+      const btn = (e.target as HTMLElement).closest("[data-amount]") as HTMLElement | null;
       if (!btn) return;
       const amount = parseInt(btn.dataset.amount ?? "0");
       if (!this.game.canBet(amount)) return;
       this.game.placeBet(amount);
-      this.render();
-      if (isBlackjack(this.game.getState().playerHand)) {
-        void this.runDealerSequence();
-      }
+      this.afterPlayerAction();
     });
 
     this.$("hit-btn").addEventListener("click", () => {
       this.game.hit();
-      this.render();
+      this.afterPlayerAction();
     });
 
     this.$("stand-btn").addEventListener("click", () => {
-      void this.runDealerSequence();
+      this.game.stand();
+      this.afterPlayerAction();
     });
 
     this.$("double-btn").addEventListener("click", () => {
       this.game.doubleDown();
+      this.afterPlayerAction();
+    });
+
+    this.$("split-btn").addEventListener("click", () => {
+      this.game.split();
       this.render();
-      if (this.game.getState().phase === "PLAYER_TURN") {
-        void this.runDealerSequence();
-      }
     });
 
     this.$("next-round-btn").addEventListener("click", () => {
       this.game.newRound();
       this.render();
     });
+  }
+
+  private afterPlayerAction(): void {
+    this.render();
+    const phase = this.game.getState().phase;
+    if (phase === "DEALER_TURN") {
+      void this.runDealerSequence();
+    }
   }
 
   private async runDealerSequence(): Promise<void> {
@@ -142,34 +146,22 @@ export class BlackjackUI {
     const state = this.game.getState();
 
     this.$("chips-display").textContent = String(state.chips);
-    this.$("bet-display").textContent = state.bet > 0 ? String(state.bet) : "—";
+    const betText =
+      state.bet > 0
+        ? state.splitHand !== null
+          ? `${state.bet} + ${state.splitBet}`
+          : String(state.bet)
+        : "—";
+    this.$("bet-display").textContent = betText;
     this.$("message").textContent = state.message;
 
-    this.renderHands();
+    this.renderDealerHand();
+    this.renderPlayerHands();
     this.renderControls();
   }
 
-  private renderHands(): void {
+  private renderDealerHand(): void {
     const state = this.game.getState();
-
-    // Player hand
-    const playerEl = this.$("player-hand");
-    playerEl.innerHTML = state.playerHand
-      .map((c) => renderCard(c))
-      .join("");
-
-    const playerValEl = this.$("player-value");
-    if (state.playerHand.length > 0) {
-      const val = handValue(state.playerHand);
-      const bust = isBust(state.playerHand);
-      const bj = isBlackjack(state.playerHand);
-      playerValEl.textContent = bj ? "BJ" : bust ? `${val} (bust)` : String(val);
-      playerValEl.className = `bj-hand-value${bust ? " bj-bust" : bj ? " bj-bj" : ""}`;
-    } else {
-      playerValEl.textContent = "";
-    }
-
-    // Dealer hand
     const dealerEl = this.$("dealer-hand");
     const dealerValEl = this.$("dealer-value");
 
@@ -180,11 +172,8 @@ export class BlackjackUI {
     }
 
     if (!state.holeRevealed && state.dealerHand.length >= 2) {
-      // Show first card, hide hole card
-      dealerEl.innerHTML =
-        renderCard(state.dealerHand[0]!) + renderFaceDownCard();
-      const visibleVal = handValue([state.dealerHand[0]!]);
-      dealerValEl.textContent = `${visibleVal}+?`;
+      dealerEl.innerHTML = renderCard(state.dealerHand[0]!) + renderFaceDownCard();
+      dealerValEl.textContent = `${handValue([state.dealerHand[0]!])}+?`;
       dealerValEl.className = "bj-hand-value";
     } else {
       dealerEl.innerHTML = state.dealerHand.map((c) => renderCard(c)).join("");
@@ -192,6 +181,40 @@ export class BlackjackUI {
       const bust = isBust(state.dealerHand);
       dealerValEl.textContent = bust ? `${val} (bust)` : String(val);
       dealerValEl.className = `bj-hand-value${bust ? " bj-bust" : ""}`;
+    }
+  }
+
+  private renderPlayerHands(): void {
+    const state = this.game.getState();
+    const container = this.$("player-hands");
+
+    const renderHandSection = (
+      cards: typeof state.playerHand,
+      label: string,
+      active: boolean,
+      result: typeof state.roundResult,
+    ): string => {
+      const val = cards.length > 0 ? handValue(cards) : 0;
+      const bust = cards.length > 0 && isBust(cards);
+      const bj = isBlackjack(cards);
+      const valText = cards.length === 0 ? "" : bj ? "BJ" : bust ? `${val} (bust)` : String(val);
+      const valClass = bust ? "bj-bust" : bj ? "bj-bj" : "";
+      const sectionClass = state.splitHand !== null && !active && state.phase === "PLAYER_TURN"
+        ? "bj-hand-section bj-inactive"
+        : "bj-hand-section";
+
+      return `<div class="${sectionClass}">
+        <div class="bj-hand-label">${label} <span class="bj-hand-value ${valClass}">${valText}</span></div>
+        <div class="bj-hand">${cards.map((c) => renderCard(c)).join("")}</div>
+      </div>`;
+    };
+
+    if (state.splitHand !== null) {
+      container.innerHTML =
+        renderHandSection(state.playerHand, "Hand 1", state.activeHand === 0, state.roundResult) +
+        renderHandSection(state.splitHand, "Hand 2", state.activeHand === 1, state.splitResult);
+    } else {
+      container.innerHTML = renderHandSection(state.playerHand, "You", true, state.roundResult);
     }
   }
 
@@ -207,23 +230,22 @@ export class BlackjackUI {
 
     if (state.phase === "BETTING") {
       betBtns.classList.remove("hidden");
-      // Disable bet buttons we can't afford
-      betBtns
-        .querySelectorAll<HTMLButtonElement>(".bj-bet-btn")
-        .forEach((btn) => {
-          const amount = parseInt(btn.dataset.amount ?? "0");
-          btn.disabled = amount > state.chips;
-        });
+      betBtns.querySelectorAll<HTMLButtonElement>(".bj-bet-btn").forEach((btn) => {
+        btn.disabled = parseInt(btn.dataset.amount ?? "0") > state.chips;
+      });
     } else if (state.phase === "PLAYER_TURN") {
-      if (!isBlackjack(state.playerHand)) {
+      const activeCards =
+        state.activeHand === 1 && state.splitHand !== null
+          ? state.splitHand
+          : state.playerHand;
+      if (!isBlackjack(activeCards)) {
         playBtns.classList.remove("hidden");
-        (this.$("double-btn") as HTMLButtonElement).disabled =
-          !this.game.canDoubleDown();
+        (this.$("double-btn") as HTMLButtonElement).disabled = !this.game.canDoubleDown();
+        (this.$("split-btn") as HTMLButtonElement).disabled = !this.game.canSplit();
       }
     } else if (state.phase === "ROUND_OVER") {
       nextBtn.classList.remove("hidden");
-      nextBtn.textContent =
-        state.chips === 0 ? "New Game (out of chips)" : "Next Round";
+      nextBtn.textContent = state.chips === 0 ? "New Game (out of chips)" : "Next Round";
     }
   }
 }

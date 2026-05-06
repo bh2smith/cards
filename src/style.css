@@ -847,3 +847,16 @@ body {
 .bj-play-buttons.hidden {
   display: none;
 }
+
+.bj-inactive {
+  opacity: 0.45;
+}
+
+#player-hands {
+  display: flex;
+  gap: 16px;
+}
+
+#player-hands .bj-hand-section {
+  flex: 1;
+}

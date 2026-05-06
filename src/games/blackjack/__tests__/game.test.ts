@@ -155,3 +155,74 @@ describe("BlackjackGame", () => {
     }
   });
 });
+
+describe("split", () => {
+  function gameWithMatchingFirstCards(): BlackjackGame | null {
+    // Run multiple times to get a splittable hand (same rank first two cards)
+    for (let i = 0; i < 200; i++) {
+      const g = new BlackjackGame(100);
+      g.placeBet(10);
+      if (g.canSplit()) return g;
+    }
+    return null;
+  }
+
+  test("canSplit returns false before bet", () => {
+    const g = new BlackjackGame();
+    expect(g.canSplit()).toBe(false);
+  });
+
+  test("canSplit returns false without enough chips", () => {
+    const g = new BlackjackGame(10);
+    g.placeBet(10);
+    // chips = 0 after bet, can't cover split
+    if (g.getState().phase === "PLAYER_TURN") {
+      expect(g.canSplit()).toBe(false);
+    }
+  });
+
+  test("split creates two hands each with 2 cards", () => {
+    const g = gameWithMatchingFirstCards();
+    if (!g) return; // skip if no splittable hand generated
+    g.split();
+    const s = g.getState();
+    expect(s.playerHand.length).toBe(2);
+    expect(s.splitHand).not.toBeNull();
+    expect(s.splitHand!.length).toBe(2);
+    expect(s.activeHand).toBe(0);
+    expect(s.chips).toBe(80); // 100 - 10 (bet) - 10 (split)
+    expect(s.splitBet).toBe(10);
+  });
+
+  test("stand on hand 0 advances to hand 1", () => {
+    const g = gameWithMatchingFirstCards();
+    if (!g) return;
+    g.split();
+    g.stand();
+    expect(g.getState().activeHand).toBe(1);
+    expect(g.getState().phase).toBe("PLAYER_TURN");
+  });
+
+  test("stand on hand 1 triggers dealer turn", () => {
+    const g = gameWithMatchingFirstCards();
+    if (!g) return;
+    g.split();
+    g.stand(); // done with hand 0
+    g.stand(); // done with hand 1 → dealer
+    expect(g.getState().phase).toBe("DEALER_TURN");
+  });
+
+  test("settling split round produces two results", () => {
+    const g = gameWithMatchingFirstCards();
+    if (!g) return;
+    g.split();
+    g.stand();
+    g.stand();
+    while (g.dealerDrawOne()) {}
+    g.settleRound();
+    const s = g.getState();
+    expect(s.phase).toBe("ROUND_OVER");
+    expect(s.roundResult).not.toBeNull();
+    expect(s.splitResult).not.toBeNull();
+  });
+});

@@ -12,11 +12,15 @@ export type RoundResult = "win" | "blackjack" | "lose" | "bust" | "push";
 export interface BlackjackState extends BaseGameState {
   phase: BlackjackPhase;
   playerHand: PlayingCard[];
+  splitHand: PlayingCard[] | null;
+  splitBet: number;
+  activeHand: 0 | 1;
   dealerHand: PlayingCard[];
   holeRevealed: boolean;
   chips: number;
   bet: number;
   roundResult: RoundResult | null;
+  splitResult: RoundResult | null;
 }
 
 export const STARTING_CHIPS = 100;
