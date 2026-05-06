@@ -76,6 +76,7 @@ export class GinRummyGame {
       return;
     this.ensureStock();
     this.state.playerHand.push(this.state.stock.pop()!);
+    sortHand(this.state.playerHand);
     this.state.phase = "DISCARDING";
     this.state.message = "Discard a card, or knock if you can.";
   }
@@ -85,6 +86,7 @@ export class GinRummyGame {
       return;
     if (this.state.discardPile.length === 0) return;
     this.state.playerHand.push(this.state.discardPile.pop()!);
+    sortHand(this.state.playerHand);
     this.state.phase = "DISCARDING";
     this.state.message = "Discard a card, or knock if you can.";
   }
