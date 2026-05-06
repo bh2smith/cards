@@ -99,10 +99,11 @@ export class BlackjackGame {
 
     const playerHand = [this.draw(), this.draw()];
     const dealerHand = [this.draw(), this.draw()];
+    const playerBJ = isBlackjack(playerHand);
 
     this.state = {
       ...this.state,
-      phase: "PLAYER_TURN",
+      phase: playerBJ ? "DEALER_TURN" : "PLAYER_TURN",
       playerHand,
       splitHand: null,
       splitBet: 0,
@@ -113,7 +114,7 @@ export class BlackjackGame {
       bet: amount,
       roundResult: null,
       splitResult: null,
-      message: isBlackjack(playerHand) ? "Blackjack!" : "Hit or stand?",
+      message: playerBJ ? "Blackjack!" : "Hit or stand?",
       winner: null,
     };
   }

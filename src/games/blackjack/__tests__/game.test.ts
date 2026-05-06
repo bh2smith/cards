@@ -77,14 +77,28 @@ describe("BlackjackGame", () => {
     expect(g.getState().chips).toBe(100);
   });
 
-  test("placing bet moves to PLAYER_TURN", () => {
+  test("placing bet deals cards and deducts chips", () => {
     const g = new BlackjackGame();
     g.placeBet(10);
-    expect(g.getState().phase).toBe("PLAYER_TURN");
-    expect(g.getState().chips).toBe(90);
-    expect(g.getState().bet).toBe(10);
-    expect(g.getState().playerHand.length).toBe(2);
-    expect(g.getState().dealerHand.length).toBe(2);
+    const s = g.getState();
+    expect(s.phase === "PLAYER_TURN" || s.phase === "DEALER_TURN").toBe(true);
+    expect(s.chips).toBe(90);
+    expect(s.bet).toBe(10);
+    expect(s.playerHand.length).toBe(2);
+    expect(s.dealerHand.length).toBe(2);
+  });
+
+  test("player natural blackjack skips to DEALER_TURN", () => {
+    for (let i = 0; i < 500; i++) {
+      const g = new BlackjackGame();
+      g.placeBet(10);
+      const s = g.getState();
+      if (isBlackjack(s.playerHand)) {
+        expect(s.phase).toBe("DEALER_TURN");
+        expect(s.message).toBe("Blackjack!");
+        return;
+      }
+    }
   });
 
   test("cannot bet more than chips", () => {
