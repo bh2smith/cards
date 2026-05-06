@@ -168,6 +168,21 @@ describe("BlackjackGame", () => {
       expect(g.canDoubleDown()).toBe(false);
     }
   });
+
+  test("can only double down on hand values 8-11", () => {
+    for (let i = 0; i < 500; i++) {
+      const g = new BlackjackGame(100);
+      g.placeBet(10);
+      const s = g.getState();
+      if (s.phase !== "PLAYER_TURN") continue;
+      const val = handValue(s.playerHand);
+      if (val >= 8 && val <= 11) {
+        expect(g.canDoubleDown()).toBe(true);
+      } else {
+        expect(g.canDoubleDown()).toBe(false);
+      }
+    }
+  });
 });
 
 describe("split", () => {
