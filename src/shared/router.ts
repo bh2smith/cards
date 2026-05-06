@@ -70,7 +70,7 @@ function renderLobby(): void {
       label: "Blackjack",
       description:
         "Beat the dealer. Get as close to 21 as you can without going bust.",
-      available: false,
+      available: registry.get("blackjack")?.available ?? false,
     },
     {
       id: "pyramid",

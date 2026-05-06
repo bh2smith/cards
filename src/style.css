@@ -774,3 +774,89 @@ body {
     font-size: 18px;
   }
 }
+
+/* ── Blackjack ─────────────────────────────────────── */
+
+.bj-table {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 16px 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.bj-hand-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bj-hand-label {
+  font-family: "Cinzel", serif;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cream-dim);
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.bj-hand-value {
+  font-family: "Cinzel", serif;
+  font-size: 14px;
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.bj-hand-value.bj-bust {
+  color: #c0392b;
+}
+
+.bj-hand-value.bj-bj {
+  color: #f1c40f;
+}
+
+.bj-hand {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.bj-bet-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.bj-bet-btn {
+  min-width: 64px;
+  font-family: "Cinzel", serif;
+  font-size: 15px;
+  padding: 10px 18px;
+}
+
+.bj-play-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.bj-bet-buttons.hidden,
+.bj-play-buttons.hidden {
+  display: none;
+}
+
+.bj-inactive {
+  opacity: 0.45;
+}
+
+#player-hands {
+  display: flex;
+  gap: 16px;
+}
+
+#player-hands .bj-hand-section {
+  flex: 1;
+}
