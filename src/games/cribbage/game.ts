@@ -114,8 +114,12 @@ export class CribbageGame {
     playerHand.sortCards(new AceLowRankSet());
     computerHand.sortCards(new AceLowRankSet());
 
-    this.state.playerHand = playerHand.getCards() as PlayingCard[];
-    this.state.computerHand = computerHand.getCards() as PlayingCard[];
+    this.state.playerHand = (playerHand.getCards() as PlayingCard[]).sort(
+      (a, b) => a.cardName - b.cardName || a.suit - b.suit,
+    );
+    this.state.computerHand = (computerHand.getCards() as PlayingCard[]).sort(
+      (a, b) => a.cardName - b.cardName || a.suit - b.suit,
+    );
     this.state.crib = [];
     this.state.starterCard = null;
     this.state.peggingPile = [];

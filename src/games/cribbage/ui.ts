@@ -246,8 +246,24 @@ export class CribbageUI {
     const result = this.game.scoreCurrentPhaseHand();
     const state = this.game.getState();
 
-    this.$("scoring-details").innerHTML = result.points.length
-      ? result.points.map((p) => `<div>${p.name}: ${p.points}</div>`).join("")
+    const grouped = new Map<string, number>();
+    for (const p of result.points) {
+      grouped.set(p.name, (grouped.get(p.name) ?? 0) + 1);
+    }
+    const pointsByName = new Map<string, number>();
+    for (const p of result.points) {
+      pointsByName.set(p.name, p.points);
+    }
+
+    const lines = [...grouped.entries()].map(([name, count]) => {
+      const pts = pointsByName.get(name)! * count;
+      return count > 1
+        ? `<div>${name} (×${count}): ${pts}</div>`
+        : `<div>${name}: ${pts}</div>`;
+    });
+
+    this.$("scoring-details").innerHTML = lines.length
+      ? lines.join("")
       : "<div>No points</div>";
     this.$("scoring-details").classList.remove("hidden");
     this.$("scoring-total").textContent = `Total: ${result.score}`;
