@@ -148,7 +148,10 @@ export class BlackjackGame {
     if (this.state.phase !== "PLAYER_TURN") return false;
     const hand = this.activeHandCards();
     const bet = this.activeBet();
-    return hand.length === 2 && this.state.chips >= bet;
+    const val = handValue(hand);
+    return (
+      hand.length === 2 && val >= 8 && val <= 11 && this.state.chips >= bet
+    );
   }
 
   doubleDown(): void {
