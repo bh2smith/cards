@@ -232,11 +232,19 @@ body {
 
 .hand-area {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
   min-height: calc(var(--card-height) + 12px);
   padding: 4px 0;
+}
+
+.hand-area .card,
+.hand-area .card-back {
+  margin-left: -40px;
+}
+
+.hand-area .card:first-child,
+.hand-area .card-back:first-child {
+  margin-left: 0;
 }
 
 .play-area {
