@@ -1,6 +1,7 @@
 import { router } from "./shared/router";
 import { CribbageUI } from "./games/cribbage/ui";
 import { GolfUI } from "./games/golf/ui";
+import { BlackjackUI } from "./games/blackjack/ui";
 
 router.register(
   "cribbage",
@@ -14,6 +15,13 @@ router.register(
   "Golf Solitaire",
   "Clear the tableau by playing cards one rank above or below the waste top.",
   () => new GolfUI(),
+);
+
+router.register(
+  "blackjack",
+  "Blackjack",
+  "Beat the dealer. Get as close to 21 as you can without going bust.",
+  () => new BlackjackUI(),
 );
 
 router.init();
