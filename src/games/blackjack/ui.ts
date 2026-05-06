@@ -61,6 +61,7 @@ export class BlackjackUI {
         <div class="bj-play-buttons hidden" id="play-buttons">
           <button id="hit-btn">Hit</button>
           <button id="stand-btn">Stand</button>
+          <button id="double-btn">Double</button>
         </div>
         <button class="hidden" id="next-round-btn">Next Round</button>
       </div>
@@ -98,6 +99,14 @@ export class BlackjackUI {
 
     this.$("stand-btn").addEventListener("click", () => {
       void this.runDealerSequence();
+    });
+
+    this.$("double-btn").addEventListener("click", () => {
+      this.game.doubleDown();
+      this.render();
+      if (this.game.getState().phase === "PLAYER_TURN") {
+        void this.runDealerSequence();
+      }
     });
 
     this.$("next-round-btn").addEventListener("click", () => {
@@ -208,6 +217,8 @@ export class BlackjackUI {
     } else if (state.phase === "PLAYER_TURN") {
       if (!isBlackjack(state.playerHand)) {
         playBtns.classList.remove("hidden");
+        (this.$("double-btn") as HTMLButtonElement).disabled =
+          !this.game.canDoubleDown();
       }
     } else if (state.phase === "ROUND_OVER") {
       nextBtn.classList.remove("hidden");

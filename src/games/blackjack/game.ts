@@ -116,6 +116,28 @@ export class BlackjackGame {
     }
   }
 
+  canDoubleDown(): boolean {
+    return (
+      this.state.phase === "PLAYER_TURN" &&
+      this.state.playerHand.length === 2 &&
+      this.state.chips >= this.state.bet
+    );
+  }
+
+  doubleDown(): void {
+    if (!this.canDoubleDown()) return;
+    this.state.chips -= this.state.bet;
+    this.state.bet *= 2;
+    this.state.playerHand = [...this.state.playerHand, this.draw()];
+    if (isBust(this.state.playerHand)) {
+      this.state.holeRevealed = true;
+      this.state.phase = "ROUND_OVER";
+      this.state.roundResult = "bust";
+      this.state.message = `Bust! You had ${handValue(this.state.playerHand)}.`;
+    }
+    // if not bust, UI triggers dealer sequence
+  }
+
   hit(): void {
     if (this.state.phase !== "PLAYER_TURN") return;
     if (isBlackjack(this.state.playerHand)) return;

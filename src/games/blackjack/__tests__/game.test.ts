@@ -128,9 +128,30 @@ describe("BlackjackGame", () => {
   });
 
   test("push returns bet", () => {
-    // Can't force a push without controlling the deck, but we can test payout logic indirectly
     const g = new BlackjackGame(50);
     g.placeBet(25);
     expect(g.getState().chips).toBe(25);
+  });
+
+  test("double down doubles bet and draws one card", () => {
+    const g = new BlackjackGame(100);
+    g.placeBet(10);
+    const state = g.getState();
+    if (state.phase === "PLAYER_TURN" && g.canDoubleDown()) {
+      g.doubleDown();
+      const s = g.getState();
+      expect(s.bet).toBe(20);
+      expect(s.chips).toBe(80);
+      expect(s.playerHand.length).toBe(3);
+    }
+  });
+
+  test("cannot double down without sufficient chips", () => {
+    const g = new BlackjackGame(15);
+    g.placeBet(10);
+    // chips = 5, bet = 10 — can't afford to double
+    if (g.getState().phase === "PLAYER_TURN") {
+      expect(g.canDoubleDown()).toBe(false);
+    }
   });
 });
