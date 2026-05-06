@@ -232,11 +232,19 @@ body {
 
 .hand-area {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
   min-height: calc(var(--card-height) + 12px);
   padding: 4px 0;
+}
+
+.hand-area .card,
+.hand-area .card-back {
+  margin-left: -40px;
+}
+
+.hand-area .card:first-child,
+.hand-area .card-back:first-child {
+  margin-left: 0;
 }
 
 .play-area {
@@ -1038,4 +1046,78 @@ body {
 
 #player-hands .bj-hand-section {
   flex: 1;
+}
+
+/* ── GIN RUMMY ── */
+
+.gin-meld-gap {
+  width: 4px;
+  flex-shrink: 0;
+}
+
+.gin-deadwood-gap {
+  width: 12px;
+  flex-shrink: 0;
+}
+
+.gin-action-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+#knock-display {
+  margin: 12px auto;
+  max-width: 520px;
+}
+
+#knock-display.hidden {
+  display: none;
+}
+
+.gin-knock-summary {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.gin-knock-section {
+  background: var(--wood);
+  border: 1px solid var(--wood-border);
+  border-radius: var(--radius);
+  padding: 12px;
+  min-width: 200px;
+}
+
+.gin-knock-section h3 {
+  font-family: "Cinzel", serif;
+  color: var(--gold);
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+  text-align: center;
+}
+
+.gin-meld-group {
+  margin-bottom: 8px;
+}
+
+.gin-meld-label {
+  font-size: 0.8rem;
+  color: var(--cream-dim);
+  margin-bottom: 4px;
+}
+
+.gin-meld-cards {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.gin-deadwood-label {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: var(--gold-light);
+  text-align: center;
+  font-weight: 600;
 }

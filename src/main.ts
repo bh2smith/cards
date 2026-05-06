@@ -3,6 +3,7 @@ import { CribbageUI } from "./games/cribbage/ui";
 import { GolfUI } from "./games/golf/ui";
 import { BlackjackUI } from "./games/blackjack/ui";
 import { PyramidUI } from "./games/pyramid/ui";
+import { GinRummyUI } from "./games/gin/ui";
 import { initMiniapp } from "./shared/circles/miniapp";
 import { withEntryGate } from "./shared/circles/entryGate";
 
@@ -34,6 +35,13 @@ router.register(
   "Pyramid",
   "Pair exposed cards that sum to 13 to clear the pyramid.",
   withEntryGate(() => new PyramidUI()),
+);
+
+router.register(
+  "gin",
+  "Gin Rummy",
+  "Form melds and knock before the bot does. Score runs and sets.",
+  withEntryGate(() => new GinRummyUI()),
 );
 
 router.init();

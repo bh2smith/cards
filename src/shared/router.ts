@@ -83,7 +83,7 @@ function renderLobby(): void {
       label: "Gin Rummy",
       description:
         "Form melds and knock before the bot does. Score runs and sets.",
-      available: false,
+      available: registry.get("gin")?.available ?? false,
     },
     {
       id: "hearts",
