@@ -76,7 +76,7 @@ function renderLobby(): void {
       id: "pyramid",
       label: "Pyramid",
       description: "Pair exposed cards that sum to 13 to clear the pyramid.",
-      available: false,
+      available: registry.get("pyramid")?.available ?? false,
     },
     {
       id: "gin",

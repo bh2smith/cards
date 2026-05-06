@@ -744,6 +744,80 @@ body {
   background: rgba(0, 0, 0, 0.15);
 }
 
+/* ── PYRAMID SOLITAIRE ── */
+
+.pyramid-tableau {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.pyramid-row {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+}
+
+.pyramid-row:not(:first-child) {
+  margin-top: -28px;
+}
+
+.pyramid-tableau .card {
+  width: 40px;
+  height: 58px;
+}
+
+.pyramid-tableau .card-corner {
+  font-size: 7px;
+}
+
+.pyramid-tableau .card-center {
+  font-size: 11px;
+}
+
+.pyramid-card {
+  position: relative;
+}
+
+.pyramid-card.removed {
+  width: 40px;
+  height: 58px;
+  visibility: hidden;
+}
+
+.pyramid-card.exposed .card {
+  cursor: pointer;
+}
+
+.pyramid-card.exposed .card:hover:not(.selected) {
+  box-shadow:
+    0 0 0 2px var(--gold),
+    0 4px 14px rgba(201, 162, 39, 0.4);
+}
+
+.pyramid-card.covered .card {
+  cursor: default;
+}
+
+.pyramid-card .card.selected {
+  transform: translateY(-8px);
+  box-shadow:
+    0 12px 30px rgba(93, 195, 247, 0.4),
+    0 0 0 2px #5dc3f7;
+  border-color: #5dc3f7;
+  z-index: 3;
+}
+
+#pyramid-waste,
+#pyramid-stock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
 /* ── RESPONSIVE ── */
 
 @media (min-width: 420px) {
@@ -773,6 +847,32 @@ body {
 
   .golf-tableau .card-center {
     font-size: 18px;
+  }
+
+  .pyramid-row:not(:first-child) {
+    margin-top: -34px;
+  }
+
+  .pyramid-tableau .card {
+    width: 48px;
+    height: 68px;
+  }
+
+  .pyramid-card.removed {
+    width: 48px;
+    height: 68px;
+  }
+
+  .pyramid-row {
+    gap: 3px;
+  }
+
+  .pyramid-tableau .card-corner {
+    font-size: 8px;
+  }
+
+  .pyramid-tableau .card-center {
+    font-size: 14px;
   }
 }
 

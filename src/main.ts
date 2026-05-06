@@ -2,6 +2,7 @@ import { router } from "./shared/router";
 import { CribbageUI } from "./games/cribbage/ui";
 import { GolfUI } from "./games/golf/ui";
 import { BlackjackUI } from "./games/blackjack/ui";
+import { PyramidUI } from "./games/pyramid/ui";
 
 router.register(
   "cribbage",
@@ -22,6 +23,13 @@ router.register(
   "Blackjack",
   "Beat the dealer. Get as close to 21 as you can without going bust.",
   () => new BlackjackUI(),
+);
+
+router.register(
+  "pyramid",
+  "Pyramid",
+  "Pair exposed cards that sum to 13 to clear the pyramid.",
+  () => new PyramidUI(),
 );
 
 router.init();
