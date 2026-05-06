@@ -1,14 +1,14 @@
 import {
   isInMiniapp,
   getWalletAddress,
-  isGnosisGroupMember,
+  canPayEntryFee,
   chargeEntryFee,
 } from "./miniapp";
 
 type GateStatus =
   | "checking"
   | "no-wallet"
-  | "not-member"
+  | "no-path"
   | "ready"
   | "paying"
   | "paid"
@@ -45,8 +45,8 @@ export function withEntryGate(
           return `<p>Checking eligibility...</p>`;
         case "no-wallet":
           return `<p>Please connect your wallet in the Circles app to play.</p>`;
-        case "not-member":
-          return `<p>You must be a member of the Gnosis Group to play.</p>
+        case "no-path":
+          return `<p>Cannot find a payment path to the treasury. You may need to join the Gnosis Group first.</p>
                   <p class="entry-gate-hint">Join at <a href="https://circles.gnosis.io" target="_blank">circles.gnosis.io</a></p>`;
         case "ready":
           return `<p>Entry fee: 1 CRC</p>
@@ -82,14 +82,14 @@ export function withEntryGate(
         return;
       }
       try {
-        const member = await isGnosisGroupMember(address);
-        if (!member) {
-          render("not-member");
+        const canPay = await canPayEntryFee(address);
+        if (!canPay) {
+          render("no-path");
           return;
         }
         render("ready");
       } catch {
-        render("error", "Could not verify group membership.");
+        render("error", "Could not verify payment path.");
       }
     }
 

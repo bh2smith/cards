@@ -31,21 +31,18 @@ export function getWalletAddress(): string | null {
   return connectedAddress;
 }
 
-export async function isGnosisGroupMember(address: string): Promise<boolean> {
-  if (!sdk) return false;
-  const members = await sdk.groups.getMembers(GNOSIS_GROUP);
-  for (const m of members.results) {
-    if (m.member.toLowerCase() === address.toLowerCase()) return true;
+export async function canPayEntryFee(address: string): Promise<boolean> {
+  try {
+    const builder = new TransferBuilder(config);
+    const txs = await builder.constructAdvancedTransfer(
+      address,
+      TREASURY_ADDRESS,
+      ONE_CRC,
+    );
+    return txs.length > 0;
+  } catch {
+    return false;
   }
-  return false;
-}
-
-export async function getMaxTransferableAmount(from: string): Promise<bigint> {
-  const builder = new TransferBuilder(config);
-  const txs = await builder
-    .constructAdvancedTransfer(from, TREASURY_ADDRESS, ONE_CRC)
-    .catch(() => null);
-  return txs ? ONE_CRC : 0n;
 }
 
 export async function chargeEntryFee(): Promise<string[]> {
