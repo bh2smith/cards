@@ -1050,6 +1050,16 @@ body {
 
 /* ── GIN RUMMY ── */
 
+.gin-meld-gap {
+  width: 4px;
+  flex-shrink: 0;
+}
+
+.gin-deadwood-gap {
+  width: 12px;
+  flex-shrink: 0;
+}
+
 .gin-action-buttons {
   display: flex;
   gap: 10px;

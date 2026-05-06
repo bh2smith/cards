@@ -53,7 +53,5 @@ export function pipValue(card: PlayingCard): number {
 }
 
 export function sortHand(hand: PlayingCard[]): void {
-  hand.sort(
-    (a, b) => a.suit * 13 + cardOrder(a) - (b.suit * 13 + cardOrder(b)),
-  );
+  hand.sort((a, b) => cardOrder(a) - cardOrder(b) || a.suit - b.suit);
 }

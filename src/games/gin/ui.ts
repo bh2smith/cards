@@ -1,6 +1,7 @@
 import { GinRummyGame } from "./game";
 import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
-import { RANK_DISPLAY, SUIT_SYMBOL } from "../../shared/deck";
+import { RANK_DISPLAY, SUIT_SYMBOL, cardKey } from "../../shared/deck";
+import { findBestMelds } from "./melds";
 import type { GinState, KnockResult, Meld } from "./types";
 
 export class GinRummyUI {
@@ -177,17 +178,57 @@ export class GinRummyUI {
     this.renderButtons(state);
   }
 
+  private groupedHandHtml(
+    hand: readonly PlayingCard[],
+    opts: { small?: boolean; dimmed?: boolean } = {},
+  ): string {
+    const { melds, deadwood } = findBestMelds([...hand]);
+    const meldKeys = new Set<string>();
+    const parts: string[] = [];
+
+    for (const meld of melds) {
+      for (const c of meld.cards) {
+        const key = cardKey(c);
+        const idx = hand.findIndex(
+          (h, i) => cardKey(h) === key && !meldKeys.has(`${i}`),
+        );
+        meldKeys.add(`${idx}`);
+        parts.push(renderCard(c, { index: idx, ...opts }));
+      }
+      parts.push('<div class="gin-meld-gap"></div>');
+    }
+
+    if (parts.length > 0 && deadwood.length > 0) {
+      parts[parts.length - 1] = '<div class="gin-deadwood-gap"></div>';
+    } else if (parts.length > 0) {
+      parts.pop();
+    }
+
+    for (const c of deadwood) {
+      const key = cardKey(c);
+      const idx = hand.findIndex(
+        (h, i) => cardKey(h) === key && !meldKeys.has(`${i}`),
+      );
+      meldKeys.add(`${idx}`);
+      parts.push(renderCard(c, { index: idx, ...opts }));
+    }
+
+    return parts.join("");
+  }
+
   private renderComputerHand(state: GinState): void {
     const container = this.$("computer-hand");
     const reveal = state.phase === "ROUND_OVER" || state.phase === "GAME_OVER";
 
-    container.innerHTML = state.computerHand
-      .map((card, i) =>
-        reveal
-          ? renderCard(card, { index: i, small: true })
-          : renderFaceDownCard(i, true),
-      )
-      .join("");
+    if (reveal) {
+      container.innerHTML = this.groupedHandHtml(state.computerHand, {
+        small: true,
+      });
+    } else {
+      container.innerHTML = state.computerHand
+        .map((_, i) => renderFaceDownCard(i, true))
+        .join("");
+    }
   }
 
   private renderPlayerHand(state: GinState): void {
@@ -195,14 +236,9 @@ export class GinRummyUI {
     const clickable =
       state.phase === "DISCARDING" && state.currentTurn === "player";
 
-    container.innerHTML = state.playerHand
-      .map((card, i) =>
-        renderCard(card, {
-          index: i,
-          dimmed: !clickable && state.phase === "DRAWING",
-        }),
-      )
-      .join("");
+    container.innerHTML = this.groupedHandHtml(state.playerHand, {
+      dimmed: !clickable && state.phase === "DRAWING",
+    });
 
     if (clickable) container.style.cursor = "pointer";
     else container.style.cursor = "default";
