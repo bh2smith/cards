@@ -124,7 +124,8 @@ export class BlackjackGame {
       this.state.activeHand === 0 &&
       this.state.splitHand === null &&
       this.state.playerHand.length === 2 &&
-      cardOrder(this.state.playerHand[0]!) === cardOrder(this.state.playerHand[1]!) &&
+      cardOrder(this.state.playerHand[0]!) ===
+        cardOrder(this.state.playerHand[1]!) &&
       this.state.chips >= this.state.bet
     );
   }
@@ -228,10 +229,18 @@ export class BlackjackGame {
       }
     };
 
-    const h0 = settle(this.state.playerHand, this.state.bet, this.state.roundResult);
+    const h0 = settle(
+      this.state.playerHand,
+      this.state.bet,
+      this.state.roundResult,
+    );
     const h1 =
       this.state.splitHand !== null
-        ? settle(this.state.splitHand, this.state.splitBet, this.state.splitResult)
+        ? settle(
+            this.state.splitHand,
+            this.state.splitBet,
+            this.state.splitResult,
+          )
         : null;
 
     const totalPayout = h0.payout + (h1?.payout ?? 0);
@@ -239,11 +248,18 @@ export class BlackjackGame {
 
     const msg = (r: RoundResult, val: number, bet: number): string => {
       switch (r) {
-        case "blackjack": return `Blackjack! (+${Math.floor(bet * 1.5)})`;
-        case "win": return dealerBust ? `Win — dealer busts (+${bet})` : `Win ${val} > ${dealerVal} (+${bet})`;
-        case "push": return `Push`;
-        case "lose": return `Lose — ${dealerVal} > ${val}`;
-        case "bust": return `Bust`;
+        case "blackjack":
+          return `Blackjack! (+${Math.floor(bet * 1.5)})`;
+        case "win":
+          return dealerBust
+            ? `Win — dealer busts (+${bet})`
+            : `Win ${val} > ${dealerVal} (+${bet})`;
+        case "push":
+          return `Push`;
+        case "lose":
+          return `Lose — ${dealerVal} > ${val}`;
+        case "bust":
+          return `Bust`;
       }
     };
 
@@ -253,16 +269,34 @@ export class BlackjackGame {
     } else {
       // Single hand — use friendlier phrasing
       switch (h0.result) {
-        case "blackjack": message = `Blackjack! You win ${h0.payout - this.state.bet} chips.`; break;
-        case "win": message = dealerBust ? `Dealer busts! You win ${this.state.bet} chips.` : `You win! ${handValue(this.state.playerHand)} beats ${dealerVal}.`; break;
-        case "push": message = `Push. Bet returned.`; break;
-        case "lose": message = `Dealer wins. ${dealerVal} beats ${handValue(this.state.playerHand)}.`; break;
-        case "bust": message = `Bust!`; break;
+        case "blackjack":
+          message = `Blackjack! You win ${h0.payout - this.state.bet} chips.`;
+          break;
+        case "win":
+          message = dealerBust
+            ? `Dealer busts! You win ${this.state.bet} chips.`
+            : `You win! ${handValue(this.state.playerHand)} beats ${dealerVal}.`;
+          break;
+        case "push":
+          message = `Push. Bet returned.`;
+          break;
+        case "lose":
+          message = `Dealer wins. ${dealerVal} beats ${handValue(this.state.playerHand)}.`;
+          break;
+        case "bust":
+          message = `Bust!`;
+          break;
       }
     }
 
-    const anyWin = h0.result === "win" || h0.result === "blackjack" || h1?.result === "win" || h1?.result === "blackjack";
-    const allLost = (h0.result === "lose" || h0.result === "bust") && (h1 === null || h1.result === "lose" || h1.result === "bust");
+    const anyWin =
+      h0.result === "win" ||
+      h0.result === "blackjack" ||
+      h1?.result === "win" ||
+      h1?.result === "blackjack";
+    const allLost =
+      (h0.result === "lose" || h0.result === "bust") &&
+      (h1 === null || h1.result === "lose" || h1.result === "bust");
 
     this.state = {
       ...this.state,
@@ -296,13 +330,16 @@ export class BlackjackGame {
     }
     // All hands done
     const h0Bust = this.state.roundResult === "bust";
-    const h1Bust = this.state.splitHand !== null && this.state.splitResult === "bust";
+    const h1Bust =
+      this.state.splitHand !== null && this.state.splitResult === "bust";
     const allBust = h0Bust && (this.state.splitHand === null || h1Bust);
 
     if (allBust) {
       this.state.holeRevealed = true;
       this.state.phase = "ROUND_OVER";
-      this.state.message = this.state.splitHand ? "Both hands bust!" : `Bust! You had ${handValue(this.state.playerHand)}.`;
+      this.state.message = this.state.splitHand
+        ? "Both hands bust!"
+        : `Bust! You had ${handValue(this.state.playerHand)}.`;
     } else {
       this.beginDealerTurn();
     }
