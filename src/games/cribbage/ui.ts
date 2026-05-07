@@ -83,17 +83,15 @@ export class CribbageUI {
     return document.getElementById(id)!;
   }
 
+  private goToLobby(): void {
+    location.hash = "/";
+  }
+
   private bindEvents(): void {
     this.$("action-btn").addEventListener("click", () => this.onAction());
     this.$("new-game-btn").addEventListener("click", () =>
-      confirmIfEnabled("Start a new game?", () => this.onNewGame()),
+      confirmIfEnabled("Leave this game?", () => this.goToLobby()),
     );
-  }
-
-  private onNewGame(): void {
-    this.game.newGame();
-    this.selectedIndices.clear();
-    this.render();
   }
 
   private onAction(): void {
@@ -125,9 +123,7 @@ export class CribbageUI {
         break;
 
       case "GAME_OVER":
-        this.game.newGame();
-        this.selectedIndices.clear();
-        this.render();
+        this.goToLobby();
         break;
 
       case "COUNTING_NONDEALER":
@@ -445,7 +441,7 @@ export class CribbageUI {
         btn.classList.remove("hidden");
         break;
       case "GAME_OVER":
-        btn.textContent = "New Game";
+        btn.textContent = "Back to Game Room";
         btn.disabled = false;
         btn.classList.remove("hidden");
         break;
