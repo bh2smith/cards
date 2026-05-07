@@ -5,7 +5,8 @@ export type BlackjackPhase =
   | "BETTING"
   | "PLAYER_TURN"
   | "DEALER_TURN"
-  | "ROUND_OVER";
+  | "ROUND_OVER"
+  | "SESSION_OVER";
 
 export type RoundResult = "win" | "blackjack" | "lose" | "bust" | "push";
 
@@ -24,4 +25,5 @@ export interface BlackjackState extends BaseGameState {
 }
 
 export const STARTING_CHIPS = 100;
+export const WIN_TARGET = STARTING_CHIPS * 3;
 export const BET_OPTIONS = [5, 10, 25] as const;

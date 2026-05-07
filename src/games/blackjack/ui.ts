@@ -1,5 +1,5 @@
 import { BlackjackGame, handValue, isBlackjack, isBust } from "./game";
-import { BET_OPTIONS } from "./types";
+import { BET_OPTIONS, WIN_TARGET } from "./types";
 import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
 import { optimalAction, type Action } from "./strategy";
 import { confirmIfEnabled } from "../../shared/settings";
@@ -37,6 +37,10 @@ export class BlackjackUI {
         <div class="score-row">
           <span class="score-label">Chips</span>
           <span class="score-value" id="chips-display">100</span>
+        </div>
+        <div class="score-row">
+          <span class="score-label">Target</span>
+          <span class="score-value">${WIN_TARGET}</span>
         </div>
         <div class="score-row">
           <span class="score-label">Bet</span>
@@ -128,6 +132,15 @@ export class BlackjackUI {
     );
 
     this.$("next-round-btn").addEventListener("click", () => {
+      if (this.game.getState().phase === "SESSION_OVER") {
+        location.hash = "/";
+        return;
+      }
+      this.game.checkSession();
+      if (this.game.getState().phase === "SESSION_OVER") {
+        this.render();
+        return;
+      }
       this.game.newRound();
       this.render();
     });
@@ -204,6 +217,7 @@ export class BlackjackUI {
     }
 
     this.game.settleRound();
+    this.game.checkSession();
     this.render();
   }
 
@@ -357,8 +371,10 @@ export class BlackjackUI {
       }
     } else if (state.phase === "ROUND_OVER") {
       nextBtn.classList.remove("hidden");
-      nextBtn.textContent =
-        state.chips === 0 ? "New Game (out of chips)" : "Next Round";
+      nextBtn.textContent = "Next Round";
+    } else if (state.phase === "SESSION_OVER") {
+      nextBtn.classList.remove("hidden");
+      nextBtn.textContent = "Back to Game Room";
     }
   }
 }
