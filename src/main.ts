@@ -4,6 +4,7 @@ import { GolfUI } from "./games/golf/ui";
 import { BlackjackUI } from "./games/blackjack/ui";
 import { PyramidUI } from "./games/pyramid/ui";
 import { GinRummyUI } from "./games/gin/ui";
+import { HeartsUI } from "./games/hearts/ui";
 import { initMiniapp } from "./shared/circles/miniapp";
 import { withEntryGate } from "./shared/circles/entryGate";
 
@@ -42,6 +43,13 @@ router.register(
   "Gin Rummy",
   "Form melds and knock before the bot does. Score runs and sets.",
   withEntryGate(() => new GinRummyUI()),
+);
+
+router.register(
+  "hearts",
+  "Hearts",
+  "Avoid hearts and the queen of spades across 4 players.",
+  withEntryGate(() => new HeartsUI()),
 );
 
 router.init();

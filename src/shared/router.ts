@@ -89,7 +89,7 @@ function renderLobby(): void {
       id: "hearts",
       label: "Hearts",
       description: "Avoid hearts and the queen of spades across 4 players.",
-      available: false,
+      available: registry.get("hearts")?.available ?? false,
     },
   ];
 
