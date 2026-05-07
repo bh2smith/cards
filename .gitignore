@@ -42,6 +42,7 @@ memory/
 .vercel
 
 # Foundry
+cache/
 contracts/out/
 contracts/cache/
 contracts/lib/

@@ -10,6 +10,11 @@ contract CardRoomLeaderboard {
         uint64 lastPlayedAt;
     }
 
+    struct TopEntry {
+        address player;
+        int64 score;
+    }
+
     uint8 public constant GAME_COUNT = 6;
     uint8 public constant GOLF = 0;
     uint8 public constant PYRAMID = 1;
@@ -20,11 +25,14 @@ contract CardRoomLeaderboard {
 
     uint8 public constant MAX_GOLF_CARDS = 35;
     uint8 public constant MAX_PYRAMID_CARDS = 28;
+    uint8 public constant MAX_TOP = 100;
 
     mapping(uint8 => uint32) public minDuration;
     mapping(uint8 => mapping(address => PlayerStats)) public stats;
-    mapping(uint8 => address[]) internal _players;
-    mapping(uint8 => mapping(address => bool)) internal _hasPlayed;
+
+    mapping(uint8 => TopEntry[]) internal _top;
+    mapping(uint8 => mapping(address => uint256)) internal _topIndex;
+    mapping(uint8 => mapping(address => bool)) internal _inTop;
 
     event GameResult(
         uint8 indexed gameId,
@@ -57,8 +65,6 @@ contract CardRoomLeaderboard {
             "Too fast"
         );
 
-        _ensurePlayer(gameId, msg.sender);
-
         if (won) {
             s.wins++;
         } else {
@@ -67,6 +73,9 @@ contract CardRoomLeaderboard {
         s.totalCardsRemaining += uint32(cardsRemaining);
         s.gamesPlayed++;
         s.lastPlayedAt = uint64(block.timestamp);
+
+        // Solo: lower totalCardsRemaining is better → negate so highest score = best
+        _updateTop(gameId, msg.sender, -int64(int32(s.totalCardsRemaining)));
 
         emit GameResult(gameId, msg.sender, won, cardsRemaining, block.timestamp);
     }
@@ -80,8 +89,6 @@ contract CardRoomLeaderboard {
             "Too fast"
         );
 
-        _ensurePlayer(gameId, msg.sender);
-
         if (won) {
             s.wins++;
         } else {
@@ -89,6 +96,9 @@ contract CardRoomLeaderboard {
         }
         s.gamesPlayed++;
         s.lastPlayedAt = uint64(block.timestamp);
+
+        // vs-AI: higher (wins - losses) is better
+        _updateTop(gameId, msg.sender, int64(int32(s.wins)) - int64(int32(s.losses)));
 
         emit GameResult(gameId, msg.sender, won, 0, block.timestamp);
     }
@@ -98,29 +108,93 @@ contract CardRoomLeaderboard {
         view
         returns (PlayerStats memory)
     {
+        require(gameId < GAME_COUNT, "Invalid game");
         return stats[gameId][player];
     }
 
-    function getLeaderboard(uint8 gameId)
+    function getTop(uint8 gameId)
         external
         view
         returns (address[] memory players, PlayerStats[] memory playerStats)
     {
-        players = _players[gameId];
-        playerStats = new PlayerStats[](players.length);
-        for (uint256 i = 0; i < players.length; i++) {
-            playerStats[i] = stats[gameId][players[i]];
+        require(gameId < GAME_COUNT, "Invalid game");
+        TopEntry[] storage top = _top[gameId];
+        uint256 len = top.length;
+        players = new address[](len);
+        playerStats = new PlayerStats[](len);
+        for (uint256 i = 0; i < len; i++) {
+            players[i] = top[i].player;
+            playerStats[i] = stats[gameId][top[i].player];
         }
     }
 
-    function getPlayerCount(uint8 gameId) external view returns (uint256) {
-        return _players[gameId].length;
+    function getTopCount(uint8 gameId) external view returns (uint256) {
+        require(gameId < GAME_COUNT, "Invalid game");
+        return _top[gameId].length;
     }
 
-    function _ensurePlayer(uint8 gameId, address player) internal {
-        if (!_hasPlayed[gameId][player]) {
-            _hasPlayed[gameId][player] = true;
-            _players[gameId].push(player);
+    // Maintains a sorted top-MAX_TOP list (index 0 = best).
+    // Score convention: higher is always better (solo games negate their metric).
+    function _updateTop(uint8 gameId, address player, int64 score) internal {
+        TopEntry[] storage top = _top[gameId];
+
+        if (_inTop[gameId][player]) {
+            uint256 idx = _topIndex[gameId][player];
+            top[idx].score = score;
+            // Score improved → bubble up; score worsened → bubble down
+            _bubbleUp(top, gameId, idx);
+            _bubbleDown(top, gameId, idx);
+            return;
         }
+
+        if (top.length < MAX_TOP) {
+            uint256 newIdx = top.length;
+            top.push(TopEntry(player, score));
+            _inTop[gameId][player] = true;
+            _topIndex[gameId][player] = newIdx;
+            _bubbleUp(top, gameId, newIdx);
+            return;
+        }
+
+        // Full — check if better than the worst (last) entry
+        uint256 lastIdx = top.length - 1;
+        if (score <= top[lastIdx].score) return;
+
+        // Evict the worst
+        address evicted = top[lastIdx].player;
+        _inTop[gameId][evicted] = false;
+        delete _topIndex[gameId][evicted];
+
+        top[lastIdx] = TopEntry(player, score);
+        _inTop[gameId][player] = true;
+        _topIndex[gameId][player] = lastIdx;
+        _bubbleUp(top, gameId, lastIdx);
+    }
+
+    function _bubbleUp(TopEntry[] storage top, uint8 gameId, uint256 idx) internal {
+        while (idx > 0) {
+            uint256 parent = idx - 1;
+            if (top[idx].score <= top[parent].score) break;
+            _swap(top, gameId, idx, parent);
+            idx = parent;
+        }
+    }
+
+    function _bubbleDown(TopEntry[] storage top, uint8 gameId, uint256 idx) internal {
+        uint256 len = top.length;
+        while (idx < len - 1) {
+            uint256 next = idx + 1;
+            if (top[idx].score >= top[next].score) break;
+            _swap(top, gameId, idx, next);
+            idx = next;
+        }
+    }
+
+    function _swap(TopEntry[] storage top, uint8 gameId, uint256 a, uint256 b) internal {
+        TopEntry memory tmp = top[a];
+        top[a] = top[b];
+        top[b] = tmp;
+        _topIndex[gameId][top[a].player] = a;
+        _topIndex[gameId][top[b].player] = b;
     }
 }

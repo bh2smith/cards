@@ -106,13 +106,13 @@ export async function fetchPlayerStats(
   return parseStats(result);
 }
 
-export async function fetchLeaderboard(
+export async function fetchTopLeaderboard(
   gameId: GameIdValue,
 ): Promise<LeaderboardEntry[]> {
   const [players, playerStats] = await client.readContract({
     address: LEADERBOARD_ADDRESS,
     abi: leaderboardAbi,
-    functionName: "getLeaderboard",
+    functionName: "getTop",
     args: [gameId],
   });
 
@@ -120,24 +120,4 @@ export async function fetchLeaderboard(
     player,
     stats: parseStats(playerStats[i]!),
   }));
-}
-
-export function rankLeaderboard(
-  entries: LeaderboardEntry[],
-  gameId: GameIdValue,
-): LeaderboardEntry[] {
-  const sorted = [...entries];
-
-  if (gameId === GameId.Golf || gameId === GameId.Pyramid) {
-    sorted.sort(
-      (a, b) => a.stats.totalCardsRemaining - b.stats.totalCardsRemaining,
-    );
-  } else {
-    sorted.sort(
-      (a, b) =>
-        b.stats.wins - b.stats.losses - (a.stats.wins - a.stats.losses),
-    );
-  }
-
-  return sorted;
 }

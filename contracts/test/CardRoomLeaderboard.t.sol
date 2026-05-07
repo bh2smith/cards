@@ -8,6 +8,7 @@ contract CardRoomLeaderboardTest is Test {
     CardRoomLeaderboard public board;
     address public alice = makeAddr("alice");
     address public bob = makeAddr("bob");
+    address public carol = makeAddr("carol");
 
     uint8 constant GOLF = 0;
     uint8 constant PYRAMID = 1;
@@ -203,48 +204,176 @@ contract CardRoomLeaderboardTest is Test {
         assertEq(s.gamesPlayed, 3);
     }
 
-    // ─── Leaderboard reads ───
+    // ─── Top leaderboard reads ───
 
-    function test_getLeaderboard_empty() public view {
+    function test_getTop_empty() public view {
         (address[] memory players, CardRoomLeaderboard.PlayerStats[] memory playerStats) =
-            board.getLeaderboard(GOLF);
+            board.getTop(GOLF);
         assertEq(players.length, 0);
         assertEq(playerStats.length, 0);
     }
 
-    function test_getLeaderboard_multiplePlayers() public {
+    function test_getTop_multiplePlayers_vsAi() public {
+        // Alice: 2 wins, 1 loss = net +1
+        vm.prank(alice);
+        board.recordVsAiResult(CRIBBAGE, true);
+        vm.warp(block.timestamp + 180);
+        vm.prank(alice);
+        board.recordVsAiResult(CRIBBAGE, true);
+        vm.warp(block.timestamp + 180);
+        vm.prank(alice);
+        board.recordVsAiResult(CRIBBAGE, false);
+
+        // Bob: 3 wins, 0 losses = net +3
+        vm.warp(block.timestamp + 180);
+        vm.prank(bob);
+        board.recordVsAiResult(CRIBBAGE, true);
+        vm.warp(block.timestamp + 180);
+        vm.prank(bob);
+        board.recordVsAiResult(CRIBBAGE, true);
+        vm.warp(block.timestamp + 180);
+        vm.prank(bob);
+        board.recordVsAiResult(CRIBBAGE, true);
+
+        (address[] memory players,) = board.getTop(CRIBBAGE);
+
+        assertEq(players.length, 2);
+        // Bob should be first (higher net wins)
+        assertEq(players[0], bob);
+        assertEq(players[1], alice);
+    }
+
+    function test_getTop_multiplePlayers_solo() public {
+        // Alice: 10 cards remaining (cumulative)
         vm.prank(alice);
         board.recordSoloResult(GOLF, false, 10);
+
+        // Bob: 5 cards remaining (cumulative) — better
+        vm.prank(bob);
+        board.recordSoloResult(GOLF, false, 5);
+
+        (address[] memory players,) = board.getTop(GOLF);
+
+        assertEq(players.length, 2);
+        // Bob should be first (fewer cards remaining)
+        assertEq(players[0], bob);
+        assertEq(players[1], alice);
+    }
+
+    function test_getTop_soloRankingUpdatesOnNewGames() public {
+        // Alice starts worse
+        vm.prank(alice);
+        board.recordSoloResult(GOLF, false, 20);
 
         vm.prank(bob);
         board.recordSoloResult(GOLF, false, 5);
 
-        (address[] memory players, CardRoomLeaderboard.PlayerStats[] memory playerStats) =
-            board.getLeaderboard(GOLF);
+        (address[] memory players1,) = board.getTop(GOLF);
+        assertEq(players1[0], bob);
+        assertEq(players1[1], alice);
 
-        assertEq(players.length, 2);
-        assertEq(playerStats.length, 2);
-        assertEq(players[0], alice);
-        assertEq(players[1], bob);
-        assertEq(playerStats[0].totalCardsRemaining, 10);
-        assertEq(playerStats[1].totalCardsRemaining, 5);
+        // Alice plays more and accumulates more cards — stays behind
+        vm.warp(block.timestamp + 30);
+        vm.prank(alice);
+        board.recordSoloResult(GOLF, false, 3);
+
+        // Alice now has 23 cumulative, Bob has 5
+        (address[] memory players2,) = board.getTop(GOLF);
+        assertEq(players2[0], bob);
+        assertEq(players2[1], alice);
     }
 
-    function test_getPlayerCount() public {
-        assertEq(board.getPlayerCount(GOLF), 0);
+    function test_getTopCount() public {
+        assertEq(board.getTopCount(GOLF), 0);
 
         vm.prank(alice);
         board.recordSoloResult(GOLF, false, 10);
-        assertEq(board.getPlayerCount(GOLF), 1);
-
-        vm.warp(block.timestamp + 30);
-        vm.prank(alice);
-        board.recordSoloResult(GOLF, false, 8);
-        assertEq(board.getPlayerCount(GOLF), 1);
+        assertEq(board.getTopCount(GOLF), 1);
 
         vm.prank(bob);
         board.recordSoloResult(GOLF, false, 3);
-        assertEq(board.getPlayerCount(GOLF), 2);
+        assertEq(board.getTopCount(GOLF), 2);
+    }
+
+    function test_getTop_vsAiRankUpdatesOnLoss() public {
+        // Alice: 2 wins
+        vm.prank(alice);
+        board.recordVsAiResult(BLACKJACK, true);
+        vm.warp(block.timestamp + 60);
+        vm.prank(alice);
+        board.recordVsAiResult(BLACKJACK, true);
+
+        // Bob: 1 win
+        vm.prank(bob);
+        board.recordVsAiResult(BLACKJACK, true);
+
+        (address[] memory players1,) = board.getTop(BLACKJACK);
+        assertEq(players1[0], alice);
+        assertEq(players1[1], bob);
+
+        // Alice loses twice — now net 0, Bob still net +1
+        vm.warp(block.timestamp + 60);
+        vm.prank(alice);
+        board.recordVsAiResult(BLACKJACK, false);
+        vm.warp(block.timestamp + 60);
+        vm.prank(alice);
+        board.recordVsAiResult(BLACKJACK, false);
+
+        (address[] memory players2,) = board.getTop(BLACKJACK);
+        assertEq(players2[0], bob);
+        assertEq(players2[1], alice);
+    }
+
+    // ─── Top-100 eviction ───
+
+    function test_getTop_evictsWorstWhenFull() public {
+        // Fill with 100 players
+        for (uint256 i = 0; i < 100; i++) {
+            address player = address(uint160(1000 + i));
+            vm.prank(player);
+            board.recordVsAiResult(CRIBBAGE, true);
+        }
+        assertEq(board.getTopCount(CRIBBAGE), 100);
+
+        // New player with 2 wins should evict someone with 1 win
+        address newPlayer = address(uint160(9999));
+        vm.prank(newPlayer);
+        board.recordVsAiResult(CRIBBAGE, true);
+        vm.warp(block.timestamp + 180);
+        vm.prank(newPlayer);
+        board.recordVsAiResult(CRIBBAGE, true);
+
+        assertEq(board.getTopCount(CRIBBAGE), 100);
+
+        // New player should be in the top
+        (address[] memory players,) = board.getTop(CRIBBAGE);
+        assertEq(players[0], newPlayer);
+    }
+
+    function test_getTop_doesNotEvictWhenScoreNotBetter() public {
+        // Fill with 100 players, each with 2 wins
+        for (uint256 i = 0; i < 100; i++) {
+            address player = address(uint160(1000 + i));
+            vm.prank(player);
+            board.recordVsAiResult(CRIBBAGE, true);
+            vm.warp(block.timestamp + 180);
+            vm.prank(player);
+            board.recordVsAiResult(CRIBBAGE, true);
+            vm.warp(block.timestamp + 180);
+        }
+
+        // New player with only 1 win should NOT get in
+        address newPlayer = address(uint160(9999));
+        vm.prank(newPlayer);
+        board.recordVsAiResult(CRIBBAGE, true);
+
+        assertEq(board.getTopCount(CRIBBAGE), 100);
+
+        // Verify new player is not in top
+        (address[] memory players,) = board.getTop(CRIBBAGE);
+        for (uint256 i = 0; i < players.length; i++) {
+            assertTrue(players[i] != newPlayer);
+        }
     }
 
     // ─── Cross-game isolation ───
@@ -279,6 +408,23 @@ contract CardRoomLeaderboardTest is Test {
         emit CardRoomLeaderboard.GameResult(HEARTS, alice, true, 0, block.timestamp);
         vm.prank(alice);
         board.recordVsAiResult(HEARTS, true);
+    }
+
+    // ─── Read validation ───
+
+    function test_getPlayerStats_revert_invalidGameId() public {
+        vm.expectRevert("Invalid game");
+        board.getPlayerStats(6, alice);
+    }
+
+    function test_getTop_revert_invalidGameId() public {
+        vm.expectRevert("Invalid game");
+        board.getTop(6);
+    }
+
+    function test_getTopCount_revert_invalidGameId() public {
+        vm.expectRevert("Invalid game");
+        board.getTopCount(6);
     }
 
     // ─── Edge cases ───

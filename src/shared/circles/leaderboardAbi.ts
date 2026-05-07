@@ -44,7 +44,7 @@ export const leaderboardAbi = [
   },
   {
     type: "function",
-    name: "getLeaderboard",
+    name: "getTop",
     inputs: [{ name: "gameId", type: "uint8" }],
     outputs: [
       { name: "players", type: "address[]" },
@@ -64,7 +64,7 @@ export const leaderboardAbi = [
   },
   {
     type: "function",
-    name: "getPlayerCount",
+    name: "getTopCount",
     inputs: [{ name: "gameId", type: "uint8" }],
     outputs: [{ name: "", type: "uint256" }],
     stateMutability: "view",
