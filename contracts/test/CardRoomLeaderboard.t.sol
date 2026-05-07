@@ -207,8 +207,7 @@ contract CardRoomLeaderboardTest is Test {
     // ─── Top leaderboard reads ───
 
     function test_getTop_empty() public view {
-        (address[] memory players, CardRoomLeaderboard.PlayerStats[] memory playerStats) =
-            board.getTop(GOLF);
+        (address[] memory players, CardRoomLeaderboard.PlayerStats[] memory playerStats) = board.getTop(GOLF);
         assertEq(players.length, 0);
         assertEq(playerStats.length, 0);
     }

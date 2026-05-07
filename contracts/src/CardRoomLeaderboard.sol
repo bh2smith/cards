@@ -34,13 +34,7 @@ contract CardRoomLeaderboard {
     mapping(uint8 => mapping(address => uint256)) internal _topIndex;
     mapping(uint8 => mapping(address => bool)) internal _inTop;
 
-    event GameResult(
-        uint8 indexed gameId,
-        address indexed player,
-        bool won,
-        uint8 cardsRemaining,
-        uint256 timestamp
-    );
+    event GameResult(uint8 indexed gameId, address indexed player, bool won, uint8 cardsRemaining, uint256 timestamp);
 
     constructor() {
         minDuration[GOLF] = 30;
@@ -60,10 +54,7 @@ contract CardRoomLeaderboard {
         }
 
         PlayerStats storage s = stats[gameId][msg.sender];
-        require(
-            s.lastPlayedAt == 0 || block.timestamp - s.lastPlayedAt >= minDuration[gameId],
-            "Too fast"
-        );
+        require(s.lastPlayedAt == 0 || block.timestamp - s.lastPlayedAt >= minDuration[gameId], "Too fast");
 
         if (won) {
             s.wins++;
@@ -84,10 +75,7 @@ contract CardRoomLeaderboard {
         require(gameId >= CRIBBAGE && gameId <= HEARTS, "Not a vs-AI game");
 
         PlayerStats storage s = stats[gameId][msg.sender];
-        require(
-            s.lastPlayedAt == 0 || block.timestamp - s.lastPlayedAt >= minDuration[gameId],
-            "Too fast"
-        );
+        require(s.lastPlayedAt == 0 || block.timestamp - s.lastPlayedAt >= minDuration[gameId], "Too fast");
 
         if (won) {
             s.wins++;
@@ -103,20 +91,12 @@ contract CardRoomLeaderboard {
         emit GameResult(gameId, msg.sender, won, 0, block.timestamp);
     }
 
-    function getPlayerStats(uint8 gameId, address player)
-        external
-        view
-        returns (PlayerStats memory)
-    {
+    function getPlayerStats(uint8 gameId, address player) external view returns (PlayerStats memory) {
         require(gameId < GAME_COUNT, "Invalid game");
         return stats[gameId][player];
     }
 
-    function getTop(uint8 gameId)
-        external
-        view
-        returns (address[] memory players, PlayerStats[] memory playerStats)
-    {
+    function getTop(uint8 gameId) external view returns (address[] memory players, PlayerStats[] memory playerStats) {
         require(gameId < GAME_COUNT, "Invalid game");
         TopEntry[] storage top = _top[gameId];
         uint256 len = top.length;
