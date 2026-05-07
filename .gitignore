@@ -40,3 +40,9 @@ memory/
 # Cursor IDE
 .cursor/
 .vercel
+
+# Foundry
+cache/
+contracts/out/
+contracts/cache/
+contracts/lib/
