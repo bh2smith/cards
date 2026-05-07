@@ -129,16 +129,53 @@ describe("BlackjackGame", () => {
     expect(g.getState().phase).toBe("BETTING");
   });
 
-  test("chips reset to 100 when bust", () => {
+  test("session over on loss — chips reach 0", () => {
     const g = new BlackjackGame(5);
     g.placeBet(5);
     g.beginDealerTurn();
     while (g.dealerDrawOne()) {}
     g.settleRound();
-    // If player lost, chips may be 0
+    if (g.getState().chips === 0) {
+      g.checkSession();
+      expect(g.getState().phase).toBe("SESSION_OVER");
+      expect(g.isSessionWon()).toBe(false);
+      expect(g.getState().winner).toBe("computer");
+    }
+  });
+
+  test("session over on win — chips reach target", () => {
+    const g = new BlackjackGame(295);
+    g.placeBet(5);
+    g.beginDealerTurn();
+    while (g.dealerDrawOne()) {}
+    g.settleRound();
+    if (g.getState().chips >= 300) {
+      g.checkSession();
+      expect(g.getState().phase).toBe("SESSION_OVER");
+      expect(g.isSessionWon()).toBe(true);
+      expect(g.getState().winner).toBe("player");
+    }
+  });
+
+  test("newRound does nothing when session is over", () => {
+    const g = new BlackjackGame(0);
     g.newRound();
-    // Either has chips from win, or reset to 100
-    expect(g.getState().chips).toBeGreaterThan(0);
+    expect(g.getState().chips).toBe(0);
+  });
+
+  test("isSessionOver returns true at 0 chips", () => {
+    const g = new BlackjackGame(0);
+    expect(g.isSessionOver()).toBe(true);
+  });
+
+  test("isSessionOver returns true at win target", () => {
+    const g = new BlackjackGame(300);
+    expect(g.isSessionOver()).toBe(true);
+  });
+
+  test("isSessionOver returns false mid-session", () => {
+    const g = new BlackjackGame(100);
+    expect(g.isSessionOver()).toBe(false);
   });
 
   test("push returns bet", () => {

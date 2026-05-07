@@ -1,7 +1,7 @@
 import type { PlayingCard } from "typedeck";
 import { createDeck, shuffle, cardOrder } from "../../shared/deck";
 import type { BlackjackState, RoundResult } from "./types";
-import { STARTING_CHIPS } from "./types";
+import { STARTING_CHIPS, WIN_TARGET } from "./types";
 
 export function handValue(cards: PlayingCard[]): number {
   let value = 0;
@@ -314,12 +314,29 @@ export class BlackjackGame {
   }
 
   newRound(): void {
-    if (this.state.chips === 0) {
-      this.state = this.bettingState(STARTING_CHIPS);
-      this.state.message = "Out of chips! Starting fresh with 100.";
-      return;
-    }
+    if (this.isSessionOver()) return;
     this.state = this.bettingState(this.state.chips);
+  }
+
+  isSessionOver(): boolean {
+    return this.state.chips === 0 || this.state.chips >= WIN_TARGET;
+  }
+
+  isSessionWon(): boolean {
+    return this.state.chips >= WIN_TARGET;
+  }
+
+  checkSession(): void {
+    if (!this.isSessionOver()) return;
+    const won = this.isSessionWon();
+    this.state = {
+      ...this.state,
+      phase: "SESSION_OVER",
+      message: won
+        ? `You did it! Turned ${STARTING_CHIPS} chips into ${this.state.chips}!`
+        : "Out of chips! Better luck next time.",
+      winner: won ? "player" : "computer",
+    };
   }
 
   private onHandComplete(): void {
