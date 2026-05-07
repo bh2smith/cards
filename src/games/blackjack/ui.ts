@@ -2,6 +2,7 @@ import { BlackjackGame, handValue, isBlackjack, isBust } from "./game";
 import { BET_OPTIONS } from "./types";
 import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
 import { optimalAction, type Action } from "./strategy";
+import { confirmIfEnabled } from "../../shared/settings";
 
 const DEALER_DELAY_MS = 600;
 
@@ -80,10 +81,12 @@ export class BlackjackUI {
   }
 
   private bindEvents(): void {
-    this.$("new-game-btn").addEventListener("click", () => {
-      this.game = new BlackjackGame();
-      this.render();
-    });
+    this.$("new-game-btn").addEventListener("click", () =>
+      confirmIfEnabled("Start a new game?", () => {
+        this.game = new BlackjackGame();
+        this.render();
+      }),
+    );
 
     this.$("bet-buttons").addEventListener("click", (e) => {
       const btn = (e.target as HTMLElement).closest(

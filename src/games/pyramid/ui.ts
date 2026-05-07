@@ -1,5 +1,6 @@
 import { PyramidGame } from "./game";
 import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
+import { confirmIfEnabled } from "../../shared/settings";
 
 export class PyramidUI {
   private game: PyramidGame;
@@ -53,7 +54,9 @@ export class PyramidUI {
   }
 
   private bindEvents(): void {
-    this.$("new-game-btn").addEventListener("click", () => this.newGame());
+    this.$("new-game-btn").addEventListener("click", () =>
+      confirmIfEnabled("Start a new game?", () => this.newGame()),
+    );
     this.$("action-btn").addEventListener("click", () => this.newGame());
     this.$("pyramid-stock").addEventListener("click", () => this.onDrawStock());
     this.$("pyramid-waste").addEventListener("click", () =>

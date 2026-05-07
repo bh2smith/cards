@@ -3,6 +3,7 @@ import { CribbageGame } from "./game";
 import { peggingValue, type Player, type GamePhase } from "./types";
 import { canPlay } from "./scoring";
 import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
+import { confirmIfEnabled } from "../../shared/settings";
 
 export class CribbageUI {
   private game: CribbageGame;
@@ -84,7 +85,9 @@ export class CribbageUI {
 
   private bindEvents(): void {
     this.$("action-btn").addEventListener("click", () => this.onAction());
-    this.$("new-game-btn").addEventListener("click", () => this.onNewGame());
+    this.$("new-game-btn").addEventListener("click", () =>
+      confirmIfEnabled("Start a new game?", () => this.onNewGame()),
+    );
   }
 
   private onNewGame(): void {

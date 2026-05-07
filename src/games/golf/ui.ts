@@ -1,5 +1,6 @@
 import { GolfGame } from "./game";
 import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
+import { confirmIfEnabled } from "../../shared/settings";
 
 export class GolfUI {
   private game: GolfGame;
@@ -53,7 +54,9 @@ export class GolfUI {
   }
 
   private bindEvents(): void {
-    this.$("new-game-btn").addEventListener("click", () => this.newGame());
+    this.$("new-game-btn").addEventListener("click", () =>
+      confirmIfEnabled("Start a new game?", () => this.newGame()),
+    );
     this.$("action-btn").addEventListener("click", () => this.newGame());
     this.$("golf-stock").addEventListener("click", () => this.onDrawStock());
     this.$("golf-tableau").addEventListener("click", (e) =>
