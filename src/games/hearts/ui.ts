@@ -8,6 +8,7 @@ import {
   type Trick,
   cardPoints,
 } from "./types";
+import { confirmIfEnabled } from "../../shared/settings";
 
 const BOT_DELAY_MS = 600;
 const TRICK_HOLD_MS = 1100;
@@ -88,12 +89,14 @@ export class HeartsUI {
   }
 
   private bindEvents(): void {
-    this.$("new-game-btn").addEventListener("click", () => {
-      this.game = new HeartsGame();
-      this.selectedPass = [];
-      this.completedTrickToShow = null;
-      this.render();
-    });
+    this.$("new-game-btn").addEventListener("click", () =>
+      confirmIfEnabled("Start a new game?", () => {
+        this.game = new HeartsGame();
+        this.selectedPass = [];
+        this.completedTrickToShow = null;
+        this.render();
+      }),
+    );
     this.$("hearts-pass-btn").addEventListener("click", () => this.onPass());
     this.$("hearts-next-btn").addEventListener("click", () => this.onNext());
     this.$("hearts-hand-0").addEventListener("click", (e) =>

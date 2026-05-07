@@ -7,8 +7,10 @@ import { GinRummyUI } from "./games/gin/ui";
 import { HeartsUI } from "./games/hearts/ui";
 import { initMiniapp } from "./shared/circles/miniapp";
 import { withEntryGate } from "./shared/circles/entryGate";
+import { mountSettings } from "./shared/ui/settings-modal";
 
 initMiniapp();
+mountSettings();
 
 router.register(
   "cribbage",

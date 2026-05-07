@@ -28,15 +28,20 @@
 
 /* ── BASE ── */
 
+html,
+body {
+  height: 100dvh;
+}
+
 body {
   font-family: "Crimson Pro", Georgia, serif;
   background: var(--bg);
   color: var(--text);
-  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow-x: hidden;
+  overflow: hidden;
+  overscroll-behavior: none;
   background-image:
     radial-gradient(
       ellipse 110% 45% at 50% 0%,
@@ -55,10 +60,12 @@ body {
   max-width: 480px;
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
-  padding: calc(12px + env(safe-area-inset-top)) 10px
-    calc(12px + env(safe-area-inset-bottom));
-  gap: 10px;
+  height: 100dvh;
+  max-height: 100dvh;
+  padding: calc(8px + env(safe-area-inset-top)) 10px
+    calc(8px + env(safe-area-inset-bottom));
+  gap: 8px;
+  overflow: hidden;
 }
 
 /* ── HEADER ── */
@@ -1358,4 +1365,316 @@ body {
 #hearts-pass-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+/* ── SETTINGS BUTTON + MODAL ── */
+
+#settings-btn {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + 8px);
+  right: calc(env(safe-area-inset-right) + 10px);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(20, 10, 4, 0.65);
+  border: 1px solid rgba(201, 162, 39, 0.35);
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1000;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.1s ease;
+  padding: 0;
+}
+
+#settings-btn:hover {
+  background: rgba(40, 20, 8, 0.85);
+  border-color: var(--gold);
+}
+
+#settings-btn:active {
+  transform: scale(0.94);
+}
+
+.settings-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  padding: 16px;
+}
+
+.settings-modal {
+  background: linear-gradient(155deg, var(--wood-mid) 0%, var(--wood) 100%);
+  border: 1px solid var(--wood-border);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 360px;
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7);
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.settings-header h2 {
+  font-family: "Cinzel", serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+#settings-close {
+  background: transparent;
+  border: none;
+  color: var(--cream-dim);
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+#settings-close:hover {
+  color: var(--gold);
+}
+
+.settings-body {
+  padding: 8px 4px 12px;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.settings-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.settings-row-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.settings-row-label {
+  font-family: "Cinzel", serif;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--cream);
+}
+
+.settings-row-hint {
+  font-family: "Crimson Pro", serif;
+  font-size: 12px;
+  color: var(--cream-dim);
+  line-height: 1.35;
+}
+
+.settings-row input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.settings-switch {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+}
+
+.settings-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--cream-dim);
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease;
+}
+
+.settings-row input[type="checkbox"]:checked ~ .settings-switch {
+  background: rgba(201, 162, 39, 0.4);
+  border-color: var(--gold);
+}
+
+.settings-row input[type="checkbox"]:checked ~ .settings-switch::after {
+  transform: translateX(16px);
+  background: var(--gold-light);
+}
+
+/* ── REDUCE MOTION ── */
+
+body.reduce-motion *,
+body.reduce-motion *::before,
+body.reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+}
+
+body.reduce-motion .card:hover:not(.face-down):not(.dimmed) {
+  transform: none;
+}
+
+body.reduce-motion #action-btn {
+  animation: none;
+}
+
+/* ── NO-SCROLL: tighten paddings, allow play areas to shrink ── */
+
+.scoreboard {
+  flex-shrink: 0;
+}
+
+.hand-area {
+  flex-shrink: 0;
+}
+
+.play-area {
+  flex-shrink: 1;
+  min-height: 0;
+}
+
+.message-bar {
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 6px 14px;
+  font-size: 14px;
+}
+
+.action-area {
+  flex-shrink: 0;
+  padding: 2px 0 4px;
+}
+
+.scoring-info {
+  flex-shrink: 0;
+}
+
+#scoring-details,
+#scoring-total {
+  font-size: 13px;
+  padding: 3px 12px;
+}
+
+.lobby {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Short-screen tightening (e.g. iPhone SE 568dvh) */
+@media (max-height: 700px) {
+  :root {
+    --card-width: 56px;
+    --card-height: 80px;
+  }
+
+  #app {
+    gap: 6px;
+    padding-top: calc(6px + env(safe-area-inset-top));
+    padding-bottom: calc(6px + env(safe-area-inset-bottom));
+  }
+
+  .header h1 {
+    font-size: 18px;
+    letter-spacing: 3px;
+  }
+
+  .scoreboard {
+    padding: 8px 12px;
+  }
+
+  .score-value {
+    font-size: 17px;
+  }
+
+  .play-area {
+    padding: 6px;
+    min-height: 90px;
+  }
+
+  .message-bar {
+    min-height: 30px;
+    font-size: 13px;
+  }
+
+  #action-btn {
+    padding: 9px 26px;
+    font-size: 12px;
+  }
+}
+
+/* Hearts: ensure the table can shrink so the player hand stays visible */
+.hearts-table {
+  flex-shrink: 1;
+  min-height: 0;
+}
+
+@media (max-height: 700px) {
+  .hearts-table {
+    min-height: 150px;
+  }
+
+  .hearts-scoreboard {
+    padding: 4px;
+    margin-bottom: 6px;
+  }
+
+  .hearts-score-total {
+    font-size: 1.05rem;
+  }
+}
+
+/* Blackjack: keep table within viewport */
+.bj-table {
+  flex-shrink: 1;
+  min-height: 0;
+  gap: 14px;
+  padding: 8px 12px;
+  overflow-y: auto;
+}
+
+@media (max-height: 700px) {
+  .bj-table {
+    gap: 10px;
+    padding: 4px 10px;
+  }
+
+  .bj-bet-btn {
+    font-size: 13px;
+    padding: 8px 14px;
+    min-width: 56px;
+  }
 }

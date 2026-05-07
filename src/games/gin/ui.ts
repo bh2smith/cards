@@ -3,6 +3,7 @@ import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
 import { RANK_DISPLAY, SUIT_SYMBOL, cardKey } from "../../shared/deck";
 import { findBestMelds } from "./melds";
 import type { GinState, KnockResult, Meld } from "./types";
+import { confirmIfEnabled } from "../../shared/settings";
 
 export class GinRummyUI {
   private game: GinRummyGame;
@@ -71,10 +72,12 @@ export class GinRummyUI {
   }
 
   private bindEvents(): void {
-    this.$("new-game-btn").addEventListener("click", () => {
-      this.game = new GinRummyGame();
-      this.render();
-    });
+    this.$("new-game-btn").addEventListener("click", () =>
+      confirmIfEnabled("Start a new game?", () => {
+        this.game = new GinRummyGame();
+        this.render();
+      }),
+    );
     this.$("action-btn").addEventListener("click", () => this.onAction());
     this.$("knock-btn").addEventListener("click", () => this.onKnock());
     this.$("gin-stock").addEventListener("click", () => this.onDrawStock());
