@@ -53,21 +53,19 @@ export class GolfUI {
     return document.getElementById(id)!;
   }
 
+  private goToLobby(): void {
+    location.hash = "/";
+  }
+
   private bindEvents(): void {
     this.$("new-game-btn").addEventListener("click", () =>
-      confirmIfEnabled("Start a new game?", () => this.newGame()),
+      confirmIfEnabled("Leave this game?", () => this.goToLobby()),
     );
-    this.$("action-btn").addEventListener("click", () => this.newGame());
+    this.$("action-btn").addEventListener("click", () => this.goToLobby());
     this.$("golf-stock").addEventListener("click", () => this.onDrawStock());
     this.$("golf-tableau").addEventListener("click", (e) =>
       this.onTableauClick(e),
     );
-  }
-
-  private newGame(): void {
-    this.game = new GolfGame();
-    this.game.deal();
-    this.render();
   }
 
   private onDrawStock(): void {
@@ -157,7 +155,7 @@ export class GolfUI {
   private renderActionButton(): void {
     const btn = this.$("action-btn") as HTMLButtonElement;
     if (this.game.getState().phase === "GAME_OVER") {
-      btn.textContent = "New Game";
+      btn.textContent = "Back to Game Room";
       btn.classList.remove("hidden");
     } else {
       btn.classList.add("hidden");

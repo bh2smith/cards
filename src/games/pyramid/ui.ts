@@ -53,11 +53,15 @@ export class PyramidUI {
     return document.getElementById(id)!;
   }
 
+  private goToLobby(): void {
+    location.hash = "/";
+  }
+
   private bindEvents(): void {
     this.$("new-game-btn").addEventListener("click", () =>
-      confirmIfEnabled("Start a new game?", () => this.newGame()),
+      confirmIfEnabled("Leave this game?", () => this.goToLobby()),
     );
-    this.$("action-btn").addEventListener("click", () => this.newGame());
+    this.$("action-btn").addEventListener("click", () => this.goToLobby());
     this.$("pyramid-stock").addEventListener("click", () => this.onDrawStock());
     this.$("pyramid-waste").addEventListener("click", () =>
       this.onWasteClick(),
@@ -65,12 +69,6 @@ export class PyramidUI {
     this.$("pyramid-tableau").addEventListener("click", (e) =>
       this.onPyramidClick(e),
     );
-  }
-
-  private newGame(): void {
-    this.game = new PyramidGame();
-    this.game.deal();
-    this.render();
   }
 
   private onDrawStock(): void {
@@ -168,7 +166,7 @@ export class PyramidUI {
   private renderActionButton(): void {
     const btn = this.$("action-btn") as HTMLButtonElement;
     if (this.game.getState().phase === "GAME_OVER") {
-      btn.textContent = "New Game";
+      btn.textContent = "Back to Game Room";
       btn.classList.remove("hidden");
     } else {
       btn.classList.add("hidden");

@@ -86,9 +86,8 @@ export class BlackjackUI {
 
   private bindEvents(): void {
     this.$("new-game-btn").addEventListener("click", () =>
-      confirmIfEnabled("Start a new game?", () => {
-        this.game = new BlackjackGame();
-        this.render();
+      confirmIfEnabled("Leave this game?", () => {
+        location.hash = "/";
       }),
     );
 

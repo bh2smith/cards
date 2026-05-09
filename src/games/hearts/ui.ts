@@ -90,11 +90,8 @@ export class HeartsUI {
 
   private bindEvents(): void {
     this.$("new-game-btn").addEventListener("click", () =>
-      confirmIfEnabled("Start a new game?", () => {
-        this.game = new HeartsGame();
-        this.selectedPass = [];
-        this.completedTrickToShow = null;
-        this.render();
+      confirmIfEnabled("Leave this game?", () => {
+        location.hash = "/";
       }),
     );
     this.$("hearts-pass-btn").addEventListener("click", () => this.onPass());
@@ -149,10 +146,7 @@ export class HeartsUI {
       this.render();
       this.maybeRunBots();
     } else if (state.phase === "GAME_OVER") {
-      this.game = new HeartsGame();
-      this.selectedPass = [];
-      this.completedTrickToShow = null;
-      this.render();
+      location.hash = "/";
     }
   }
 
@@ -391,7 +385,7 @@ export class HeartsUI {
       nextBtn.textContent = "Next Round";
     } else if (state.phase === "GAME_OVER") {
       nextBtn.classList.remove("hidden");
-      nextBtn.textContent = "New Game";
+      nextBtn.textContent = "Back to Game Room";
     } else {
       nextBtn.classList.add("hidden");
     }

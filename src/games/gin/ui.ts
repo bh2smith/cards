@@ -73,9 +73,8 @@ export class GinRummyUI {
 
   private bindEvents(): void {
     this.$("new-game-btn").addEventListener("click", () =>
-      confirmIfEnabled("Start a new game?", () => {
-        this.game = new GinRummyGame();
-        this.render();
+      confirmIfEnabled("Leave this game?", () => {
+        location.hash = "/";
       }),
     );
     this.$("action-btn").addEventListener("click", () => this.onAction());
@@ -141,8 +140,7 @@ export class GinRummyUI {
         this.scheduleBotTurn();
       }
     } else if (state.phase === "GAME_OVER") {
-      this.game = new GinRummyGame();
-      this.render();
+      location.hash = "/";
     }
   }
 
@@ -323,7 +321,7 @@ export class GinRummyUI {
       actionBtn.textContent = "Next Round";
       actionBtn.classList.remove("hidden");
     } else if (state.phase === "GAME_OVER") {
-      actionBtn.textContent = "New Game";
+      actionBtn.textContent = "Back to Game Room";
       actionBtn.classList.remove("hidden");
     } else {
       actionBtn.classList.add("hidden");
