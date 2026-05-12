@@ -1,12 +1,11 @@
 import { PyramidGame } from "./game";
 import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
 import { confirmIfEnabled } from "../../shared/settings";
-import { isInMiniapp } from "../../shared/circles/miniapp";
-import { submitSoloResult, GameId } from "../../shared/circles/leaderboard";
+import { LeaderboardReporter, GameId } from "../../shared/circles/leaderboard";
 
 export class PyramidUI {
   private game: PyramidGame;
-  private resultSubmitted = false;
+  private reporter = new LeaderboardReporter(GameId.Pyramid);
 
   constructor() {
     document.getElementById("app")!.innerHTML = PyramidUI.template();
@@ -99,16 +98,11 @@ export class PyramidUI {
   private render(): void {
     const state = this.game.getState();
 
-    if (state.phase === "GAME_OVER" && !this.resultSubmitted) {
-      this.resultSubmitted = true;
-      if (isInMiniapp()) {
-        submitSoloResult(
-          GameId.Pyramid,
-          state.won,
-          this.game.pyramidCardsRemaining(),
-        ).catch(() => {});
-      }
-    }
+    this.reporter.reportSolo(
+      state.phase,
+      state.won,
+      this.game.pyramidCardsRemaining(),
+    );
 
     this.$("cards-remaining").textContent = String(
       this.game.pyramidCardsRemaining(),

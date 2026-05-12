@@ -1,12 +1,11 @@
 import { GolfGame } from "./game";
 import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
 import { confirmIfEnabled } from "../../shared/settings";
-import { isInMiniapp } from "../../shared/circles/miniapp";
-import { submitSoloResult, GameId } from "../../shared/circles/leaderboard";
+import { LeaderboardReporter, GameId } from "../../shared/circles/leaderboard";
 
 export class GolfUI {
   private game: GolfGame;
-  private resultSubmitted = false;
+  private reporter = new LeaderboardReporter(GameId.Golf);
 
   constructor() {
     document.getElementById("app")!.innerHTML = GolfUI.template();
@@ -91,16 +90,11 @@ export class GolfUI {
   private render(): void {
     const state = this.game.getState();
 
-    if (state.phase === "GAME_OVER" && !this.resultSubmitted) {
-      this.resultSubmitted = true;
-      if (isInMiniapp()) {
-        submitSoloResult(
-          GameId.Golf,
-          state.won,
-          this.game.cardsRemaining(),
-        ).catch(() => {});
-      }
-    }
+    this.reporter.reportSolo(
+      state.phase,
+      state.won,
+      this.game.cardsRemaining(),
+    );
 
     this.$("cards-remaining").textContent = String(this.game.cardsRemaining());
     this.$("message").textContent = state.message;

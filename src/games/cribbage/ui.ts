@@ -4,15 +4,14 @@ import { peggingValue, type Player, type GamePhase } from "./types";
 import { canPlay } from "./scoring";
 import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
 import { confirmIfEnabled } from "../../shared/settings";
-import { isInMiniapp } from "../../shared/circles/miniapp";
-import { submitVsAiResult, GameId } from "../../shared/circles/leaderboard";
+import { LeaderboardReporter, GameId } from "../../shared/circles/leaderboard";
 
 export class CribbageUI {
   private game: CribbageGame;
   private selectedIndices = new Set<number>();
   private animating = false;
   private destroyed = false;
-  private resultSubmitted = false;
+  private reporter = new LeaderboardReporter(GameId.Cribbage);
 
   constructor() {
     document.getElementById("app")!.innerHTML = CribbageUI.template();
@@ -298,14 +297,7 @@ export class CribbageUI {
   private render(): void {
     const state = this.game.getState();
 
-    if (state.phase === "GAME_OVER" && !this.resultSubmitted) {
-      this.resultSubmitted = true;
-      if (isInMiniapp()) {
-        submitVsAiResult(GameId.Cribbage, state.winner === "player").catch(
-          () => {},
-        );
-      }
-    }
+    this.reporter.reportVsAi(state.phase, state.winner === "player");
 
     this.$("player-score").textContent = String(state.playerScore);
     this.$("computer-score").textContent = String(state.computerScore);

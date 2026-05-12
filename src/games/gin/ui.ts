@@ -4,14 +4,13 @@ import { RANK_DISPLAY, SUIT_SYMBOL, cardKey } from "../../shared/deck";
 import { findBestMelds } from "./melds";
 import type { GinState, KnockResult, Meld } from "./types";
 import { confirmIfEnabled } from "../../shared/settings";
-import { isInMiniapp } from "../../shared/circles/miniapp";
-import { submitVsAiResult, GameId } from "../../shared/circles/leaderboard";
+import { LeaderboardReporter, GameId } from "../../shared/circles/leaderboard";
 
 export class GinRummyUI {
   private game: GinRummyGame;
   private destroyed = false;
   private animating = false;
-  private resultSubmitted = false;
+  private reporter = new LeaderboardReporter(GameId.GinRummy);
 
   constructor() {
     document.getElementById("app")!.innerHTML = GinRummyUI.template();
@@ -168,14 +167,7 @@ export class GinRummyUI {
     if (this.destroyed) return;
     const state = this.game.getState();
 
-    if (state.phase === "GAME_OVER" && !this.resultSubmitted) {
-      this.resultSubmitted = true;
-      if (isInMiniapp()) {
-        submitVsAiResult(GameId.GinRummy, state.winner === "player").catch(
-          () => {},
-        );
-      }
-    }
+    this.reporter.reportVsAi(state.phase, state.winner === "player");
 
     this.$("player-score").textContent = String(state.playerScore);
     this.$("computer-score").textContent = String(state.computerScore);

@@ -9,8 +9,7 @@ import {
   cardPoints,
 } from "./types";
 import { confirmIfEnabled } from "../../shared/settings";
-import { isInMiniapp } from "../../shared/circles/miniapp";
-import { submitVsAiResult, GameId } from "../../shared/circles/leaderboard";
+import { LeaderboardReporter, GameId } from "../../shared/circles/leaderboard";
 
 const BOT_DELAY_MS = 600;
 const TRICK_HOLD_MS = 1100;
@@ -21,7 +20,7 @@ export class HeartsUI {
   private game: HeartsGame;
   private destroyed = false;
   private animating = false;
-  private resultSubmitted = false;
+  private reporter = new LeaderboardReporter(GameId.Hearts);
   private selectedPass: number[] = [];
   private completedTrickToShow: Trick | null = null;
 
@@ -221,12 +220,7 @@ export class HeartsUI {
     if (this.destroyed) return;
     const state = this.game.getState();
 
-    if (state.phase === "GAME_OVER" && !this.resultSubmitted) {
-      this.resultSubmitted = true;
-      if (isInMiniapp()) {
-        submitVsAiResult(GameId.Hearts, state.winner === 0).catch(() => {});
-      }
-    }
+    this.reporter.reportVsAi(state.phase, state.winner === 0);
 
     this.renderScoreboard(state);
     this.renderBotHands(state);
