@@ -1,9 +1,11 @@
 import { PyramidGame } from "./game";
 import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
 import { confirmIfEnabled } from "../../shared/settings";
+import { LeaderboardReporter, GameId } from "../../shared/circles/leaderboard";
 
 export class PyramidUI {
   private game: PyramidGame;
+  private reporter = new LeaderboardReporter(GameId.Pyramid);
 
   constructor() {
     document.getElementById("app")!.innerHTML = PyramidUI.template();
@@ -95,6 +97,12 @@ export class PyramidUI {
 
   private render(): void {
     const state = this.game.getState();
+
+    this.reporter.reportSolo(
+      state.phase,
+      state.won,
+      this.game.pyramidCardsRemaining(),
+    );
 
     this.$("cards-remaining").textContent = String(
       this.game.pyramidCardsRemaining(),

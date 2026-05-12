@@ -8,7 +8,7 @@ import { gnosis } from "viem/chains";
 import { sendTransactions, type Transaction } from "@aboutcircles/miniapp-sdk";
 import { leaderboardAbi } from "./leaderboardAbi";
 import { CIRCLES_RPC, LEADERBOARD_ADDRESS } from "./config";
-import { getWalletAddress } from "./miniapp";
+import { getWalletAddress, isInMiniapp } from "./miniapp";
 
 export const GameId = {
   Golf: 0,
@@ -104,6 +104,31 @@ export async function fetchPlayerStats(
   });
 
   return parseStats(result);
+}
+
+export class LeaderboardReporter {
+  private submitted = false;
+  private gameId: GameIdValue;
+  private terminalPhase: string;
+
+  constructor(gameId: GameIdValue, terminalPhase = "GAME_OVER") {
+    this.gameId = gameId;
+    this.terminalPhase = terminalPhase;
+  }
+
+  reportSolo(phase: string, won: boolean, cardsRemaining: number): void {
+    if (phase !== this.terminalPhase || this.submitted) return;
+    this.submitted = true;
+    if (!isInMiniapp()) return;
+    submitSoloResult(this.gameId, won, cardsRemaining).catch(() => {});
+  }
+
+  reportVsAi(phase: string, won: boolean): void {
+    if (phase !== this.terminalPhase || this.submitted) return;
+    this.submitted = true;
+    if (!isInMiniapp()) return;
+    submitVsAiResult(this.gameId, won).catch(() => {});
+  }
 }
 
 export async function fetchTopLeaderboard(

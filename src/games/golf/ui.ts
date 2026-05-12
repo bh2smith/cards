@@ -1,9 +1,11 @@
 import { GolfGame } from "./game";
 import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
 import { confirmIfEnabled } from "../../shared/settings";
+import { LeaderboardReporter, GameId } from "../../shared/circles/leaderboard";
 
 export class GolfUI {
   private game: GolfGame;
+  private reporter = new LeaderboardReporter(GameId.Golf);
 
   constructor() {
     document.getElementById("app")!.innerHTML = GolfUI.template();
@@ -87,6 +89,12 @@ export class GolfUI {
 
   private render(): void {
     const state = this.game.getState();
+
+    this.reporter.reportSolo(
+      state.phase,
+      state.won,
+      this.game.cardsRemaining(),
+    );
 
     this.$("cards-remaining").textContent = String(this.game.cardsRemaining());
     this.$("message").textContent = state.message;

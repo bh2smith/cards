@@ -3,12 +3,14 @@ import { BET_OPTIONS, WIN_TARGET } from "./types";
 import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
 import { optimalAction, type Action } from "./strategy";
 import { confirmIfEnabled } from "../../shared/settings";
+import { LeaderboardReporter, GameId } from "../../shared/circles/leaderboard";
 
 const DEALER_DELAY_MS = 600;
 
 export class BlackjackUI {
   private game: BlackjackGame;
   private destroyed = false;
+  private reporter = new LeaderboardReporter(GameId.Blackjack, "SESSION_OVER");
   private pendingNonOptimal: (() => void) | null = null;
 
   constructor() {
@@ -226,6 +228,8 @@ export class BlackjackUI {
 
   private render(): void {
     const state = this.game.getState();
+
+    this.reporter.reportVsAi(state.phase, this.game.isSessionWon());
 
     this.$("chips-display").textContent = String(state.chips);
     const betText =

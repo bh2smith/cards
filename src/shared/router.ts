@@ -1,3 +1,5 @@
+import { LeaderboardUI } from "./ui/leaderboard";
+
 interface GameMeta {
   label: string;
   description: string;
@@ -35,7 +37,9 @@ function handle(): void {
   const id = location.hash.replace(/^#\/?/, "");
   const route = id ? registry.get(id) : undefined;
 
-  if (route?.available) {
+  if (id === "leaderboard") {
+    current = new LeaderboardUI();
+  } else if (route?.available) {
     current = route.factory();
   } else {
     renderLobby();
@@ -111,6 +115,9 @@ function renderLobby(): void {
           )
           .join("")}
       </div>
+      <div class="lobby-footer">
+        <button class="lobby-leaderboard-btn" id="lobby-leaderboard-btn">Leaderboard</button>
+      </div>
     </div>
   `;
 
@@ -119,4 +126,10 @@ function renderLobby(): void {
       location.hash = `/${el.dataset.game}`;
     });
   });
+
+  document
+    .getElementById("lobby-leaderboard-btn")
+    ?.addEventListener("click", () => {
+      location.hash = "/leaderboard";
+    });
 }
