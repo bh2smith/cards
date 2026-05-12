@@ -4,11 +4,14 @@ import { RANK_DISPLAY, SUIT_SYMBOL, cardKey } from "../../shared/deck";
 import { findBestMelds } from "./melds";
 import type { GinState, KnockResult, Meld } from "./types";
 import { confirmIfEnabled } from "../../shared/settings";
+import { isInMiniapp } from "../../shared/circles/miniapp";
+import { submitVsAiResult, GameId } from "../../shared/circles/leaderboard";
 
 export class GinRummyUI {
   private game: GinRummyGame;
   private destroyed = false;
   private animating = false;
+  private resultSubmitted = false;
 
   constructor() {
     document.getElementById("app")!.innerHTML = GinRummyUI.template();
@@ -164,6 +167,15 @@ export class GinRummyUI {
   private render(): void {
     if (this.destroyed) return;
     const state = this.game.getState();
+
+    if (state.phase === "GAME_OVER" && !this.resultSubmitted) {
+      this.resultSubmitted = true;
+      if (isInMiniapp()) {
+        submitVsAiResult(GameId.GinRummy, state.winner === "player").catch(
+          () => {},
+        );
+      }
+    }
 
     this.$("player-score").textContent = String(state.playerScore);
     this.$("computer-score").textContent = String(state.computerScore);

@@ -3,12 +3,15 @@ import { BET_OPTIONS, WIN_TARGET } from "./types";
 import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
 import { optimalAction, type Action } from "./strategy";
 import { confirmIfEnabled } from "../../shared/settings";
+import { isInMiniapp } from "../../shared/circles/miniapp";
+import { submitVsAiResult, GameId } from "../../shared/circles/leaderboard";
 
 const DEALER_DELAY_MS = 600;
 
 export class BlackjackUI {
   private game: BlackjackGame;
   private destroyed = false;
+  private resultSubmitted = false;
   private pendingNonOptimal: (() => void) | null = null;
 
   constructor() {
@@ -226,6 +229,15 @@ export class BlackjackUI {
 
   private render(): void {
     const state = this.game.getState();
+
+    if (state.phase === "SESSION_OVER" && !this.resultSubmitted) {
+      this.resultSubmitted = true;
+      if (isInMiniapp()) {
+        submitVsAiResult(GameId.Blackjack, this.game.isSessionWon()).catch(
+          () => {},
+        );
+      }
+    }
 
     this.$("chips-display").textContent = String(state.chips);
     const betText =
