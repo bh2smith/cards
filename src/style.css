@@ -918,10 +918,31 @@ body {
   text-align: left;
 }
 
-.lb-addr {
-  font-family: monospace;
-  font-size: 12px;
-  letter-spacing: 0.5px;
+.lb-player {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lb-avatar {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+.lb-avatar-placeholder {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.lb-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
 }
 
 .lb-row-me {

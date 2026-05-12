@@ -6,7 +6,12 @@ import {
   type LeaderboardEntry,
   type PlayerStats,
 } from "../circles/leaderboard";
-import { isInMiniapp, getWalletAddress } from "../circles/miniapp";
+import {
+  isInMiniapp,
+  getWalletAddress,
+  resolveProfiles,
+  type ResolvedProfile,
+} from "../circles/miniapp";
 
 const GAME_TABS: Array<{ id: GameIdValue; label: string; solo: boolean }> = [
   { id: GameId.Golf, label: "Golf", solo: true },
@@ -25,6 +30,7 @@ export class LeaderboardUI {
   private activeGame: GameIdValue = GameId.Golf;
   private entries: LeaderboardEntry[] = [];
   private myStats: PlayerStats | null = null;
+  private profiles = new Map<string, ResolvedProfile>();
   private loading = true;
 
   constructor() {
@@ -94,6 +100,11 @@ export class LeaderboardUI {
 
     this.loading = false;
     this.render();
+
+    if (this.entries.length > 0) {
+      this.profiles = await resolveProfiles(this.entries.map((e) => e.player));
+      this.render();
+    }
   }
 
   private isSolo(): boolean {
@@ -123,6 +134,8 @@ export class LeaderboardUI {
 
     const s = this.myStats;
     const addr = getWalletAddress();
+    const profile = addr ? this.profiles.get(addr.toLowerCase()) : undefined;
+    const displayName = profile?.name ?? (addr ? shortAddr(addr) : "");
     const solo = this.isSolo();
     const metric = solo
       ? `<span class="lb-stat"><span class="lb-stat-label">Cards Left</span>${s.totalCardsRemaining}</span>`
@@ -130,7 +143,7 @@ export class LeaderboardUI {
 
     el.classList.remove("hidden");
     el.innerHTML = `
-      <div class="lb-my-stats-label">Your Record${addr ? ` (${shortAddr(addr)})` : ""}</div>
+      <div class="lb-my-stats-label">Your Record${displayName ? ` (${displayName})` : ""}</div>
       <div class="lb-stat-row">
         <span class="lb-stat"><span class="lb-stat-label">W</span>${s.wins}</span>
         <span class="lb-stat"><span class="lb-stat-label">L</span>${s.losses}</span>
@@ -171,9 +184,15 @@ export class LeaderboardUI {
             ? `+${s.wins - s.losses}`
             : s.wins - s.losses;
 
+        const profile = this.profiles.get(entry.player.toLowerCase());
+        const avatar = profile?.imageUrl
+          ? `<img class="lb-avatar" src="${profile.imageUrl}" alt="">`
+          : `<span class="lb-avatar lb-avatar-placeholder"></span>`;
+        const name = profile?.name ?? shortAddr(entry.player);
+
         return `<tr${cls}>
         <td>${i + 1}</td>
-        <td class="lb-addr">${shortAddr(entry.player)}</td>
+        <td class="lb-player">${avatar}<span class="lb-name">${name}</span></td>
         <td>${s.wins}</td>
         <td>${s.losses}</td>
         <td>${metric}</td>
