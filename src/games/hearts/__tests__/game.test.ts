@@ -141,6 +141,7 @@ describe("HeartsGame full round", () => {
     const state = game.getState();
     expect(["ROUND_OVER", "GAME_OVER"]).toContain(state.phase);
     const total = state.scores.reduce((s, n) => s + n, 0);
-    expect(total).toBe(26);
+    // 26 normally, 78 if someone shot the moon (0 + 26*3)
+    expect([26, 78]).toContain(total);
   });
 });
