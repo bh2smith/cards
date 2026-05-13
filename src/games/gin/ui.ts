@@ -51,9 +51,9 @@ export class GinRummyUI {
         <div class="board-track"><div class="board-peg" id="computer-peg" style="width:0%"></div></div>
       </div>
 
-      <div class="hand-area" id="computer-hand"></div>
+      <div class="hand-area gin-bot-hand" id="computer-hand"></div>
 
-      <div class="play-area">
+      <div class="play-area gin-play-area">
         <div id="gin-stock"></div>
         <div id="gin-discard"></div>
       </div>

@@ -1436,6 +1436,14 @@ body {
 
 /* ── GIN RUMMY ── */
 
+.gin-bot-hand {
+  min-height: 66px;
+}
+
+.gin-play-area {
+  padding: 6px;
+}
+
 .gin-meld-gap {
   width: 4px;
   flex-shrink: 0;
@@ -1453,8 +1461,11 @@ body {
 }
 
 #knock-display {
-  margin: 12px auto;
+  margin: 8px auto;
   max-width: 520px;
+  flex-shrink: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 #knock-display.hidden {
