@@ -14,6 +14,10 @@ const STORAGE_KEY = "cardroom:settings";
 
 let cache: Settings | null = null;
 
+function systemPrefersLight(): boolean {
+  return window.matchMedia("(prefers-color-scheme: light)").matches;
+}
+
 function load(): Settings {
   if (cache) return cache;
   try {
@@ -26,7 +30,7 @@ function load(): Settings {
   } catch {
     // fall through to defaults
   }
-  cache = { ...DEFAULTS };
+  cache = { ...DEFAULTS, lightTheme: systemPrefersLight() };
   return cache;
 }
 
