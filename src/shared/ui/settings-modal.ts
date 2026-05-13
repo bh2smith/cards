@@ -78,6 +78,7 @@ function renderModal(s: Readonly<Settings>): string {
         <button id="settings-close" type="button" aria-label="Close">×</button>
       </div>
       <div class="settings-body">
+        ${toggleRow("lightTheme", "Light theme", "Warm daytime look — easier on the eyes.", s.lightTheme)}
         ${toggleRow("reduceMotion", "Reduce motion", "Disable card hover and pulse animations.", s.reduceMotion)}
         ${toggleRow("confirmNewGame", "Confirm new game", "Ask before discarding the current round.", s.confirmNewGame)}
       </div>

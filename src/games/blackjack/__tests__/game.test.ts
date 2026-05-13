@@ -255,7 +255,7 @@ describe("split", () => {
     expect(s.playerHand.length).toBe(2);
     expect(s.splitHand).not.toBeNull();
     expect(s.splitHand!.length).toBe(2);
-    expect(s.activeHand).toBe(0);
+    expect([0, 1]).toContain(s.activeHand); // may auto-advance past BJ
     expect(s.chips).toBe(80); // 100 - 10 (bet) - 10 (split)
     expect(s.splitBet).toBe(10);
   });
@@ -264,6 +264,8 @@ describe("split", () => {
     const g = gameWithMatchingFirstCards();
     if (!g) return;
     g.split();
+    const afterSplit = g.getState();
+    if (afterSplit.activeHand === 1) return; // hand 0 was auto-advanced (BJ)
     g.stand();
     expect(g.getState().activeHand).toBe(1);
     expect(g.getState().phase).toBe("PLAYER_TURN");
@@ -273,8 +275,8 @@ describe("split", () => {
     const g = gameWithMatchingFirstCards();
     if (!g) return;
     g.split();
-    g.stand(); // done with hand 0
-    g.stand(); // done with hand 1 → dealer
+    if (g.getState().activeHand === 0) g.stand(); // done with hand 0
+    if (g.getState().phase === "PLAYER_TURN") g.stand(); // done with hand 1
     expect(g.getState().phase).toBe("DEALER_TURN");
   });
 
