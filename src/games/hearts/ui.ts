@@ -9,6 +9,7 @@ import {
   cardPoints,
 } from "./types";
 import { confirmIfEnabled } from "../../shared/settings";
+import { openInstructions } from "../../shared/ui/instructions-modal";
 import { LeaderboardReporter, GameId } from "../../shared/circles/leaderboard";
 
 const BOT_DELAY_MS = 600;
@@ -43,7 +44,10 @@ export class HeartsUI {
           <a href="#" class="back-link">← Games</a>
           <h1>Hearts</h1>
         </div>
-        <button id="new-game-btn">New Game</button>
+        <div class="header-right">
+          <button class="help-btn" id="help-btn" type="button" aria-label="How to play">?</button>
+          <button id="new-game-btn">New Game</button>
+        </div>
       </div>
 
       <div class="hearts-scoreboard">
@@ -91,6 +95,9 @@ export class HeartsUI {
   }
 
   private bindEvents(): void {
+    this.$("help-btn").addEventListener("click", () =>
+      openInstructions("hearts"),
+    );
     this.$("new-game-btn").addEventListener("click", () =>
       confirmIfEnabled("Leave this game?", () => {
         location.hash = "/";

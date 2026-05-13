@@ -4,6 +4,7 @@ import { peggingValue, type Player, type GamePhase } from "./types";
 import { canPlay } from "./scoring";
 import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
 import { confirmIfEnabled } from "../../shared/settings";
+import { openInstructions } from "../../shared/ui/instructions-modal";
 import { LeaderboardReporter, GameId } from "../../shared/circles/leaderboard";
 
 export class CribbageUI {
@@ -32,7 +33,10 @@ export class CribbageUI {
           <a href="#" class="back-link">← Games</a>
           <h1>Cribbage</h1>
         </div>
-        <button id="new-game-btn">New Game</button>
+        <div class="header-right">
+          <button class="help-btn" id="help-btn" type="button" aria-label="How to play">?</button>
+          <button id="new-game-btn">New Game</button>
+        </div>
       </div>
 
       <div class="scoreboard">
@@ -90,6 +94,9 @@ export class CribbageUI {
   }
 
   private bindEvents(): void {
+    this.$("help-btn").addEventListener("click", () =>
+      openInstructions("cribbage"),
+    );
     this.$("action-btn").addEventListener("click", () => this.onAction());
     this.$("new-game-btn").addEventListener("click", () =>
       confirmIfEnabled("Leave this game?", () => this.goToLobby()),
