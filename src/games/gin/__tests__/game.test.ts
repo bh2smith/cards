@@ -137,6 +137,32 @@ describe("GinRummyGame", () => {
       expect(game.getState().playerScore).toBe(0);
       expect(game.getState().computerScore).toBe(0);
     });
+
+    test("scores never go negative after a round", () => {
+      for (let i = 0; i < 20; i++) {
+        const game = new GinRummyGame();
+        let turns = 0;
+        while (turns < 200) {
+          const state = game.getState();
+          if (state.phase === "ROUND_OVER" || state.phase === "GAME_OVER")
+            break;
+          if (state.phase === "DRAWING" && state.currentTurn === "player") {
+            game.playerDrawFromStock();
+          } else if (
+            state.phase === "DISCARDING" &&
+            state.currentTurn === "player"
+          ) {
+            game.playerDiscard(0);
+          } else if (state.phase === "BOT_TURN") {
+            game.botTurn();
+          }
+          turns++;
+        }
+        const final = game.getState();
+        expect(final.playerScore).toBeGreaterThanOrEqual(0);
+        expect(final.computerScore).toBeGreaterThanOrEqual(0);
+      }
+    });
   });
 
   describe("nextRound", () => {

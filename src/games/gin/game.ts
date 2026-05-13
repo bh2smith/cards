@@ -225,7 +225,7 @@ export class GinRummyGame {
       roundPoints = UNDERCUT_BONUS + (knockerDwValue - defenderDwValue);
       pointsTo = knocker === "player" ? "computer" : "player";
     } else {
-      roundPoints = knockerDwValue - defenderDwValue;
+      roundPoints = defenderDwValue - knockerDwValue;
       pointsTo = knocker;
     }
 
