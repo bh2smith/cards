@@ -1869,6 +1869,99 @@ body {
   background: var(--gold-light);
 }
 
+/* ── LIGHT THEME ── */
+
+body.light-theme {
+  --bg: #f0e4d0;
+  --wood: #c4a070;
+  --wood-mid: #d4b488;
+  --wood-light: #e2c89e;
+  --wood-border: #b08c58;
+  --felt: #2e7e4e;
+  --felt-mid: #369460;
+  --gold: #8c6810;
+  --gold-light: #a47c14;
+  --gold-glow: rgba(140, 104, 16, 0.3);
+  --cream: #2c1a08;
+  --cream-dim: #6a4828;
+  --text: #3c2210;
+  --blue-back: #2c3c80;
+
+  background-image:
+    radial-gradient(
+      ellipse 110% 45% at 50% 0%,
+      rgba(220, 200, 170, 0.6) 0%,
+      transparent 100%
+    ),
+    radial-gradient(
+      ellipse 80% 30% at 50% 100%,
+      rgba(200, 180, 150, 0.4) 0%,
+      transparent 100%
+    );
+}
+
+body.light-theme .message-bar {
+  background: rgba(0, 0, 0, 0.07);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light-theme #scoring-details {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light-theme .board-track {
+  background: rgba(0, 0, 0, 0.12);
+}
+
+body.light-theme .card-slot {
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+body.light-theme .bj-confirm {
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+body.light-theme .hearts-score-cell {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+body.light-theme #settings-btn {
+  background: rgba(240, 228, 208, 0.85);
+  border-color: rgba(140, 104, 16, 0.4);
+}
+
+body.light-theme .settings-backdrop {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+body.light-theme .settings-header {
+  border-bottom-color: rgba(0, 0, 0, 0.1);
+}
+
+body.light-theme .settings-switch {
+  background: rgba(0, 0, 0, 0.15);
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+body.light-theme .settings-switch::after {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+body.light-theme .card.face-down {
+  border-color: rgba(44, 60, 128, 0.5);
+}
+
+body.light-theme .card.face-down::after {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+body.light-theme .lb-table thead th {
+  background: var(--bg);
+}
+
 /* ── REDUCE MOTION ── */
 
 body.reduce-motion *,

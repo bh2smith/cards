@@ -1,11 +1,13 @@
 export interface Settings {
   reduceMotion: boolean;
   confirmNewGame: boolean;
+  lightTheme: boolean;
 }
 
 const DEFAULTS: Settings = {
   reduceMotion: false,
   confirmNewGame: false,
+  lightTheme: false,
 };
 
 const STORAGE_KEY = "cardroom:settings";
@@ -73,6 +75,7 @@ function emitChange(): void {
 export function applySettings(): void {
   const s = load();
   document.body.classList.toggle("reduce-motion", s.reduceMotion);
+  document.body.classList.toggle("light-theme", s.lightTheme);
 }
 
 export function confirmIfEnabled(message: string, action: () => void): void {
