@@ -21,6 +21,10 @@
   --cream-dim: #c0a878;
   --text: #e2d0a8;
   --blue-back: #192660;
+  --card-face: #fefaf3;
+  --card-border: #d6cbb5;
+  --card-red: #c41e23;
+  --card-black: #1a1a2e;
   --card-width: 62px;
   --card-height: 90px;
   --radius: 10px;
@@ -328,8 +332,8 @@ body {
   width: var(--card-width);
   height: var(--card-height);
   border-radius: 6px;
-  background: #fefaf3;
-  border: 1px solid #d6cbb5;
+  background: var(--card-face);
+  border: 1px solid var(--card-border);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -356,10 +360,10 @@ body {
 }
 
 .card.red {
-  color: #c41e23;
+  color: var(--card-red);
 }
 .card.black {
-  color: #1a1a2e;
+  color: var(--card-black);
 }
 
 .card.selected {
@@ -1886,6 +1890,10 @@ body.light-theme {
   --cream-dim: #6a4828;
   --text: #3c2210;
   --blue-back: #2c3c80;
+  --card-face: #ffffff;
+  --card-border: #c0b498;
+  --card-red: #b01820;
+  --card-black: #121228;
 
   background-image:
     radial-gradient(
@@ -1898,6 +1906,12 @@ body.light-theme {
       rgba(200, 180, 150, 0.4) 0%,
       transparent 100%
     );
+}
+
+body.light-theme .card:not(.face-down) {
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.15),
+    0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 body.light-theme .message-bar {
