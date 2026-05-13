@@ -128,7 +128,7 @@ export class BlackjackUI {
     this.$("split-btn").addEventListener("click", () =>
       this.tryAction("split", () => {
         this.game.split();
-        this.render();
+        this.afterPlayerAction();
       }),
     );
 

@@ -142,6 +142,17 @@ export class BlackjackGame {
     this.state.roundResult = null;
     this.state.splitResult = null;
     this.state.message = "Playing first hand — Hit or Stand?";
+
+    if (isBlackjack(this.state.playerHand)) {
+      this.onHandComplete();
+    }
+    if (
+      this.state.activeHand === 1 &&
+      this.state.splitHand &&
+      isBlackjack(this.state.splitHand)
+    ) {
+      this.onHandComplete();
+    }
   }
 
   canDoubleDown(): boolean {
