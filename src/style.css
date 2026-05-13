@@ -24,7 +24,7 @@
   --card-face: #e8d8b4;
   --card-border: #b8a078;
   --card-red: #a82020;
-  --card-black: #2a1a10;
+  --card-black: #111111;
   --card-width: 62px;
   --card-height: 90px;
   --radius: 10px;
@@ -1893,7 +1893,7 @@ body.light-theme {
   --card-face: #ffffff;
   --card-border: #c0b498;
   --card-red: #b01820;
-  --card-black: #121228;
+  --card-black: #111111;
 
   background-image:
     radial-gradient(
