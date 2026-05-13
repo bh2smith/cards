@@ -1238,14 +1238,114 @@ body {
 .bj-bet-btn {
   min-width: 64px;
   font-family: "Cinzel", serif;
-  font-size: 15px;
-  padding: 10px 18px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  padding: 12px 20px;
+  background: linear-gradient(
+    180deg,
+    var(--wood-light) 0%,
+    var(--wood-mid) 100%
+  );
+  color: var(--cream);
+  border: 1px solid var(--wood-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    transform 0.1s ease,
+    box-shadow 0.15s ease;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+}
+
+.bj-bet-btn:hover:not(:disabled) {
+  background: linear-gradient(
+    180deg,
+    var(--wood-border) 0%,
+    var(--wood-light) 100%
+  );
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.5);
+}
+
+.bj-bet-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.bj-bet-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 .bj-play-buttons {
   display: flex;
   gap: 10px;
   justify-content: center;
+}
+
+.bj-play-buttons button {
+  font-family: "Cinzel", serif;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 12px 22px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid var(--wood-border);
+  background: linear-gradient(
+    180deg,
+    var(--wood-light) 0%,
+    var(--wood-mid) 100%
+  );
+  color: var(--cream);
+  transition:
+    background 0.15s ease,
+    transform 0.1s ease,
+    box-shadow 0.15s ease;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+}
+
+.bj-play-buttons button:hover:not(:disabled) {
+  background: linear-gradient(
+    180deg,
+    var(--wood-border) 0%,
+    var(--wood-light) 100%
+  );
+  transform: translateY(-1px);
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.5);
+}
+
+.bj-play-buttons button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.bj-play-buttons button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+#next-round-btn {
+  font-family: "Cinzel", serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  background: linear-gradient(150deg, var(--gold-light) 0%, var(--gold) 100%);
+  color: #150902;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 34px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    transform 0.1s ease;
+  animation: pulse-ready 2.5s ease-in-out infinite;
+}
+
+#next-round-btn:hover {
+  background: linear-gradient(150deg, #e8ca55 0%, var(--gold-light) 100%);
+  transform: translateY(-1px);
 }
 
 .bj-bet-buttons.hidden,
@@ -1267,9 +1367,19 @@ body {
 }
 
 .bj-optimal {
+  background: linear-gradient(150deg, var(--gold-light) 0%, var(--gold) 100%);
+  color: #150902;
+  border-color: var(--gold-light);
+  transform: scale(1.08);
   box-shadow:
     0 0 0 2px var(--gold),
-    0 0 12px var(--gold-glow);
+    0 0 16px var(--gold-glow),
+    0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.bj-optimal:hover:not(:disabled) {
+  background: linear-gradient(150deg, #e8ca55 0%, var(--gold-light) 100%);
+  transform: scale(1.08) translateY(-1px);
 }
 
 .bj-confirm {
@@ -1289,8 +1399,29 @@ body {
 }
 
 .bj-confirm button {
-  padding: 4px 14px;
-  font-size: 13px;
+  font-family: "Cinzel", serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--wood-border);
+  background: linear-gradient(
+    180deg,
+    var(--wood-light) 0%,
+    var(--wood-mid) 100%
+  );
+  color: var(--cream);
+  cursor: pointer;
+}
+
+.bj-confirm button:hover {
+  background: linear-gradient(
+    180deg,
+    var(--wood-border) 0%,
+    var(--wood-light) 100%
+  );
 }
 
 /* ── GIN RUMMY ── */
@@ -1881,5 +2012,10 @@ body.reduce-motion #action-btn {
     font-size: 13px;
     padding: 8px 14px;
     min-width: 56px;
+  }
+
+  .bj-play-buttons button {
+    font-size: 13px;
+    padding: 10px 16px;
   }
 }
