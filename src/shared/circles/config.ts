@@ -5,4 +5,4 @@ export const GNOSIS_GROUP = "0xC19BC204eb1c1D5B3FE500E5E5dfaBaB625F286c";
 export const CIRCLES_RPC = "https://rpc.aboutcircles.com/";
 
 export const LEADERBOARD_ADDRESS: Address =
-  "0xC719436DF864D7A3708dbC4a659b6e13DEEBb051";
+  "0x5b46017EF62efa405579D5397B35FC70E0eD8A87";
