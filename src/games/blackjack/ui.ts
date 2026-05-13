@@ -3,6 +3,7 @@ import { BET_OPTIONS, WIN_TARGET } from "./types";
 import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
 import { optimalAction, type Action } from "./strategy";
 import { confirmIfEnabled } from "../../shared/settings";
+import { openInstructions } from "../../shared/ui/instructions-modal";
 import { LeaderboardReporter, GameId } from "../../shared/circles/leaderboard";
 
 const DEALER_DELAY_MS = 600;
@@ -32,7 +33,10 @@ export class BlackjackUI {
           <a href="#" class="back-link">← Games</a>
           <h1>Blackjack</h1>
         </div>
-        <button id="new-game-btn">New Game</button>
+        <div class="header-right">
+          <button class="help-btn" id="help-btn" type="button" aria-label="How to play">?</button>
+          <button id="new-game-btn">New Game</button>
+        </div>
       </div>
 
       <div class="scoreboard">
@@ -87,6 +91,9 @@ export class BlackjackUI {
   }
 
   private bindEvents(): void {
+    this.$("help-btn").addEventListener("click", () =>
+      openInstructions("blackjack"),
+    );
     this.$("new-game-btn").addEventListener("click", () =>
       confirmIfEnabled("Leave this game?", () => {
         location.hash = "/";
