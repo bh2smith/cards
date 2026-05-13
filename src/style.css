@@ -424,9 +424,9 @@ body {
 
 .card-corner {
   font-family: "Cinzel", serif;
-  font-size: 10px;
-  font-weight: 600;
-  line-height: 1.2;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.15;
 }
 
 .card-corner.bottom {
@@ -444,7 +444,7 @@ body {
   font-size: 14px;
 }
 .card.small .card-corner {
-  font-size: 8px;
+  font-size: 10px;
 }
 
 .deck-placeholder {
@@ -1129,7 +1129,7 @@ body {
   }
 
   .card-corner {
-    font-size: 12px;
+    font-size: 15px;
   }
 
   .card-center {

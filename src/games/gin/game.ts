@@ -56,7 +56,7 @@ export class GinRummyGame {
 
     this.state = {
       ...this.state,
-      phase: "DRAWING",
+      phase: nonDealer === "computer" ? "BOT_TURN" : "DRAWING",
       currentTurn: nonDealer,
       playerHand,
       computerHand,
@@ -66,7 +66,7 @@ export class GinRummyGame {
       message:
         nonDealer === "player"
           ? "Your turn. Draw from stock or discard pile."
-          : "Computer's turn...",
+          : "Computer's turn…",
       winner: this.state.winner,
     };
   }
