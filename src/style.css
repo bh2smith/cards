@@ -20,7 +20,7 @@
   --cream: #f4e3be;
   --cream-dim: #c0a878;
   --text: #e2d0a8;
-  --blue-back: #192660;
+  --blue-back: #1e3a8a;
   --card-face: #e8d8b4;
   --card-border: #b8a078;
   --card-red: #a82020;
@@ -398,24 +398,24 @@ body {
   background-image:
     radial-gradient(
       ellipse at 50% 45%,
-      rgba(201, 162, 39, 0.1) 0%,
+      rgba(201, 162, 39, 0.15) 0%,
       transparent 60%
     ),
     repeating-linear-gradient(
       45deg,
-      rgba(255, 255, 255, 0.025) 0px,
-      rgba(255, 255, 255, 0.025) 1px,
+      rgba(255, 255, 255, 0.06) 0px,
+      rgba(255, 255, 255, 0.06) 1px,
       transparent 1px,
       transparent 7px
     ),
     repeating-linear-gradient(
       -45deg,
-      rgba(255, 255, 255, 0.015) 0px,
-      rgba(255, 255, 255, 0.015) 1px,
+      rgba(255, 255, 255, 0.04) 0px,
+      rgba(255, 255, 255, 0.04) 1px,
       transparent 1px,
       transparent 7px
     );
-  border-color: rgba(201, 162, 39, 0.4);
+  border-color: rgba(201, 162, 39, 0.5);
   cursor: default;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
 }
@@ -2020,7 +2020,7 @@ body.light-theme {
   --cream: #2c1a08;
   --cream-dim: #6a4828;
   --text: #3c2210;
-  --blue-back: #2c3c80;
+  --blue-back: #2548b5;
   --card-face: #ffffff;
   --card-border: #c0b498;
   --card-red: #b01820;
