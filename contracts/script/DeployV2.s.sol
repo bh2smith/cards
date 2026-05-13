@@ -39,7 +39,8 @@ contract MigrateV2 is Script {
             (address[] memory players, CardRoomLeaderboard.PlayerStats[] memory oldStats) = old.getTop(gameId);
             if (players.length == 0) continue;
 
-            CardRoomLeaderboardV2.PlayerStats[] memory newStats = new CardRoomLeaderboardV2.PlayerStats[](players.length);
+            CardRoomLeaderboardV2.PlayerStats[] memory newStats =
+                new CardRoomLeaderboardV2.PlayerStats[](players.length);
             for (uint256 i = 0; i < players.length; i++) {
                 newStats[i] = CardRoomLeaderboardV2.PlayerStats({
                     wins: oldStats[i].wins,

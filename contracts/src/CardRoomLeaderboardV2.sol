@@ -92,11 +92,10 @@ contract CardRoomLeaderboardV2 is Initializable, UUPSUpgradeable, OwnableUpgrade
         minDuration[gameId] = dur;
     }
 
-    function migrateStats(
-        uint8 gameId,
-        address[] calldata players,
-        PlayerStats[] calldata playerStats
-    ) external onlyOwner {
+    function migrateStats(uint8 gameId, address[] calldata players, PlayerStats[] calldata playerStats)
+        external
+        onlyOwner
+    {
         require(gameId < gameCount, "Invalid game");
         require(players.length == playerStats.length, "Length mismatch");
         for (uint256 i = 0; i < players.length; i++) {
