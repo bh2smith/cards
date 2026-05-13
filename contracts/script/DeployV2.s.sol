@@ -9,16 +9,14 @@ import "../src/CardRoomLeaderboard.sol";
 contract DeployV2 is Script {
     address constant OLD_LEADERBOARD = 0xC719436DF864D7A3708dbC4a659b6e13DEEBb051;
 
-    function run() external {
-        address deployer = msg.sender;
-
+    function run(address owner_) external {
         vm.startBroadcast();
 
         // 1. Deploy implementation
         CardRoomLeaderboardV2 impl = new CardRoomLeaderboardV2();
 
         // 2. Deploy proxy with initialize call
-        bytes memory initData = abi.encodeCall(CardRoomLeaderboardV2.initialize, (deployer));
+        bytes memory initData = abi.encodeCall(CardRoomLeaderboardV2.initialize, (owner_));
         ERC1967Proxy proxy = new ERC1967Proxy(address(impl), initData);
 
         console.log("Implementation:", address(impl));
