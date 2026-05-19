@@ -1,5 +1,5 @@
 import { BlackjackGame, handValue, isBlackjack, isBust } from "./game";
-import { BET_OPTIONS, WIN_TARGET } from "./types";
+import { WIN_TARGET, getBetOptions } from "./types";
 import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
 import { optimalAction, type Action } from "./strategy";
 import { confirmIfEnabled } from "../../shared/settings";
@@ -72,9 +72,7 @@ export class BlackjackUI {
       <div class="message-bar" id="message"></div>
 
       <div class="action-area" id="action-area">
-        <div class="bj-bet-buttons hidden" id="bet-buttons">
-          ${BET_OPTIONS.map((n) => `<button class="bj-bet-btn" data-amount="${n}">${n}</button>`).join("")}
-        </div>
+        <div class="bj-bet-buttons hidden" id="bet-buttons"></div>
         <div class="bj-play-buttons hidden" id="play-buttons">
           <button id="hit-btn">Hit</button>
           <button id="stand-btn">Stand</button>
@@ -356,12 +354,14 @@ export class BlackjackUI {
     }
 
     if (state.phase === "BETTING") {
+      const options = getBetOptions(state.chips);
+      betBtns.innerHTML = options
+        .map(
+          (n) =>
+            `<button class="bj-bet-btn" data-amount="${n}"${n > state.chips ? " disabled" : ""}>${n}</button>`,
+        )
+        .join("");
       betBtns.classList.remove("hidden");
-      betBtns
-        .querySelectorAll<HTMLButtonElement>(".bj-bet-btn")
-        .forEach((btn) => {
-          btn.disabled = parseInt(btn.dataset.amount ?? "0") > state.chips;
-        });
     } else if (state.phase === "PLAYER_TURN") {
       const activeCards =
         state.activeHand === 1 && state.splitHand !== null
