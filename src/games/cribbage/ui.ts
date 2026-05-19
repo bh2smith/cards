@@ -68,14 +68,13 @@ export class CribbageUI {
         <div id="starter-area"></div>
         <div id="pegging-area"></div>
         <div id="pegging-count"></div>
+        <div class="scoring-info">
+          <div id="scoring-details" class="hidden"></div>
+          <div id="scoring-total" class="hidden"></div>
+        </div>
       </div>
 
       <div class="hand-area" id="player-hand"></div>
-
-      <div class="scoring-info">
-        <div id="scoring-details" class="hidden"></div>
-        <div id="scoring-total" class="hidden"></div>
-      </div>
 
       <div class="message-bar" id="message">Welcome to Cribbage!</div>
 
