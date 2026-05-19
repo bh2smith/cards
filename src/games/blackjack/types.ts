@@ -26,4 +26,8 @@ export interface BlackjackState extends BaseGameState {
 
 export const STARTING_CHIPS = 100;
 export const WIN_TARGET = STARTING_CHIPS * 3;
-export const BET_OPTIONS = [5, 10, 25] as const;
+export function getBetOptions(chips: number): number[] {
+  if (chips < 10) return [1, 2, 5];
+  if (chips < 25) return [1, 5, 10];
+  return [5, 10, 25];
+}
