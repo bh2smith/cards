@@ -109,10 +109,7 @@ export class KlondikeUI {
     if (state.waste.length === 0) return;
 
     // Double-click auto-foundation: if waste card can go to foundation, do it
-    if (
-      state.selected !== null &&
-      state.selected.type === "waste"
-    ) {
+    if (state.selected !== null && state.selected.type === "waste") {
       const card = state.waste[state.waste.length - 1]!;
       const foundIdx = this.game.canAutoFoundation(card);
       if (foundIdx >= 0) {
@@ -219,8 +216,7 @@ export class KlondikeUI {
       .map((pile, suitIdx) => {
         const suit = FOUNDATION_SUITS[suitIdx]!;
         const symbol = SUIT_SYMBOL[suit];
-        const isTarget =
-          state.selected !== null && state.phase === "PLAYING";
+        const isTarget = state.selected !== null && state.phase === "PLAYING";
 
         if (pile.length > 0) {
           const topCard = pile[pile.length - 1]!;

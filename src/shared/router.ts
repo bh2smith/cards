@@ -73,26 +73,66 @@ function getCategories(): Category[] {
     {
       name: "Solitaire",
       games: [
-        gameEntry("golf", "Golf Solitaire", "Clear the tableau by playing cards one rank above or below the waste top."),
-        gameEntry("pyramid", "Pyramid", "Pair exposed cards that sum to 13 to clear the pyramid."),
-        gameEntry("klondike", "Klondike", "The classic. Build four foundation piles from Ace to King by suit."),
-        gameEntry("freecell", "Freecell", "All cards face-up. Use four free cells to maneuver cards to the foundations."),
+        gameEntry(
+          "golf",
+          "Golf Solitaire",
+          "Clear the tableau by playing cards one rank above or below the waste top.",
+        ),
+        gameEntry(
+          "pyramid",
+          "Pyramid",
+          "Pair exposed cards that sum to 13 to clear the pyramid.",
+        ),
+        gameEntry(
+          "klondike",
+          "Klondike",
+          "The classic. Build four foundation piles from Ace to King by suit.",
+        ),
+        gameEntry(
+          "freecell",
+          "Freecell",
+          "All cards face-up. Use four free cells to maneuver cards to the foundations.",
+        ),
       ],
     },
     {
       name: "Head-to-Head",
       games: [
-        gameEntry("cribbage", "Cribbage", "Score points through pegging and showing your hand. First to 121 wins."),
-        gameEntry("gin", "Gin Rummy", "Form melds and knock before the bot does. Score runs and sets."),
-        gameEntry("blackjack", "Blackjack", "Beat the dealer. Get as close to 21 as you can without going bust."),
-        gameEntry("crazy-eights", "Crazy Eights", "Match the suit or rank. Play an eight to change suits. First to empty wins."),
+        gameEntry(
+          "cribbage",
+          "Cribbage",
+          "Score points through pegging and showing your hand. First to 121 wins.",
+        ),
+        gameEntry(
+          "gin",
+          "Gin Rummy",
+          "Form melds and knock before the bot does. Score runs and sets.",
+        ),
+        gameEntry(
+          "blackjack",
+          "Blackjack",
+          "Beat the dealer. Get as close to 21 as you can without going bust.",
+        ),
+        gameEntry(
+          "crazy-eights",
+          "Crazy Eights",
+          "Match the suit or rank. Play an eight to change suits. First to empty wins.",
+        ),
       ],
     },
     {
       name: "Trick-Taking",
       games: [
-        gameEntry("hearts", "Hearts", "Avoid hearts and the queen of spades across 4 players."),
-        gameEntry("spades", "Spades", "Bid and take tricks with your partner. Spades are always trump."),
+        gameEntry(
+          "hearts",
+          "Hearts",
+          "Avoid hearts and the queen of spades across 4 players.",
+        ),
+        gameEntry(
+          "spades",
+          "Spades",
+          "Bid and take tricks with your partner. Spades are always trump.",
+        ),
       ],
     },
   ];

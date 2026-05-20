@@ -81,10 +81,7 @@ export class KlondikeGame {
     if (this.state.phase !== "PLAYING") return;
     if (this.state.waste.length === 0) return;
 
-    if (
-      this.state.selected !== null &&
-      this.state.selected.type === "waste"
-    ) {
+    if (this.state.selected !== null && this.state.selected.type === "waste") {
       this.state.selected = null;
       this.state.message =
         "Move cards to build foundations from Ace to King by suit.";
@@ -257,10 +254,7 @@ export class KlondikeGame {
     return true;
   }
 
-  private canPlaceOnFoundation(
-    card: PlayingCard,
-    suitIndex: number,
-  ): boolean {
+  private canPlaceOnFoundation(card: PlayingCard, suitIndex: number): boolean {
     const suit = ALL_SUITS[suitIndex]!;
     if (card.suit !== suit) return false;
 
