@@ -5,6 +5,7 @@ import { BlackjackUI } from "./games/blackjack/ui";
 import { PyramidUI } from "./games/pyramid/ui";
 import { GinRummyUI } from "./games/gin/ui";
 import { HeartsUI } from "./games/hearts/ui";
+import { KlondikeUI } from "./games/klondike/ui";
 import { initMiniapp } from "./shared/circles/miniapp";
 import { withEntryGate } from "./shared/circles/entryGate";
 import { mountSettings } from "./shared/ui/settings-modal";
@@ -52,6 +53,13 @@ router.register(
   "Hearts",
   "Avoid hearts and the queen of spades across 4 players.",
   withEntryGate(() => new HeartsUI()),
+);
+
+router.register(
+  "klondike",
+  "Klondike",
+  "The classic. Build four foundation piles from Ace to King by suit.",
+  withEntryGate(() => new KlondikeUI()),
 );
 
 router.init();

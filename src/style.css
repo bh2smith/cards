@@ -712,10 +712,67 @@ body {
   opacity: 0.55;
 }
 
+.lobby-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.lobby-category {
+  display: flex;
+  flex-direction: column;
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  border-bottom: 1px solid rgba(201, 162, 39, 0.2);
+  padding: 6px 2px 8px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.category-name {
+  font-family: "Cinzel", serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  flex: 1;
+}
+
+.category-count {
+  font-family: "Crimson Pro", serif;
+  font-size: 11px;
+  color: var(--cream-dim);
+  opacity: 0.5;
+}
+
+.category-chevron {
+  font-size: 12px;
+  color: var(--cream-dim);
+  opacity: 0.5;
+  width: 12px;
+  text-align: center;
+}
+
+.category-header:hover .category-name {
+  text-shadow: 0 0 8px var(--gold-glow);
+}
+
 .lobby-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+  padding-top: 10px;
+}
+
+.lobby-grid.collapsed {
+  display: none;
 }
 
 .game-card {
@@ -805,6 +862,203 @@ body {
 .lobby-leaderboard-btn:hover {
   background: rgba(201, 162, 39, 0.1);
   border-color: var(--gold);
+}
+
+/* ── KLONDIKE SOLITAIRE ── */
+
+.klondike-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.klondike-foundations {
+  display: flex;
+  gap: 3px;
+}
+
+.klondike-foundation {
+  flex-shrink: 0;
+}
+
+.klondike-foundation .card-slot {
+  width: var(--card-width);
+  height: var(--card-height);
+  border-radius: 6px;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.klondike-foundation .foundation-suit {
+  font-size: 22px;
+  opacity: 0.25;
+  color: var(--cream);
+}
+
+.klondike-foundation.clickable {
+  cursor: pointer;
+}
+
+.klondike-foundation.clickable .card-slot {
+  border-color: rgba(201, 162, 39, 0.35);
+}
+
+.klondike-foundation.clickable .card:hover,
+.klondike-foundation.clickable .card-slot:hover {
+  box-shadow:
+    0 0 0 2px var(--gold),
+    0 4px 14px rgba(201, 162, 39, 0.4);
+}
+
+.klondike-stock-waste {
+  display: flex;
+  gap: 6px;
+}
+
+#klondike-stock,
+#klondike-waste {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+#klondike-stock .card-slot.recycle {
+  border-style: dashed;
+  border-color: rgba(201, 162, 39, 0.3);
+  cursor: pointer;
+}
+
+.klondike-tableau {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 0;
+}
+
+.klondike-cascade {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  flex: 1;
+  max-width: calc(var(--card-width) + 4px);
+}
+
+.klondike-cascade .klondike-empty-col {
+  width: var(--card-width);
+  height: var(--card-height);
+  border-radius: 6px;
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+}
+
+.klondike-cascade-card {
+  width: var(--card-width);
+}
+
+.klondike-cascade-card.facedown:not(:first-child) {
+  margin-top: -84px;
+}
+
+.klondike-cascade-card.faceup:not(:first-child) {
+  margin-top: -72px;
+}
+
+.klondike-cascade-card.facedown + .klondike-cascade-card.faceup {
+  margin-top: -72px;
+}
+
+.klondike-cascade-card.faceup .card {
+  cursor: pointer;
+}
+
+.klondike-cascade-card.faceup .card:hover:not(.selected) {
+  box-shadow:
+    0 0 0 2px var(--gold),
+    0 4px 14px rgba(201, 162, 39, 0.4);
+}
+
+.klondike-cascade-card .card.selected {
+  transform: translateY(-8px);
+  box-shadow:
+    0 12px 30px rgba(93, 195, 247, 0.4),
+    0 0 0 2px #5dc3f7;
+  border-color: #5dc3f7;
+  z-index: 3;
+}
+
+/* Smaller cards for klondike top row to fit on mobile */
+.klondike-top-row .card {
+  width: var(--card-width);
+  height: var(--card-height);
+}
+
+/* Scale down tableau cards on smaller screens */
+@media (max-width: 419px) {
+  .klondike-top-row .card,
+  .klondike-top-row .card-slot,
+  .klondike-top-row .klondike-foundation .card-slot {
+    width: 44px;
+    height: 64px;
+  }
+
+  .klondike-top-row .card-corner {
+    font-size: 8px;
+  }
+
+  .klondike-top-row .card-center {
+    font-size: 14px;
+  }
+
+  .klondike-top-row .foundation-suit {
+    font-size: 16px;
+  }
+
+  .klondike-cascade .card,
+  .klondike-cascade .card.face-down {
+    width: 44px;
+    height: 64px;
+  }
+
+  .klondike-cascade .card-corner {
+    font-size: 8px;
+  }
+
+  .klondike-cascade .card-center {
+    font-size: 14px;
+  }
+
+  .klondike-cascade-card {
+    width: 44px;
+  }
+
+  .klondike-cascade .klondike-empty-col {
+    width: 44px;
+    height: 64px;
+  }
+
+  .klondike-cascade-card.facedown:not(:first-child) {
+    margin-top: -58px;
+  }
+
+  .klondike-cascade-card.faceup:not(:first-child) {
+    margin-top: -50px;
+  }
+
+  .klondike-cascade-card.facedown + .klondike-cascade-card.faceup {
+    margin-top: -50px;
+  }
 }
 
 /* ── LEADERBOARD ── */

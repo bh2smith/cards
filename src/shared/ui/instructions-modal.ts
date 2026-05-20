@@ -56,6 +56,16 @@ const INSTRUCTIONS: Record<string, { title: string; html: string }> = {
       <p>The defender can lay off deadwood on the knocker's melds. Undercut the knocker for a bonus.</p>
     `,
   },
+  klondike: {
+    title: "Klondike Solitaire",
+    html: `
+      <p><strong>Goal:</strong> Move all 52 cards to the four foundation piles, building each suit up from Ace to King.</p>
+      <p><strong>Tableau:</strong> Build down in <strong>alternating colors</strong> (red on black, black on red). Move single cards or sequences. Empty columns accept only Kings.</p>
+      <p><strong>Stock:</strong> Draw cards to the waste pile. Play the top waste card to the tableau or foundations.</p>
+      <p><strong>Flip:</strong> When a face-down card is uncovered, it automatically turns face-up.</p>
+      <p><strong>Win:</strong> All four foundations built from Ace to King.</p>
+    `,
+  },
   hearts: {
     title: "Hearts",
     html: `
