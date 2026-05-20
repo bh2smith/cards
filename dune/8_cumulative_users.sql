@@ -1,10 +1,10 @@
 -- Cumulative unique players over time
 WITH results AS (
     SELECT evt_block_time, player
-    FROM card_circles_gnosis.CardRoomLeaderboard_evt_GameResult
+    FROM card_circles_gnosis.leaderboardv0_evt_gameresult
     UNION ALL
     SELECT evt_block_time, player
-    FROM card_circles_gnosis.CardRoomLeaderboardV2_evt_GameResult
+    FROM card_circles_gnosis.leaderboard_evt_gameresult
 ),
 first_seen AS (
     SELECT

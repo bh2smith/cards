@@ -21,7 +21,7 @@ results AS (
         cardsRemaining,
         timestamp,
         'v1' AS contract_version
-    FROM card_circles_gnosis.CardRoomLeaderboard_evt_GameResult
+    FROM card_circles_gnosis.leaderboardv0_evt_gameresult
 
     UNION ALL
 
@@ -34,7 +34,7 @@ results AS (
         cardsRemaining,
         timestamp,
         'v2' AS contract_version
-    FROM card_circles_gnosis.CardRoomLeaderboardV2_evt_GameResult
+    FROM card_circles_gnosis.leaderboard_evt_gameresult
 )
 SELECT
     r.evt_block_time,

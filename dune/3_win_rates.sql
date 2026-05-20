@@ -12,10 +12,10 @@ WITH game_names AS (
 ),
 results AS (
     SELECT gameId, won, cardsRemaining
-    FROM card_circles_gnosis.CardRoomLeaderboard_evt_GameResult
+    FROM card_circles_gnosis.leaderboardv0_evt_gameresult
     UNION ALL
     SELECT gameId, won, cardsRemaining
-    FROM card_circles_gnosis.CardRoomLeaderboardV2_evt_GameResult
+    FROM card_circles_gnosis.leaderboard_evt_gameresult
 )
 SELECT
     g.game_name,

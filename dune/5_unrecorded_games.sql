@@ -12,9 +12,9 @@ WITH payments AS (
 recorded AS (
     SELECT player, COUNT(*) AS games_recorded
     FROM (
-        SELECT player FROM card_circles_gnosis.CardRoomLeaderboard_evt_GameResult
+        SELECT player FROM card_circles_gnosis.leaderboardv0_evt_gameresult
         UNION ALL
-        SELECT player FROM card_circles_gnosis.CardRoomLeaderboardV2_evt_GameResult
+        SELECT player FROM card_circles_gnosis.leaderboard_evt_gameresult
     ) r
     GROUP BY 1
 )

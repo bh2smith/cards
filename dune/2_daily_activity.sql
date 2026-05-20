@@ -8,10 +8,10 @@ WITH game_names AS (
 ),
 results AS (
     SELECT evt_block_time, player, gameId
-    FROM card_circles_gnosis.CardRoomLeaderboard_evt_GameResult
+    FROM card_circles_gnosis.leaderboardv0_evt_gameresult
     UNION ALL
     SELECT evt_block_time, player, gameId
-    FROM card_circles_gnosis.CardRoomLeaderboardV2_evt_GameResult
+    FROM card_circles_gnosis.leaderboard_evt_gameresult
 )
 SELECT
     DATE_TRUNC('day', r.evt_block_time) AS day,
