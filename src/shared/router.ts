@@ -11,8 +11,21 @@ interface Destroyable {
   destroy?(): void;
 }
 
+interface GameEntry {
+  id: string;
+  label: string;
+  description: string;
+  available: boolean;
+}
+
+interface Category {
+  name: string;
+  games: GameEntry[];
+}
+
 const registry = new Map<string, GameMeta>();
 let current: Destroyable | null = null;
+let openSection: string | null = null;
 
 export const router = {
   register(
@@ -46,56 +59,88 @@ function handle(): void {
   }
 }
 
-function renderLobby(): void {
-  const app = document.getElementById("app")!;
+function gameEntry(id: string, label: string, description: string): GameEntry {
+  return {
+    id,
+    label,
+    description,
+    available: registry.get(id)?.available ?? false,
+  };
+}
 
-  const allGames: Array<{
-    id: string;
-    label: string;
-    description: string;
-    available: boolean;
-  }> = [
+function getCategories(): Category[] {
+  return [
     {
-      id: "cribbage",
-      label: "Cribbage",
-      description:
-        "Score points through pegging and showing your hand. First to 121 wins.",
-      available: registry.get("cribbage")?.available ?? false,
+      name: "Solitaire",
+      games: [
+        gameEntry(
+          "golf",
+          "Golf Solitaire",
+          "Clear the tableau by playing cards one rank above or below the waste top.",
+        ),
+        gameEntry(
+          "pyramid",
+          "Pyramid",
+          "Pair exposed cards that sum to 13 to clear the pyramid.",
+        ),
+        gameEntry(
+          "klondike",
+          "Klondike",
+          "The classic. Build four foundation piles from Ace to King by suit.",
+        ),
+        gameEntry(
+          "freecell",
+          "Freecell",
+          "All cards face-up. Use four free cells to maneuver cards to the foundations.",
+        ),
+      ],
     },
     {
-      id: "golf",
-      label: "Golf Solitaire",
-      description:
-        "Clear the tableau by playing cards one rank above or below the waste top.",
-      available: registry.get("golf")?.available ?? false,
+      name: "Head-to-Head",
+      games: [
+        gameEntry(
+          "cribbage",
+          "Cribbage",
+          "Score points through pegging and showing your hand. First to 121 wins.",
+        ),
+        gameEntry(
+          "gin",
+          "Gin Rummy",
+          "Form melds and knock before the bot does. Score runs and sets.",
+        ),
+        gameEntry(
+          "blackjack",
+          "Blackjack",
+          "Beat the dealer. Get as close to 21 as you can without going bust.",
+        ),
+        gameEntry(
+          "crazy-eights",
+          "Crazy Eights",
+          "Match the suit or rank. Play an eight to change suits. First to empty wins.",
+        ),
+      ],
     },
     {
-      id: "blackjack",
-      label: "Blackjack",
-      description:
-        "Beat the dealer. Get as close to 21 as you can without going bust.",
-      available: registry.get("blackjack")?.available ?? false,
-    },
-    {
-      id: "pyramid",
-      label: "Pyramid",
-      description: "Pair exposed cards that sum to 13 to clear the pyramid.",
-      available: registry.get("pyramid")?.available ?? false,
-    },
-    {
-      id: "gin",
-      label: "Gin Rummy",
-      description:
-        "Form melds and knock before the bot does. Score runs and sets.",
-      available: registry.get("gin")?.available ?? false,
-    },
-    {
-      id: "hearts",
-      label: "Hearts",
-      description: "Avoid hearts and the queen of spades across 4 players.",
-      available: registry.get("hearts")?.available ?? false,
+      name: "Trick-Taking",
+      games: [
+        gameEntry(
+          "hearts",
+          "Hearts",
+          "Avoid hearts and the queen of spades across 4 players.",
+        ),
+        gameEntry(
+          "spades",
+          "Spades",
+          "Bid and take tricks with your partner. Spades are always trump.",
+        ),
+      ],
     },
   ];
+}
+
+function renderLobby(): void {
+  const app = document.getElementById("app")!;
+  const categories = getCategories();
 
   app.innerHTML = `
     <div class="lobby">
@@ -103,16 +148,31 @@ function renderLobby(): void {
         <h1>The Card Room</h1>
         <p class="lobby-subtitle">Choose your game</p>
       </div>
-      <div class="lobby-grid">
-        ${allGames
-          .map(
-            (g) => `
-          <div class="game-card ${g.available ? "available" : "coming-soon"}" ${g.available ? `data-game="${g.id}"` : ""}>
-            <div class="game-card-name">${g.label}</div>
-            <div class="game-card-desc">${g.description}</div>
-            ${!g.available ? '<div class="game-badge">Coming Soon</div>' : ""}
-          </div>`,
-          )
+      <div class="lobby-categories">
+        ${categories
+          .map((cat) => {
+            const collapsed = openSection !== cat.name;
+            return `
+            <div class="lobby-category">
+              <button class="category-header" data-category="${cat.name}" aria-expanded="${!collapsed}">
+                <span class="category-name">${cat.name}</span>
+                <span class="category-count">${cat.games.filter((g) => g.available).length}/${cat.games.length}</span>
+                <span class="category-chevron">${collapsed ? "▸" : "▾"}</span>
+              </button>
+              <div class="lobby-grid ${collapsed ? "collapsed" : ""}">
+                ${cat.games
+                  .map(
+                    (g) => `
+                  <div class="game-card ${g.available ? "available" : "coming-soon"}" ${g.available ? `data-game="${g.id}"` : ""}>
+                    <div class="game-card-name">${g.label}</div>
+                    <div class="game-card-desc">${g.description}</div>
+                    ${!g.available ? '<div class="game-badge">Coming Soon</div>' : ""}
+                  </div>`,
+                  )
+                  .join("")}
+              </div>
+            </div>`;
+          })
           .join("")}
       </div>
       <div class="lobby-footer">
@@ -124,6 +184,14 @@ function renderLobby(): void {
   app.querySelectorAll<HTMLElement>(".game-card.available").forEach((el) => {
     el.addEventListener("click", () => {
       location.hash = `/${el.dataset.game}`;
+    });
+  });
+
+  app.querySelectorAll<HTMLElement>(".category-header").forEach((el) => {
+    el.addEventListener("click", () => {
+      const name = el.dataset.category!;
+      openSection = openSection === name ? null : name;
+      renderLobby();
     });
   });
 
