@@ -20,6 +20,7 @@ const GAME_TABS: Array<{ id: GameIdValue; label: string; solo: boolean }> = [
   { id: GameId.Blackjack, label: "Blackjack", solo: false },
   { id: GameId.GinRummy, label: "Gin Rummy", solo: false },
   { id: GameId.Hearts, label: "Hearts", solo: false },
+  { id: GameId.Klondike, label: "Klondike", solo: true },
 ];
 
 function shortAddr(addr: string): string {
