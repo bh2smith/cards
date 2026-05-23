@@ -274,6 +274,31 @@ export class KlondikeGame {
     return -1;
   }
 
+  canAutoComplete(): boolean {
+    if (this.state.phase !== "PLAYING") return false;
+    if (this.state.stock.length > 0 || this.state.waste.length > 0)
+      return false;
+    return this.state.tableau.every((col) => col.faceDown.length === 0);
+  }
+
+  autoCompleteStep(): boolean {
+    if (this.state.phase !== "PLAYING") return false;
+
+    for (let colIdx = 0; colIdx < this.state.tableau.length; colIdx++) {
+      const col = this.state.tableau[colIdx]!;
+      if (col.faceUp.length === 0) continue;
+      const card = col.faceUp[col.faceUp.length - 1]!;
+      const foundIdx = this.canAutoFoundation(card);
+      if (foundIdx >= 0) {
+        this.state.foundations[foundIdx]!.push(col.faceUp.pop()!);
+        this.state.moves++;
+        this.checkWin();
+        return true;
+      }
+    }
+    return false;
+  }
+
   giveUp(): void {
     if (this.state.phase !== "PLAYING") return;
     this.state.won = false;

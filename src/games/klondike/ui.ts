@@ -11,6 +11,7 @@ const FOUNDATION_SUITS = [Suit.Clubs, Suit.Spades, Suit.Diamonds, Suit.Hearts];
 export class KlondikeUI {
   private game: KlondikeGame;
   private reporter = new LeaderboardReporter(GameId.Klondike);
+  private autoCompleteTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor() {
     document.getElementById("app")!.innerHTML = KlondikeUI.template();
