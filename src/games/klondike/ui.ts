@@ -22,6 +22,7 @@ export class KlondikeUI {
   }
 
   destroy(): void {
+    if (this.autoCompleteTimer) clearInterval(this.autoCompleteTimer);
     document.getElementById("app")!.innerHTML = "";
   }
 
@@ -101,11 +102,13 @@ export class KlondikeUI {
   }
 
   private onStockClick(): void {
+    if (this.autoCompleteTimer) return;
     this.game.drawStock();
     this.render();
   }
 
   private onWasteClick(): void {
+    if (this.autoCompleteTimer) return;
     const state = this.game.getState();
     if (state.waste.length === 0) return;
 
@@ -125,6 +128,7 @@ export class KlondikeUI {
   }
 
   private onFoundationClick(e: Event): void {
+    if (this.autoCompleteTimer) return;
     const target = (e.target as HTMLElement).closest(
       ".klondike-foundation",
     ) as HTMLElement;
@@ -136,6 +140,7 @@ export class KlondikeUI {
   }
 
   private onTableauClick(e: Event): void {
+    if (this.autoCompleteTimer) return;
     const target = e.target as HTMLElement;
 
     // Check if clicking a face-up card
@@ -207,6 +212,17 @@ export class KlondikeUI {
     this.renderWaste();
     this.renderTableau();
     this.renderActionButton();
+
+    if (!this.autoCompleteTimer && this.game.canAutoComplete()) {
+      this.$("message").textContent = "Auto-completing...";
+      this.autoCompleteTimer = setInterval(() => {
+        if (!this.game.autoCompleteStep()) {
+          clearInterval(this.autoCompleteTimer!);
+          this.autoCompleteTimer = null;
+        }
+        this.render();
+      }, 150);
+    }
   }
 
   private renderFoundations(): void {
