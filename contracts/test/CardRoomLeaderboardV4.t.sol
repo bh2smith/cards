@@ -104,7 +104,7 @@ contract CardRoomLeaderboardV4Test is Test {
         address[] memory players = new address[](1);
         players[0] = alice;
 
-        vm.prank(owner);
+        vm.prank(bob);
         board.resolveAbandoned(KLONDIKE, players);
 
         assertEq(board.gameStartedAt(KLONDIKE, alice), 0);
@@ -124,7 +124,7 @@ contract CardRoomLeaderboardV4Test is Test {
         address[] memory players = new address[](1);
         players[0] = alice;
 
-        vm.prank(owner);
+        vm.prank(bob);
         board.resolveAbandoned(CRIBBAGE, players);
 
         assertEq(board.gameStartedAt(CRIBBAGE, alice), 0);
@@ -147,7 +147,6 @@ contract CardRoomLeaderboardV4Test is Test {
         players[0] = alice;
         players[1] = bob;
 
-        vm.prank(owner);
         board.resolveAbandoned(GOLF, players);
 
         assertEq(board.gameStartedAt(GOLF, alice), 0);
@@ -163,20 +162,20 @@ contract CardRoomLeaderboardV4Test is Test {
         address[] memory players = new address[](1);
         players[0] = alice;
 
-        vm.prank(owner);
         vm.expectRevert("No active game");
         board.resolveAbandoned(GOLF, players);
     }
 
-    function test_resolveAbandoned_revert_notOwner() public {
+    function test_resolveAbandoned_revert_notYetAbandoned() public {
         vm.prank(alice);
         board.startGame(GOLF);
+
+        vm.warp(block.timestamp + 1800);
 
         address[] memory players = new address[](1);
         players[0] = alice;
 
-        vm.prank(alice);
-        vm.expectRevert();
+        vm.expectRevert("Not yet abandoned");
         board.resolveAbandoned(GOLF, players);
     }
 
@@ -189,7 +188,6 @@ contract CardRoomLeaderboardV4Test is Test {
         address[] memory players = new address[](1);
         players[0] = alice;
 
-        vm.prank(owner);
         vm.expectEmit(true, true, false, true);
         emit CardRoomLeaderboardV4.GameAbandoned(KLONDIKE, alice, block.timestamp);
         board.resolveAbandoned(KLONDIKE, players);
@@ -204,7 +202,6 @@ contract CardRoomLeaderboardV4Test is Test {
         address[] memory players = new address[](1);
         players[0] = alice;
 
-        vm.prank(owner);
         board.resolveAbandoned(KLONDIKE, players);
 
         (address[] memory top,) = board.getTop(KLONDIKE);
@@ -222,7 +219,6 @@ contract CardRoomLeaderboardV4Test is Test {
 
         address[] memory players = new address[](1);
         players[0] = alice;
-        vm.prank(owner);
         board.resolveAbandoned(GOLF, players);
 
         vm.warp(block.timestamp + 30);
@@ -236,6 +232,22 @@ contract CardRoomLeaderboardV4Test is Test {
         assertEq(s.wins, 1);
         assertEq(s.losses, 1);
         assertEq(s.gamesPlayed, 2);
+    }
+
+    // ─── setAbandonmentTimeout ───
+
+    function test_setAbandonmentTimeout() public {
+        assertEq(board.abandonmentTimeout(), 1 hours);
+
+        vm.prank(owner);
+        board.setAbandonmentTimeout(2 hours);
+        assertEq(board.abandonmentTimeout(), 2 hours);
+    }
+
+    function test_setAbandonmentTimeout_revert_notOwner() public {
+        vm.prank(alice);
+        vm.expectRevert();
+        board.setAbandonmentTimeout(2 hours);
     }
 
     // ─── Upgrade from V3 ───

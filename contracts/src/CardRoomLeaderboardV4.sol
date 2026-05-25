@@ -50,6 +50,7 @@ contract CardRoomLeaderboardV4 is Initializable, UUPSUpgradeable, OwnableUpgrade
 
     // --- V4 storage ---
     mapping(uint8 => mapping(address => uint64)) public gameStartedAt;
+    uint32 public abandonmentTimeout;
 
     event GameResult(uint8 indexed gameId, address indexed player, bool won, uint8 cardsRemaining, uint256 timestamp);
     event GameAdded(uint8 indexed gameId, bool solo, uint32 minDurationSec);
@@ -81,6 +82,8 @@ contract CardRoomLeaderboardV4 is Initializable, UUPSUpgradeable, OwnableUpgrade
         maxCards[GOLF] = MAX_GOLF_CARDS;
         maxCards[PYRAMID] = MAX_PYRAMID_CARDS;
         maxCards[KLONDIKE] = MAX_KLONDIKE_CARDS;
+
+        abandonmentTimeout = 1 hours;
     }
 
     function initializeV3() external reinitializer(2) {
@@ -93,7 +96,9 @@ contract CardRoomLeaderboardV4 is Initializable, UUPSUpgradeable, OwnableUpgrade
         maxCards[KLONDIKE] = MAX_KLONDIKE_CARDS;
     }
 
-    function initializeV4() external reinitializer(3) {}
+    function initializeV4() external reinitializer(3) {
+        abandonmentTimeout = 1 hours;
+    }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}
 
@@ -141,11 +146,17 @@ contract CardRoomLeaderboardV4 is Initializable, UUPSUpgradeable, OwnableUpgrade
         }
     }
 
-    function resolveAbandoned(uint8 gameId, address[] calldata players) external onlyOwner {
+    function setAbandonmentTimeout(uint32 timeout) external onlyOwner {
+        abandonmentTimeout = timeout;
+    }
+
+    function resolveAbandoned(uint8 gameId, address[] calldata players) external {
         require(gameId < gameCount, "Invalid game");
         for (uint256 i = 0; i < players.length; i++) {
             address player = players[i];
-            require(gameStartedAt[gameId][player] != 0, "No active game");
+            uint64 startedAt = gameStartedAt[gameId][player];
+            require(startedAt != 0, "No active game");
+            require(block.timestamp - startedAt >= abandonmentTimeout, "Not yet abandoned");
 
             PlayerStats storage s = stats[gameId][player];
             s.losses++;
