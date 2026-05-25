@@ -56,6 +56,15 @@ function parseStats(raw: {
   };
 }
 
+export function encodeStartGame(gameId: GameIdValue): Transaction {
+  const data = encodeFunctionData({
+    abi: leaderboardAbi,
+    functionName: "startGame",
+    args: [gameId],
+  });
+  return { to: LEADERBOARD_ADDRESS, data };
+}
+
 export async function submitSoloResult(
   gameId: GameIdValue,
   won: boolean,

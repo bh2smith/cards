@@ -10,6 +10,7 @@ import { circlesConfig } from "@aboutcircles/sdk-core";
 import { CirclesRpc } from "@aboutcircles/sdk-rpc";
 import { TransferBuilder } from "@aboutcircles/sdk-transfers";
 import { TREASURY_ADDRESS, GNOSIS_GROUP, CIRCLES_RPC } from "./config";
+import { encodeStartGame, type GameIdValue } from "./leaderboard";
 
 const ONE_CRC = BigInt(1e18);
 const config = circlesConfig[100]!;
@@ -64,6 +65,29 @@ export async function chargeEntryFee(): Promise<string[]> {
     data: tx.data,
     value: tx.value ? `0x${tx.value.toString(16)}` : undefined,
   }));
+
+  return sendTransactions(miniappTxs);
+}
+
+export async function chargeEntryFeeWithStartGame(
+  gameId: GameIdValue,
+): Promise<string[]> {
+  if (!connectedAddress) throw new Error("Wallet not connected");
+
+  const builder = new TransferBuilder(config);
+  const txs = await builder.constructAdvancedTransfer(
+    connectedAddress,
+    TREASURY_ADDRESS,
+    ONE_CRC,
+  );
+
+  const miniappTxs: Transaction[] = txs.map((tx) => ({
+    to: tx.to,
+    data: tx.data,
+    value: tx.value ? `0x${tx.value.toString(16)}` : undefined,
+  }));
+
+  miniappTxs.push(encodeStartGame(gameId));
 
   return sendTransactions(miniappTxs);
 }

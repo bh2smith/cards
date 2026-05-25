@@ -8,6 +8,7 @@ import { HeartsUI } from "./games/hearts/ui";
 import { KlondikeUI } from "./games/klondike/ui";
 import { initMiniapp } from "./shared/circles/miniapp";
 import { withEntryGate } from "./shared/circles/entryGate";
+import { GameId } from "./shared/circles/leaderboard";
 import { mountSettings } from "./shared/ui/settings-modal";
 
 initMiniapp();
@@ -17,42 +18,42 @@ router.register(
   "cribbage",
   "Cribbage",
   "Score points through pegging and showing your hand. First to 121 wins.",
-  withEntryGate(() => new CribbageUI()),
+  withEntryGate(GameId.Cribbage, () => new CribbageUI()),
 );
 
 router.register(
   "golf",
   "Golf Solitaire",
   "Clear the tableau by playing cards one rank above or below the waste top.",
-  withEntryGate(() => new GolfUI()),
+  withEntryGate(GameId.Golf, () => new GolfUI()),
 );
 
 router.register(
   "blackjack",
   "Blackjack",
   "Beat the dealer. Get as close to 21 as you can without going bust.",
-  withEntryGate(() => new BlackjackUI()),
+  withEntryGate(GameId.Blackjack, () => new BlackjackUI()),
 );
 
 router.register(
   "pyramid",
   "Pyramid",
   "Pair exposed cards that sum to 13 to clear the pyramid.",
-  withEntryGate(() => new PyramidUI()),
+  withEntryGate(GameId.Pyramid, () => new PyramidUI()),
 );
 
 router.register(
   "gin",
   "Gin Rummy",
   "Form melds and knock before the bot does. Score runs and sets.",
-  withEntryGate(() => new GinRummyUI()),
+  withEntryGate(GameId.GinRummy, () => new GinRummyUI()),
 );
 
 router.register(
   "hearts",
   "Hearts",
   "Avoid hearts and the queen of spades across 4 players.",
-  withEntryGate(() => new HeartsUI()),
+  withEntryGate(GameId.Hearts, () => new HeartsUI()),
 );
 
 router.register(

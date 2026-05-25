@@ -1,6 +1,13 @@
 export const leaderboardAbi = [
   {
     type: "function",
+    name: "startGame",
+    inputs: [{ name: "gameId", type: "uint8" }],
+    outputs: [],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
     name: "recordSoloResult",
     inputs: [
       { name: "gameId", type: "uint8" },
