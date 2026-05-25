@@ -83,7 +83,7 @@ contract CardRoomLeaderboardV4 is Initializable, UUPSUpgradeable, OwnableUpgrade
         maxCards[PYRAMID] = MAX_PYRAMID_CARDS;
         maxCards[KLONDIKE] = MAX_KLONDIKE_CARDS;
 
-        abandonmentTimeout = 1 hours;
+        abandonmentTimeout = 24 hours;
     }
 
     function initializeV3() external reinitializer(2) {
@@ -97,7 +97,7 @@ contract CardRoomLeaderboardV4 is Initializable, UUPSUpgradeable, OwnableUpgrade
     }
 
     function initializeV4() external reinitializer(3) {
-        abandonmentTimeout = 1 hours;
+        abandonmentTimeout = 24 hours;
     }
 
     function _authorizeUpgrade(address) internal override onlyOwner {}

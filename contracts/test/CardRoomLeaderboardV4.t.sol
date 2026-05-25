@@ -99,7 +99,7 @@ contract CardRoomLeaderboardV4Test is Test {
         vm.prank(alice);
         board.startGame(KLONDIKE);
 
-        vm.warp(block.timestamp + 3600);
+        vm.warp(block.timestamp + 86400);
 
         address[] memory players = new address[](1);
         players[0] = alice;
@@ -119,7 +119,7 @@ contract CardRoomLeaderboardV4Test is Test {
         vm.prank(alice);
         board.startGame(CRIBBAGE);
 
-        vm.warp(block.timestamp + 3600);
+        vm.warp(block.timestamp + 86400);
 
         address[] memory players = new address[](1);
         players[0] = alice;
@@ -141,7 +141,7 @@ contract CardRoomLeaderboardV4Test is Test {
         vm.prank(bob);
         board.startGame(GOLF);
 
-        vm.warp(block.timestamp + 3600);
+        vm.warp(block.timestamp + 86400);
 
         address[] memory players = new address[](2);
         players[0] = alice;
@@ -183,7 +183,7 @@ contract CardRoomLeaderboardV4Test is Test {
         vm.prank(alice);
         board.startGame(KLONDIKE);
 
-        vm.warp(block.timestamp + 3600);
+        vm.warp(block.timestamp + 86400);
 
         address[] memory players = new address[](1);
         players[0] = alice;
@@ -197,7 +197,7 @@ contract CardRoomLeaderboardV4Test is Test {
         vm.prank(alice);
         board.startGame(KLONDIKE);
 
-        vm.warp(block.timestamp + 3600);
+        vm.warp(block.timestamp + 86400);
 
         address[] memory players = new address[](1);
         players[0] = alice;
@@ -215,7 +215,7 @@ contract CardRoomLeaderboardV4Test is Test {
         vm.prank(alice);
         board.startGame(GOLF);
 
-        vm.warp(block.timestamp + 3600);
+        vm.warp(block.timestamp + 86400);
 
         address[] memory players = new address[](1);
         players[0] = alice;
@@ -237,7 +237,7 @@ contract CardRoomLeaderboardV4Test is Test {
     // ─── setAbandonmentTimeout ───
 
     function test_setAbandonmentTimeout() public {
-        assertEq(board.abandonmentTimeout(), 1 hours);
+        assertEq(board.abandonmentTimeout(), 24 hours);
 
         vm.prank(owner);
         board.setAbandonmentTimeout(2 hours);
