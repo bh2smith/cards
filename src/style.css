@@ -2530,40 +2530,20 @@ body.reduce-motion #action-btn {
 /* ── FACE CARDS ── */
 
 .card.face-card:not(.face-down) {
-  background: linear-gradient(175deg, var(--card-face) 20%, #efe0be 100%);
+  background: transparent;
+  padding: 0;
+  overflow: hidden;
 }
 
 .card.face-card::after {
-  content: "";
-  position: absolute;
-  inset: 3px;
-  border: 1px solid currentColor;
-  border-radius: 2px;
-  opacity: 0.08;
-  pointer-events: none;
-}
-
-.card.small.face-card::after {
-  inset: 2px;
-}
-
-.card.face-card .card-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
+  display: none;
 }
 
 .face-portrait {
   display: block;
-  width: 1.8em;
-  height: auto;
-}
-
-body.light-theme .card.face-card:not(.face-down) {
-  background: linear-gradient(175deg, #ffffff 20%, #f5ecd4 100%);
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
 }
 
 /* ── CRIBBAGE LAYOUT ── */
