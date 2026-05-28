@@ -39,5 +39,7 @@ await Bun.write("./dist/index.html", distHtml);
 cpSync("./src/manifest.json", "./dist/manifest.json");
 cpSync("./src/sw.js", "./dist/sw.js");
 cpSync("./src/icon.svg", "./dist/icon.svg");
+mkdirSync("./dist/assets", { recursive: true });
+cpSync("./src/assets/svg-cards.svg", "./dist/assets/svg-cards.svg");
 
 console.log("Build complete → dist/");

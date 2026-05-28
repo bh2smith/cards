@@ -2526,3 +2526,262 @@ body.reduce-motion #action-btn {
     padding: 10px 16px;
   }
 }
+
+/* ── FACE CARDS ── */
+
+.card.face-card:not(.face-down) {
+  background: transparent;
+  padding: 0;
+  overflow: hidden;
+}
+
+.card.face-card::after {
+  display: none;
+}
+
+.face-portrait {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+/* ── CRIBBAGE LAYOUT ── */
+
+.cribbage {
+  --crib-card-w: 88px;
+  --crib-card-h: 127px;
+  --crib-card-overlap: -36px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  gap: 6px;
+}
+
+/* -- Compact scorebar -- */
+
+.crib-scorebar {
+  padding: 6px 10px;
+  background: linear-gradient(155deg, var(--wood-mid) 0%, var(--wood) 100%);
+  border-radius: 6px;
+  border: 1px solid var(--wood-border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  flex-shrink: 0;
+}
+
+.crib-scores {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.crib-score-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.crib-score-name {
+  font-family: "Cinzel", serif;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--cream-dim);
+  min-width: 28px;
+}
+
+.crib-dealer-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1px solid rgba(201, 162, 39, 0.2);
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.crib-dealer-dot.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  box-shadow: 0 0 6px var(--gold-glow);
+}
+
+.crib-scorebar .board-track {
+  height: 5px;
+  margin-bottom: 0;
+  flex: 1;
+}
+
+.crib-scorebar .board-track::after {
+  display: none;
+}
+
+.crib-scorebar .board-peg::after {
+  display: none;
+}
+
+.crib-score-val {
+  font-family: "Cinzel", serif;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--cream);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  min-width: 26px;
+  text-align: right;
+}
+
+/* -- Larger cards for cribbage -- */
+
+.cribbage .hand-area {
+  min-height: calc(var(--crib-card-h) + 4px);
+}
+
+.cribbage .hand-area .card,
+.cribbage .hand-area .card.face-down {
+  width: var(--crib-card-w);
+  height: var(--crib-card-h);
+}
+
+.cribbage .hand-area .card .card-corner {
+  font-size: 16px;
+}
+
+.cribbage .hand-area .card .card-center {
+  font-size: 30px;
+}
+
+.cribbage .hand-area .card {
+  margin-left: var(--crib-card-overlap);
+}
+
+.cribbage .hand-area .card:first-child {
+  margin-left: 0;
+}
+
+/* -- Crib drop zone -- */
+
+#crib-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.crib-zone-label {
+  font-family: "Cinzel", serif;
+  font-size: 8px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.crib-zone-cards {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  align-items: center;
+}
+
+.crib-zone-cards .card {
+  width: 58px !important;
+  height: 84px !important;
+  animation: card-to-crib 0.2s ease-out;
+  cursor: pointer;
+}
+
+.crib-zone-cards .card .card-corner {
+  font-size: 11px !important;
+}
+
+.crib-zone-cards .card .card-center {
+  font-size: 18px !important;
+}
+
+.crib-slot {
+  width: 58px;
+  height: 84px;
+  border: 1.5px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.crib-zone-hint {
+  font-family: "Crimson Pro", serif;
+  font-size: 11px;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.35);
+  margin-top: 2px;
+}
+
+@keyframes card-to-crib {
+  from {
+    transform: translateY(30px) scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* -- Cribbage play area -- */
+
+.cribbage .play-area {
+  flex: 1;
+  min-height: 100px;
+}
+
+/* -- Cribbage responsive -- */
+
+@media (max-height: 700px) {
+  .cribbage {
+    --crib-card-w: 74px;
+    --crib-card-h: 107px;
+    --crib-card-overlap: -30px;
+    gap: 4px;
+  }
+
+  .crib-scorebar {
+    padding: 4px 8px;
+  }
+
+  .crib-score-val {
+    font-size: 13px;
+  }
+
+  .cribbage .play-area {
+    min-height: 80px;
+    padding: 6px;
+  }
+
+  .crib-zone-cards .card {
+    width: 48px !important;
+    height: 70px !important;
+  }
+
+  .crib-slot {
+    width: 48px;
+    height: 70px;
+  }
+
+  .crib-zone-cards .card .card-corner {
+    font-size: 9px !important;
+  }
+
+  .crib-zone-cards .card .card-center {
+    font-size: 14px !important;
+  }
+}
+
+/* Cribbage light theme */
+body.light-theme .crib-dealer-dot {
+  border-color: rgba(140, 104, 16, 0.3);
+}
+
+body.light-theme .crib-dealer-dot.active {
+  background: var(--gold);
+  border-color: var(--gold);
+}

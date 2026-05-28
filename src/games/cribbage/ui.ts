@@ -28,58 +28,59 @@ export class CribbageUI {
 
   static template(): string {
     return `
-      <div class="header">
-        <div class="header-left">
-          <a href="#" class="back-link">← Games</a>
-          <h1>Cribbage</h1>
+      <div class="cribbage">
+        <div class="header">
+          <div class="header-left">
+            <a href="#" class="back-link">← Games</a>
+            <h1>Cribbage</h1>
+          </div>
+          <div class="header-right">
+            <button class="help-btn" id="help-btn" type="button" aria-label="How to play">?</button>
+            <button id="new-game-btn">New Game</button>
+          </div>
         </div>
-        <div class="header-right">
-          <button class="help-btn" id="help-btn" type="button" aria-label="How to play">?</button>
-          <button id="new-game-btn">New Game</button>
-        </div>
-      </div>
 
-      <div class="scoreboard">
-        <div class="score-row">
-          <span>
-            <span class="score-label">You</span>
-            <span class="dealer-tag" id="player-dealer"></span>
-          </span>
-          <span class="score-value" id="player-score">0</span>
+        <div class="crib-scorebar">
+          <div class="crib-scores">
+            <div class="crib-score-row">
+              <span class="crib-score-name">YOU</span>
+              <span class="crib-dealer-dot" id="player-dealer"></span>
+              <div class="board-track">
+                <div class="board-peg" id="player-peg"></div>
+              </div>
+              <span class="crib-score-val" id="player-score">0</span>
+            </div>
+            <div class="crib-score-row">
+              <span class="crib-score-name">CPU</span>
+              <span class="crib-dealer-dot" id="computer-dealer"></span>
+              <div class="board-track">
+                <div class="board-peg" id="computer-peg"></div>
+              </div>
+              <span class="crib-score-val" id="computer-score">0</span>
+            </div>
+          </div>
         </div>
-        <div class="board-track">
-          <div class="board-peg" id="player-peg"></div>
+
+        <div class="hand-area" id="computer-hand"></div>
+
+        <div class="play-area">
+          <div id="starter-area"></div>
+          <div id="crib-zone" class="hidden"></div>
+          <div id="pegging-area"></div>
+          <div id="pegging-count"></div>
+          <div class="scoring-info">
+            <div id="scoring-details" class="hidden"></div>
+            <div id="scoring-total" class="hidden"></div>
+          </div>
         </div>
-        <div class="score-row">
-          <span>
-            <span class="score-label">Computer</span>
-            <span class="dealer-tag" id="computer-dealer"></span>
-          </span>
-          <span class="score-value" id="computer-score">0</span>
+
+        <div class="hand-area" id="player-hand"></div>
+
+        <div class="message-bar" id="message">Welcome to Cribbage!</div>
+
+        <div class="action-area">
+          <button id="action-btn">Deal</button>
         </div>
-        <div class="board-track">
-          <div class="board-peg" id="computer-peg"></div>
-        </div>
-      </div>
-
-      <div class="hand-area" id="computer-hand"></div>
-
-      <div class="play-area">
-        <div id="starter-area"></div>
-        <div id="pegging-area"></div>
-        <div id="pegging-count"></div>
-        <div class="scoring-info">
-          <div id="scoring-details" class="hidden"></div>
-          <div id="scoring-total" class="hidden"></div>
-        </div>
-      </div>
-
-      <div class="hand-area" id="player-hand"></div>
-
-      <div class="message-bar" id="message">Welcome to Cribbage!</div>
-
-      <div class="action-area">
-        <button id="action-btn">Deal</button>
       </div>
     `;
   }
@@ -309,15 +310,20 @@ export class CribbageUI {
     this.$("computer-score").textContent = String(state.computerScore);
     this.renderBoard(state.playerScore, state.computerScore);
 
-    this.$("player-dealer").textContent =
-      state.dealer === "player" ? "(Dealer)" : "";
-    this.$("computer-dealer").textContent =
-      state.dealer === "computer" ? "(Dealer)" : "";
+    this.$("player-dealer").classList.toggle(
+      "active",
+      state.dealer === "player",
+    );
+    this.$("computer-dealer").classList.toggle(
+      "active",
+      state.dealer === "computer",
+    );
 
     this.$("message").textContent = state.message;
 
     this.renderComputerHand(state);
     this.renderStarter(state.starterCard);
+    this.renderCribZone(state);
     this.renderPeggingArea(state);
     this.renderPlayerHand(state);
     this.renderActionButton(state.phase);
@@ -362,6 +368,47 @@ export class CribbageUI {
     }
   }
 
+  private renderCribZone(state: ReturnType<CribbageGame["getState"]>): void {
+    const zone = this.$("crib-zone");
+
+    if (state.phase !== "DISCARDING") {
+      zone.classList.add("hidden");
+      return;
+    }
+
+    zone.classList.remove("hidden");
+
+    const cribOwner = state.dealer === "player" ? "Your" : "Opponent's";
+    const selected = [...this.selectedIndices].sort((a, b) => a - b);
+    const cardsHtml = selected
+      .map((i) => renderCard(state.playerHand[i], { index: i }))
+      .join("");
+    const slotsHtml = Array(2 - selected.length)
+      .fill('<div class="crib-slot"></div>')
+      .join("");
+    const hint =
+      selected.length < 2
+        ? '<div class="crib-zone-hint">Tap cards to place here</div>'
+        : "";
+
+    zone.innerHTML = `
+      <div class="crib-zone-label">${cribOwner} Crib</div>
+      <div class="crib-zone-cards">${cardsHtml}${slotsHtml}</div>
+      ${hint}
+    `;
+
+    zone.querySelectorAll(".card").forEach((el) => {
+      el.addEventListener("click", (e) => {
+        const target = e.currentTarget as HTMLElement;
+        const idx = parseInt(target.dataset.index || "-1");
+        if (idx >= 0 && this.selectedIndices.has(idx)) {
+          this.selectedIndices.delete(idx);
+          this.render();
+        }
+      });
+    });
+  }
+
   private renderPeggingArea(state: ReturnType<CribbageGame["getState"]>): void {
     const container = this.$("pegging-area");
     if (state.phase !== "PEGGING" && state.peggingPile.length === 0) {
@@ -386,14 +433,13 @@ export class CribbageUI {
     const cards = isPegging ? state.playerPeggingHand : state.playerHand;
     container.innerHTML = cards
       .map((card, i) => {
-        const selected = isDiscarding && this.selectedIndices.has(i);
+        if (isDiscarding && this.selectedIndices.has(i)) return "";
         const playable =
           isPegging &&
           state.currentTurn === "player" &&
           peggingValue(card) + state.peggingCount <= 31;
         return renderCard(card, {
           index: i,
-          selected,
           dimmed: isPegging && !playable,
         });
       })
@@ -404,13 +450,8 @@ export class CribbageUI {
         el.addEventListener("click", (e) => {
           const target = e.currentTarget as HTMLElement;
           const idx = parseInt(target.dataset.index || "-1");
-          if (idx < 0) return;
-
-          if (this.selectedIndices.has(idx)) {
-            this.selectedIndices.delete(idx);
-          } else if (this.selectedIndices.size < 2) {
-            this.selectedIndices.add(idx);
-          }
+          if (idx < 0 || this.selectedIndices.size >= 2) return;
+          this.selectedIndices.add(idx);
           this.render();
         });
       });
@@ -426,9 +467,13 @@ export class CribbageUI {
         btn.classList.remove("hidden");
         break;
       case "DISCARDING":
-        btn.textContent = `Discard to Crib (${this.selectedIndices.size}/2)`;
-        btn.disabled = this.selectedIndices.size !== 2;
-        btn.classList.remove("hidden");
+        if (this.selectedIndices.size === 2) {
+          btn.textContent = "Confirm Crib Cards";
+          btn.disabled = false;
+          btn.classList.remove("hidden");
+        } else {
+          btn.classList.add("hidden");
+        }
         break;
       case "CUTTING":
         btn.textContent = "Cut for Starter";
