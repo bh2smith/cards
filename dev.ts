@@ -11,9 +11,12 @@ Bun.serve({
     "/icon.svg": new Response(Bun.file("src/icon.svg"), {
       headers: { "Content-Type": "image/svg+xml" },
     }),
-    "/assets/svg-cards.svg": new Response(Bun.file("src/assets/svg-cards.svg"), {
-      headers: { "Content-Type": "image/svg+xml" },
-    }),
+    "/assets/svg-cards.svg": new Response(
+      Bun.file("src/assets/svg-cards.svg"),
+      {
+        headers: { "Content-Type": "image/svg+xml" },
+      },
+    ),
   },
   development: {
     hmr: true,

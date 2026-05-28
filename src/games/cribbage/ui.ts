@@ -368,9 +368,7 @@ export class CribbageUI {
     }
   }
 
-  private renderCribZone(
-    state: ReturnType<CribbageGame["getState"]>,
-  ): void {
+  private renderCribZone(state: ReturnType<CribbageGame["getState"]>): void {
     const zone = this.$("crib-zone");
 
     if (state.phase !== "DISCARDING") {
