@@ -505,6 +505,13 @@ body {
   pointer-events: none;
 }
 
+/* Hide the overlay entirely when there are no scoring details to show —
+   otherwise its dark tint paints over the play-area and looks like a
+   shadow stripe. */
+.scoring-info:has(#scoring-details.hidden) {
+  display: none;
+}
+
 #scoring-details {
   display: flex;
   flex-direction: column;
