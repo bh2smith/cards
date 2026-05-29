@@ -489,26 +489,22 @@ body {
   color: var(--cream);
 }
 
-/* ── SCORING INFO (overlay on play-area) ── */
+/* ── SCORING BOX ── */
 
-.scoring-info {
-  position: absolute;
-  inset: 0;
-  left: calc(var(--card-width) + 36px);
+.scoring-box {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  background: rgba(0, 0, 0, 0.65);
-  z-index: 2;
-  padding: 8px 12px;
-  pointer-events: none;
+  gap: 12px;
+  background: var(--wood);
+  border: 1px solid var(--wood-border);
+  border-radius: 8px;
+  padding: 6px 14px;
+  margin: 0 auto;
+  max-width: fit-content;
 }
 
-/* Hide the overlay entirely when there are no scoring details to show —
-   otherwise its dark tint paints over the play-area and looks like a
-   shadow stripe. */
-.scoring-info:has(#scoring-details.hidden) {
+.scoring-box.hidden {
   display: none;
 }
 
@@ -2331,8 +2327,9 @@ body.light-theme .message-bar {
   border-color: rgba(0, 0, 0, 0.1);
 }
 
-body.light-theme .scoring-info {
-  background: rgba(255, 255, 255, 0.75);
+body.light-theme .scoring-box {
+  background: #f0ebe0;
+  border-color: #d4c9b0;
 }
 
 body.light-theme .board-track {
@@ -2484,19 +2481,6 @@ body.reduce-motion #action-btn {
     font-size: 12px;
   }
 
-  .scoring-info {
-    left: calc(var(--card-width) + 24px);
-    gap: 6px;
-    padding: 6px 8px;
-  }
-
-  #scoring-details {
-    font-size: 11px;
-  }
-
-  #scoring-total {
-    font-size: 13px;
-  }
 }
 
 /* Hearts: ensure the table can shrink so the player hand stays visible */
@@ -2750,7 +2734,6 @@ body.reduce-motion #action-btn {
 /* -- Cribbage play area -- */
 
 .cribbage .play-area {
-  flex: 1;
   min-height: 100px;
   /* Flat felt so small pegging cards and the count stand out instead of
      competing with a bright radial spotlight. */

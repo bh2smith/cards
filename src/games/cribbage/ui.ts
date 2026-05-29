@@ -61,6 +61,11 @@ export class CribbageUI {
           </div>
         </div>
 
+        <div class="scoring-box hidden" id="scoring-box-top">
+          <div id="scoring-details-top"></div>
+          <div id="scoring-total-top"></div>
+        </div>
+
         <div class="hand-area" id="computer-hand"></div>
 
         <div class="play-area">
@@ -68,10 +73,11 @@ export class CribbageUI {
           <div id="crib-zone" class="hidden"></div>
           <div id="pegging-area"></div>
           <div id="pegging-count"></div>
-          <div class="scoring-info">
-            <div id="scoring-details" class="hidden"></div>
-            <div id="scoring-total" class="hidden"></div>
-          </div>
+        </div>
+
+        <div class="scoring-box hidden" id="scoring-box">
+          <div id="scoring-details"></div>
+          <div id="scoring-total"></div>
         </div>
 
         <div class="hand-area" id="player-hand"></div>
@@ -270,12 +276,15 @@ export class CribbageUI {
         : `<div>${name}: ${pts}</div>`;
     });
 
-    this.$("scoring-details").innerHTML = lines.length
+    const isTop = result.who === "computer";
+    const suffix = isTop ? "-top" : "";
+    const otherSuffix = isTop ? "" : "-top";
+    this.$(`scoring-box${otherSuffix}`).classList.add("hidden");
+    this.$(`scoring-details${suffix}`).innerHTML = lines.length
       ? lines.join("")
       : "<div>No points</div>";
-    this.$("scoring-details").classList.remove("hidden");
-    this.$("scoring-total").textContent = `Total: ${result.score}`;
-    this.$("scoring-total").classList.remove("hidden");
+    this.$(`scoring-total${suffix}`).textContent = `Total: ${result.score}`;
+    this.$(`scoring-box${suffix}`).classList.remove("hidden");
 
     this.render();
 
@@ -328,13 +337,13 @@ export class CribbageUI {
     this.renderPlayerHand(state);
     this.renderActionButton(state.phase);
 
-    if (
-      state.phase !== "COUNTING_NONDEALER" &&
-      state.phase !== "COUNTING_DEALER" &&
-      state.phase !== "COUNTING_CRIB"
-    ) {
-      this.$("scoring-details").classList.add("hidden");
-      this.$("scoring-total").classList.add("hidden");
+    const isCounting =
+      state.phase === "COUNTING_NONDEALER" ||
+      state.phase === "COUNTING_DEALER" ||
+      state.phase === "COUNTING_CRIB";
+    if (!isCounting) {
+      this.$("scoring-box").classList.add("hidden");
+      this.$("scoring-box-top").classList.add("hidden");
     }
   }
 
@@ -342,10 +351,22 @@ export class CribbageUI {
     state: ReturnType<CribbageGame["getState"]>,
   ): void {
     const container = this.$("computer-hand");
+
+    if (state.phase === "COUNTING_CRIB" && state.dealer === "computer") {
+      container.innerHTML = state.crib
+        .map((card, i) => renderCard(card, { index: i }))
+        .join("");
+      return;
+    }
+
+    if (state.phase === "COUNTING_CRIB" && state.dealer === "player") {
+      container.innerHTML = "";
+      return;
+    }
+
     const showCards =
       state.phase === "COUNTING_NONDEALER" ||
       state.phase === "COUNTING_DEALER" ||
-      state.phase === "COUNTING_CRIB" ||
       state.phase === "ROUND_OVER" ||
       state.phase === "GAME_OVER";
 
@@ -429,8 +450,19 @@ export class CribbageUI {
     const container = this.$("player-hand");
     const isPegging = state.phase === "PEGGING";
     const isDiscarding = state.phase === "DISCARDING";
+    const isCribCounting =
+      state.phase === "COUNTING_CRIB" && state.dealer === "player";
 
-    const cards = isPegging ? state.playerPeggingHand : state.playerHand;
+    const cards = isCribCounting
+      ? state.crib
+      : isPegging
+        ? state.playerPeggingHand
+        : state.playerHand;
+
+    if (state.phase === "COUNTING_CRIB" && state.dealer === "computer") {
+      container.innerHTML = "";
+      return;
+    }
     container.innerHTML = cards
       .map((card, i) => {
         if (isDiscarding && this.selectedIndices.has(i)) return "";
