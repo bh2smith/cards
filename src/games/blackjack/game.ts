@@ -146,13 +146,6 @@ export class BlackjackGame {
     if (isBlackjack(this.state.playerHand)) {
       this.onHandComplete();
     }
-    if (
-      this.state.activeHand === 1 &&
-      this.state.splitHand &&
-      isBlackjack(this.state.splitHand)
-    ) {
-      this.onHandComplete();
-    }
   }
 
   canDoubleDown(): boolean {
@@ -358,6 +351,10 @@ export class BlackjackGame {
         this.state.roundResult === "bust"
           ? "First hand busted. Playing second hand."
           : "Playing second hand — Hit or Stand?";
+      // Auto-complete a natural blackjack on the second hand
+      if (isBlackjack(this.state.splitHand)) {
+        this.onHandComplete();
+      }
       return;
     }
     // All hands done

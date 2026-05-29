@@ -316,20 +316,33 @@ body {
 
 #pegging-area {
   display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
+  flex-wrap: nowrap;
   justify-content: center;
+  align-items: center;
   flex: 1;
+  min-width: 0;
+}
+
+#pegging-area .card {
+  margin-left: -22px;
+}
+
+#pegging-area .card:first-child {
+  margin-left: 0;
 }
 
 #pegging-count {
   font-family: "Cinzel", serif;
-  font-size: 15px;
-  font-weight: 600;
-  min-width: 68px;
+  font-size: 16px;
+  font-weight: 700;
+  min-width: 64px;
+  padding: 4px 10px;
   text-align: center;
   color: var(--gold-light);
-  text-shadow: 0 0 12px var(--gold-glow);
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(201, 162, 39, 0.25);
+  border-radius: 6px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 
 /* ── CARDS ── */
@@ -2732,6 +2745,14 @@ body.reduce-motion #action-btn {
 .cribbage .play-area {
   flex: 1;
   min-height: 100px;
+  /* Flat felt so small pegging cards and the count stand out instead of
+     competing with a bright radial spotlight. */
+  background: var(--felt);
+}
+
+/* The dotted overlay competes with small pegging cards — drop it here. */
+.cribbage .play-area::before {
+  display: none;
 }
 
 /* -- Cribbage responsive -- */
