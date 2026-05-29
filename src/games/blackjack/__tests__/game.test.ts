@@ -268,7 +268,9 @@ describe("split", () => {
     if (afterSplit.activeHand === 1) return; // hand 0 was auto-advanced (BJ)
     g.stand();
     expect(g.getState().activeHand).toBe(1);
-    expect(g.getState().phase).toBe("PLAYER_TURN");
+    // Hand 1 is normally PLAYER_TURN, but a natural blackjack on hand 1
+    // auto-completes and jumps to DEALER_TURN (see #104 regression test).
+    expect(["PLAYER_TURN", "DEALER_TURN"]).toContain(g.getState().phase);
   });
 
   test("stand on hand 1 triggers dealer turn", () => {
@@ -277,6 +279,42 @@ describe("split", () => {
     g.split();
     if (g.getState().activeHand === 0) g.stand(); // done with hand 0
     if (g.getState().phase === "PLAYER_TURN") g.stand(); // done with hand 1
+    expect(g.getState().phase).toBe("DEALER_TURN");
+  });
+
+  test("auto-advances past natural blackjack on second hand (#104)", () => {
+    // Reproduce the soft-lock: split a pair of 10s where the new card on
+    // hand 1 is an Ace (so hand 1 is a natural blackjack, hand 0 is not).
+    // After standing on hand 0, the game must jump straight to DEALER_TURN —
+    // not sit in PLAYER_TURN on a BJ hand with no controls.
+    const g = new BlackjackGame(100);
+    const state = g.getState() as {
+      phase: string;
+      chips: number;
+      bet: number;
+      playerHand: PlayingCard[];
+      dealerHand: PlayingCard[];
+      holeRevealed: boolean;
+    };
+    state.phase = "PLAYER_TURN";
+    state.chips = 90;
+    state.bet = 10;
+    state.playerHand = [
+      card(CardName.Ten, Suit.Hearts),
+      card(CardName.Ten, Suit.Spades),
+    ];
+    state.dealerHand = [card(CardName.Seven), card(CardName.Six)];
+    state.holeRevealed = false;
+    // draw() pops from the end. First pop → hand 0 new card, second pop → hand 1.
+    (g as unknown as { deck: PlayingCard[] }).deck = [
+      card(CardName.Ace, Suit.Diamonds), // hand 1's new card → BJ
+      card(CardName.Five, Suit.Clubs), // hand 0's new card → 15
+    ];
+
+    g.split();
+    expect(g.getState().activeHand).toBe(0);
+
+    g.stand();
     expect(g.getState().phase).toBe("DEALER_TURN");
   });
 
