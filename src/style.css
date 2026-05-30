@@ -1433,7 +1433,7 @@ body {
 }
 
 .freecell-cascade-card:not(:first-child) {
-  margin-top: -72px;
+  margin-top: -60px;
 }
 
 .freecell-cascade-card .card {
@@ -1496,7 +1496,7 @@ body {
   }
 
   .freecell-cascade-card:not(:first-child) {
-    margin-top: -42px;
+    margin-top: -36px;
   }
 }
 
