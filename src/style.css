@@ -1796,6 +1796,119 @@ body {
   font-weight: 600;
 }
 
+/* ── CRAZY EIGHTS ── */
+
+.ce-bot-hand {
+  min-height: 66px;
+}
+
+.ce-play-area {
+  gap: 18px;
+  padding: 10px;
+}
+
+.ce-playable {
+  box-shadow:
+    0 0 0 2px var(--gold-light),
+    0 6px 18px rgba(201, 162, 39, 0.45);
+  border-color: var(--gold-light);
+}
+
+.ce-suit-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 40px;
+}
+
+.ce-suit-symbol {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.ce-suit-symbol.red {
+  color: #e0524f;
+}
+
+.ce-suit-symbol.black {
+  color: var(--cream);
+}
+
+.ce-suit-caption {
+  font-family: "Cinzel", serif;
+  font-size: 7px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.ce-action-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.ce-suit-picker {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  z-index: 2000;
+  padding: 16px;
+}
+
+.ce-suit-picker.hidden {
+  display: none;
+}
+
+.ce-suit-picker-title {
+  font-family: "Cinzel", serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.ce-suit-options {
+  display: flex;
+  gap: 14px;
+}
+
+.ce-suit-option {
+  width: 64px;
+  height: 80px;
+  font-size: 38px;
+  line-height: 1;
+  border-radius: var(--radius);
+  border: 1px solid var(--card-border);
+  background: var(--card-face);
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.ce-suit-option.red {
+  color: var(--card-red);
+}
+
+.ce-suit-option.black {
+  color: var(--card-black);
+}
+
+.ce-suit-option:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 0 0 2px var(--gold-light),
+    0 10px 24px rgba(0, 0, 0, 0.5);
+}
+
 /* ── HEARTS ── */
 
 .hearts-scoreboard {

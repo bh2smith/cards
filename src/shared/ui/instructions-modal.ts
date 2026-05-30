@@ -66,6 +66,16 @@ const INSTRUCTIONS: Record<string, { title: string; html: string }> = {
       <p><strong>Win:</strong> All four foundations built from Ace to King.</p>
     `,
   },
+  "crazy-eights": {
+    title: "Crazy Eights",
+    html: `
+      <p><strong>Goal:</strong> Be the first to empty your hand, then race to <strong>100 points</strong> across rounds.</p>
+      <p>On your turn, play a card that matches the top of the discard pile by <strong>suit or rank</strong>.</p>
+      <p><strong>Eights are wild</strong> — play one anytime and choose the suit that comes next.</p>
+      <p>If you can't play, draw from the stock until you can, or pass when the stock runs out.</p>
+      <p><strong>Scoring:</strong> When a player goes out, they score the value of the cards left in the opponent's hand. Eights = 50, 10/J/Q/K = 10, Ace = 1, others = face value.</p>
+    `,
+  },
   hearts: {
     title: "Hearts",
     html: `
