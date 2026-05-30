@@ -1796,6 +1796,152 @@ body {
   font-weight: 600;
 }
 
+/* ── CRAZY EIGHTS ── */
+
+.ce-bot-hand {
+  min-height: 66px;
+}
+
+.ce-play-area {
+  gap: 18px;
+  padding: 10px;
+}
+
+.ce-hand {
+  /* Extra headroom so lifted playable cards are not clipped. */
+  min-height: calc(var(--card-height) + 26px);
+  align-items: flex-end;
+  padding-bottom: 2px;
+}
+
+.ce-hand .card {
+  margin-left: -34px;
+  box-shadow:
+    0 3px 9px rgba(0, 0, 0, 0.4),
+    0 1px 2px rgba(0, 0, 0, 0.3);
+  transition:
+    transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.16s ease,
+    opacity 0.15s ease;
+}
+
+.ce-hand .card:first-child {
+  margin-left: 0;
+}
+
+.ce-hand .card.dimmed {
+  opacity: 0.5;
+}
+
+.ce-hand .ce-playable {
+  transform: translateY(-16px);
+  z-index: 2;
+  border-color: var(--gold-light);
+  box-shadow:
+    0 0 0 2px var(--gold-light),
+    0 10px 20px rgba(0, 0, 0, 0.5);
+}
+
+.ce-hand .card.ce-playable:hover {
+  transform: translateY(-24px) rotate(0deg);
+  z-index: 5;
+}
+
+.ce-suit-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 40px;
+}
+
+.ce-suit-symbol {
+  font-size: 30px;
+  line-height: 1;
+}
+
+.ce-suit-symbol.red {
+  color: #e0524f;
+}
+
+.ce-suit-symbol.black {
+  color: var(--cream);
+}
+
+.ce-suit-caption {
+  font-family: "Cinzel", serif;
+  font-size: 7px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.ce-action-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.ce-suit-picker {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  z-index: 2000;
+  padding: 16px;
+}
+
+.ce-suit-picker.hidden {
+  display: none;
+}
+
+.ce-suit-picker-title {
+  font-family: "Cinzel", serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.ce-suit-options {
+  display: flex;
+  gap: 14px;
+}
+
+.ce-suit-option {
+  width: 64px;
+  height: 80px;
+  font-size: 38px;
+  line-height: 1;
+  border-radius: var(--radius);
+  border: 1px solid var(--card-border);
+  background: var(--card-face);
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.ce-suit-option.red {
+  color: var(--card-red);
+}
+
+.ce-suit-option.black {
+  color: var(--card-black);
+}
+
+.ce-suit-option:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 0 0 2px var(--gold-light),
+    0 10px 24px rgba(0, 0, 0, 0.5);
+}
+
 /* ── HEARTS ── */
 
 .hearts-scoreboard {

@@ -6,6 +6,7 @@ import { PyramidUI } from "./games/pyramid/ui";
 import { GinRummyUI } from "./games/gin/ui";
 import { HeartsUI } from "./games/hearts/ui";
 import { KlondikeUI } from "./games/klondike/ui";
+import { CrazyEightsUI } from "./games/crazy-eights/ui";
 import { initMiniapp } from "./shared/circles/miniapp";
 import { withEntryGate } from "./shared/circles/entryGate";
 import { mountSettings } from "./shared/ui/settings-modal";
@@ -62,6 +63,13 @@ router.register(
   "Klondike",
   "The classic. Build four foundation piles from Ace to King by suit.",
   withEntryGate(() => new KlondikeUI()),
+);
+
+router.register(
+  "crazy-eights",
+  "Crazy Eights",
+  "Match the suit or rank. Play an eight to change suits. First to empty wins.",
+  withEntryGate(() => new CrazyEightsUI()),
 );
 
 router.init();
