@@ -19,6 +19,7 @@ export const GameId = {
   Hearts: 5,
   Klondike: 6,
   CrazyEights: 7,
+  Freecell: 8,
 } as const;
 
 export type GameIdValue = (typeof GameId)[keyof typeof GameId];

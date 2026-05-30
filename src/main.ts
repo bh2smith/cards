@@ -7,6 +7,7 @@ import { GinRummyUI } from "./games/gin/ui";
 import { HeartsUI } from "./games/hearts/ui";
 import { KlondikeUI } from "./games/klondike/ui";
 import { CrazyEightsUI } from "./games/crazy-eights/ui";
+import { FreecellUI } from "./games/freecell/ui";
 import { initMiniapp } from "./shared/circles/miniapp";
 import { withEntryGate } from "./shared/circles/entryGate";
 import { mountSettings } from "./shared/ui/settings-modal";
@@ -70,6 +71,13 @@ router.register(
   "Crazy Eights",
   "Match the suit or rank. Play an eight to change suits. First to empty wins.",
   withEntryGate(() => new CrazyEightsUI()),
+);
+
+router.register(
+  "freecell",
+  "Freecell",
+  "All cards face-up. Use four free cells to maneuver cards to the foundations.",
+  withEntryGate(() => new FreecellUI()),
 );
 
 router.init();

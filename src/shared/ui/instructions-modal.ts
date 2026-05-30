@@ -76,6 +76,16 @@ const INSTRUCTIONS: Record<string, { title: string; html: string }> = {
       <p><strong>Scoring:</strong> When a player goes out, they score the value of the cards left in the opponent's hand. Eights = 50, 10/J/Q/K = 10, Ace = 1, others = face value.</p>
     `,
   },
+  freecell: {
+    title: "Freecell",
+    html: `
+      <p><strong>Goal:</strong> Move all 52 cards to the four foundation piles, building each suit up from Ace to King.</p>
+      <p>All cards are dealt face-up into <strong>8 columns</strong> — every move is in plain sight.</p>
+      <p><strong>Tableau:</strong> Build down in <strong>alternating colors</strong>. Move a single card, or a sequence if you have enough room.</p>
+      <p><strong>Free cells:</strong> Four cells each hold one card as temporary storage. The number of free cells (and empty columns) limits how large a sequence you can move at once.</p>
+      <p><strong>Deals are numbered</strong> — the same number always deals the same game, so you can replay or share a deal. Use Undo and Restart freely.</p>
+    `,
+  },
   hearts: {
     title: "Hearts",
     html: `
