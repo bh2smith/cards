@@ -7,8 +7,10 @@ import {
   HAND_SIZE,
   WILD_RANK,
   WINNING_SCORE,
+  STALEMATE_RESHUFFLES,
   handValue,
   isLegalPlay,
+  sortHand,
 } from "./types";
 
 export interface BotMove {
@@ -39,6 +41,7 @@ export class CrazyEightsGame {
       discardPile: [],
       activeSuit: Suit.Clubs,
       consecutivePasses: 0,
+      reshuffles: 0,
       roundWinner: null,
       roundPoints: 0,
       message: "",
@@ -54,6 +57,7 @@ export class CrazyEightsGame {
     const deck = shuffle(createDeck());
     const playerHand = deck.slice(0, HAND_SIZE);
     const computerHand = deck.slice(HAND_SIZE, HAND_SIZE * 2);
+    sortHand(playerHand);
     let cut = HAND_SIZE * 2;
 
     // The starter must not be an eight — bury eights until a normal card turns up.
@@ -76,6 +80,7 @@ export class CrazyEightsGame {
       discardPile: [starter],
       activeSuit: starter.suit,
       consecutivePasses: 0,
+      reshuffles: 0,
       roundWinner: null,
       roundPoints: 0,
       message:
@@ -103,6 +108,11 @@ export class CrazyEightsGame {
   canPlayerDraw(): boolean {
     if (this.state.phase !== "PLAYER_TURN") return false;
     return this.legalPlays(this.state.playerHand).length === 0;
+  }
+
+  /** Whether a card can still be pulled (stock, or a reshuffleable discard). */
+  hasDrawableCard(): boolean {
+    return this.state.stock.length > 0 || this.state.discardPile.length > 1;
   }
 
   playerPlay(index: number): boolean {
@@ -148,12 +158,13 @@ export class CrazyEightsGame {
       return;
     }
     this.state.playerHand.push(this.state.stock.pop()!);
+    sortHand(this.state.playerHand);
     if (this.legalPlays(this.state.playerHand).length > 0) {
       this.state.message = "You drew a playable card.";
+    } else if (this.hasDrawableCard()) {
+      this.state.message = "Still no match — draw again.";
     } else {
-      this.state.message = "No match — draw again or pass.";
-      if (this.state.stock.length === 0) this.ensureStock();
-      if (this.state.stock.length === 0) this.passTurn("player");
+      this.state.message = "No cards left to draw — you must pass.";
     }
   }
 
@@ -191,9 +202,11 @@ export class CrazyEightsGame {
       this.state.activeSuit = card.suit;
     }
 
-    this.state.currentTurn = "player";
-    this.state.phase = "PLAYER_TURN";
-    this.state.message = "Your turn.";
+    if (!this.endRoundIfStalemated()) {
+      this.state.currentTurn = "player";
+      this.state.phase = "PLAYER_TURN";
+      this.state.message = "Your turn.";
+    }
     return { drewCount, playedCard: card, chosenSuit, passed: false };
   }
 
@@ -210,6 +223,7 @@ export class CrazyEightsGame {
   }
 
   private endPlayerTurn(): void {
+    if (this.endRoundIfStalemated()) return;
     this.state.currentTurn = "computer";
     this.state.phase = "BOT_TURN";
     this.state.message = "Computer's turn…";
@@ -234,15 +248,19 @@ export class CrazyEightsGame {
     const playerValue = handValue(this.state.playerHand);
     const computerValue = handValue(this.state.computerHand);
     if (playerValue === computerValue) {
-      this.awardRound(null, 0);
+      this.awardRound(null, 0, true);
     } else if (playerValue < computerValue) {
-      this.awardRound("player", computerValue - playerValue);
+      this.awardRound("player", computerValue - playerValue, true);
     } else {
-      this.awardRound("computer", playerValue - computerValue);
+      this.awardRound("computer", playerValue - computerValue, true);
     }
   }
 
-  private awardRound(winner: Player | null, points: number): void {
+  private awardRound(
+    winner: Player | null,
+    points: number,
+    blocked = false,
+  ): void {
     this.state.roundWinner = winner;
     this.state.roundPoints = points;
     if (winner === "player") this.state.playerScore += points;
@@ -265,6 +283,8 @@ export class CrazyEightsGame {
     this.state.phase = "ROUND_OVER";
     if (winner === null) {
       this.state.message = "Blocked round — tied. No points.";
+    } else if (blocked) {
+      this.state.message = `Round blocked — ${winner === "player" ? "you have" : "computer has"} fewer points. +${points}.`;
     } else if (winner === "player") {
       this.state.message = `You went out! +${points} points.`;
     } else {
@@ -279,5 +299,16 @@ export class CrazyEightsGame {
     const top = this.state.discardPile.pop()!;
     this.state.stock = shuffle(this.state.discardPile);
     this.state.discardPile = [top];
+    this.state.reshuffles++;
+  }
+
+  /**
+   * End the round as blocked when the stock has been reshuffled too many times,
+   * which means the remaining cards are only cycling (no one can shed).
+   */
+  private endRoundIfStalemated(): boolean {
+    if (this.state.reshuffles < STALEMATE_RESHUFFLES) return false;
+    this.resolveBlocked();
+    return true;
   }
 }

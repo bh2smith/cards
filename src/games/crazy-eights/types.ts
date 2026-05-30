@@ -23,6 +23,8 @@ export interface CrazyEightsState extends BaseGameState {
   activeSuit: Suit;
   /** Number of consecutive passes; two in a row ends a blocked round. */
   consecutivePasses: number;
+  /** Times the stock has been reshuffled this round; a cap breaks stalemates. */
+  reshuffles: number;
   roundWinner: Player | null;
   roundPoints: number;
   winner: Player | null;
@@ -30,6 +32,11 @@ export interface CrazyEightsState extends BaseGameState {
 
 export const HAND_SIZE = 7;
 export const WINNING_SCORE = 100;
+/**
+ * If the stock is reshuffled this many times in one round, the cards are just
+ * cycling (e.g. only eights remain playable) — end the round and score it.
+ */
+export const STALEMATE_RESHUFFLES = 5;
 export const WILD_RANK = CardName.Eight;
 export const WILD_VALUE = 50;
 
@@ -58,4 +65,22 @@ export function isLegalPlay(
     card.suit === activeSuit ||
     card.cardName === topRank
   );
+}
+
+const SUIT_SORT: Record<number, number> = {
+  [Suit.Clubs]: 0,
+  [Suit.Diamonds]: 1,
+  [Suit.Hearts]: 2,
+  [Suit.Spades]: 3,
+};
+
+/** Sort a hand by suit then rank, with eights pulled out to the right. */
+export function sortHand(hand: PlayingCard[]): void {
+  hand.sort((a, b) => {
+    const aWild = a.cardName === WILD_RANK ? 1 : 0;
+    const bWild = b.cardName === WILD_RANK ? 1 : 0;
+    if (aWild !== bWild) return aWild - bWild;
+    if (a.suit !== b.suit) return SUIT_SORT[a.suit]! - SUIT_SORT[b.suit]!;
+    return cardOrder(a) - cardOrder(b);
+  });
 }

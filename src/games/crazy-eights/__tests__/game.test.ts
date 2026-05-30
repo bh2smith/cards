@@ -7,6 +7,7 @@ import {
   handValue,
   isLegalPlay,
   WINNING_SCORE,
+  STALEMATE_RESHUFFLES,
 } from "../types";
 import { cardKey } from "../../../shared/deck";
 
@@ -316,6 +317,30 @@ describe("blocked round", () => {
     expect(out.phase).toBe("ROUND_OVER");
     expect(out.roundWinner).toBe("player");
     expect(out.playerScore).toBe(8); // 10 - 2
+  });
+});
+
+describe("stalemate", () => {
+  test("round ends as blocked once the reshuffle cap is hit", () => {
+    const game = new CrazyEightsGame();
+    const s = mut(game);
+    s.phase = "PLAYER_TURN";
+    s.currentTurn = "player";
+    s.discardPile = [card(CardName.Five, Suit.Clubs)];
+    s.activeSuit = Suit.Clubs;
+    s.reshuffles = STALEMATE_RESHUFFLES;
+    s.playerHand = [
+      card(CardName.Five, Suit.Hearts),
+      card(CardName.Two, Suit.Diamonds),
+    ];
+    s.computerHand = [card(CardName.King), card(CardName.King)]; // value 20
+
+    game.playerPlay(0); // plays 5♥, leaving 2♦ (value 2)
+    const out = game.getState();
+    expect(out.phase).toBe("ROUND_OVER");
+    expect(out.roundWinner).toBe("player"); // 2 < 20
+    expect(out.playerScore).toBe(18); // 20 - 2
+    expect(out.message.toLowerCase()).toContain("blocked");
   });
 });
 

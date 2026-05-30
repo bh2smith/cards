@@ -70,7 +70,7 @@ export class CrazyEightsUI {
         <div class="ce-suit-badge" id="ce-suit-badge"></div>
       </div>
 
-      <div class="hand-area" id="player-hand"></div>
+      <div class="hand-area ce-hand" id="player-hand"></div>
 
       <div class="message-bar" id="message"></div>
 
@@ -234,7 +234,7 @@ export class CrazyEightsUI {
         ? `<div class="pile-label">Stock (${state.stock.length})</div>${renderFaceDownCard()}`
         : `<div class="pile-label">Stock (0)</div><div class="card-slot"></div>`;
     stockEl.style.cursor =
-      canDraw && state.stock.length > 0 ? "pointer" : "default";
+      canDraw && this.game.hasDrawableCard() ? "pointer" : "default";
 
     const top = this.game.topCard();
     discardEl.innerHTML = `<div class="pile-label">Discard</div>${renderCard(top)}`;
@@ -268,7 +268,7 @@ export class CrazyEightsUI {
     const actionBtn = this.$("action-btn") as HTMLButtonElement;
 
     if (this.game.canPlayerDraw()) {
-      drawBtn.textContent = state.stock.length === 0 ? "Pass" : "Draw";
+      drawBtn.textContent = this.game.hasDrawableCard() ? "Draw" : "Pass";
       drawBtn.classList.remove("hidden");
     } else {
       drawBtn.classList.add("hidden");
