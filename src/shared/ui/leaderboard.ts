@@ -22,6 +22,7 @@ const GAME_TABS: Array<{ id: GameIdValue; label: string; solo: boolean }> = [
   { id: GameId.Hearts, label: "Hearts", solo: false },
   { id: GameId.Klondike, label: "Klondike", solo: true },
   { id: GameId.CrazyEights, label: "Crazy Eights", solo: false },
+  { id: GameId.Freecell, label: "Freecell", solo: true },
 ];
 
 function shortAddr(addr: string): string {

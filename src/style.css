@@ -1329,6 +1329,177 @@ body {
   background: rgba(0, 0, 0, 0.15);
 }
 
+/* ── FREECELL ── */
+
+.freecell-scoreboard {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+}
+
+.freecell-scoreboard .score-row {
+  gap: 8px;
+  margin-bottom: 0;
+}
+
+.freecell-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.freecell-cells,
+.freecell-foundations {
+  display: flex;
+  gap: 3px;
+}
+
+.freecell-cell,
+.freecell-foundation {
+  flex-shrink: 0;
+}
+
+.freecell-cell .card-slot,
+.freecell-foundation .card-slot {
+  width: var(--card-width);
+  height: var(--card-height);
+  border-radius: 6px;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.freecell-foundation .foundation-suit {
+  font-size: 22px;
+  opacity: 0.25;
+  color: var(--cream);
+}
+
+.freecell-foundation.clickable {
+  cursor: pointer;
+}
+
+.freecell-foundation.clickable .card-slot {
+  border-color: rgba(201, 162, 39, 0.35);
+}
+
+.freecell-cell .card,
+.freecell-foundation .card {
+  cursor: pointer;
+}
+
+.freecell-foundation.clickable .card:hover,
+.freecell-foundation.clickable .card-slot:hover,
+.freecell-cell .card:hover:not(.selected) {
+  box-shadow:
+    0 0 0 2px var(--gold),
+    0 4px 14px rgba(201, 162, 39, 0.4);
+}
+
+.freecell-tableau {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 0;
+}
+
+.freecell-cascade {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  flex: 1;
+  max-width: calc(var(--card-width) + 4px);
+}
+
+.freecell-cascade .freecell-empty-col {
+  width: var(--card-width);
+  height: var(--card-height);
+  border-radius: 6px;
+  border: 1px dashed rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+}
+
+.freecell-cascade-card {
+  width: var(--card-width);
+}
+
+.freecell-cascade-card:not(:first-child) {
+  margin-top: -72px;
+}
+
+.freecell-cascade-card .card {
+  cursor: pointer;
+}
+
+.freecell-cascade-card .card:hover:not(.selected) {
+  box-shadow:
+    0 0 0 2px var(--gold),
+    0 4px 14px rgba(201, 162, 39, 0.4);
+}
+
+.freecell-cascade-card .card.selected {
+  transform: translateY(-8px);
+  box-shadow:
+    0 12px 30px rgba(93, 195, 247, 0.4),
+    0 0 0 2px #5dc3f7;
+  border-color: #5dc3f7;
+  z-index: 3;
+}
+
+.freecell-actions {
+  flex-wrap: wrap;
+}
+
+/* Scale cards down so 8 columns fit on small screens. */
+@media (max-width: 519px) {
+  .freecell-top-row .card,
+  .freecell-cell .card-slot,
+  .freecell-foundation .card-slot,
+  .freecell-cascade .card,
+  .freecell-cascade-card {
+    width: 40px;
+  }
+
+  .freecell-top-row .card,
+  .freecell-cell .card-slot,
+  .freecell-foundation .card-slot,
+  .freecell-cascade .card {
+    height: 58px;
+  }
+
+  .freecell-cascade .freecell-empty-col {
+    width: 40px;
+    height: 58px;
+  }
+
+  .freecell-top-row .card-corner,
+  .freecell-cascade .card-corner {
+    font-size: 8px;
+  }
+
+  .freecell-top-row .card-center,
+  .freecell-cascade .card-center {
+    font-size: 13px;
+  }
+
+  .freecell-foundation .foundation-suit {
+    font-size: 15px;
+  }
+
+  .freecell-cascade-card:not(:first-child) {
+    margin-top: -42px;
+  }
+}
+
 /* ── PYRAMID SOLITAIRE ── */
 
 .pyramid-tableau {
