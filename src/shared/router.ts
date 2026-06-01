@@ -118,6 +118,11 @@ function getCategories(): Category[] {
           "Crazy Eights",
           "Match the suit or rank. Play an eight to change suits. First to empty wins.",
         ),
+        gameEntry(
+          "cuttle",
+          "Cuttle",
+          "A card duel. Race to 21 points while one-offs and royals disrupt your foe.",
+        ),
       ],
     },
     {
