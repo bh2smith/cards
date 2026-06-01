@@ -8,6 +8,7 @@ import { HeartsUI } from "./games/hearts/ui";
 import { KlondikeUI } from "./games/klondike/ui";
 import { CrazyEightsUI } from "./games/crazy-eights/ui";
 import { FreecellUI } from "./games/freecell/ui";
+import { CuttleUI } from "./games/cuttle/ui";
 import { initMiniapp } from "./shared/circles/miniapp";
 import { withEntryGate } from "./shared/circles/entryGate";
 import { mountSettings } from "./shared/ui/settings-modal";
@@ -78,6 +79,13 @@ router.register(
   "Freecell",
   "All cards face-up. Use four free cells to maneuver cards to the foundations.",
   withEntryGate(() => new FreecellUI()),
+);
+
+router.register(
+  "cuttle",
+  "Cuttle",
+  "A combative duel. Race to 21 points with number cards while royals and one-off effects disrupt your opponent.",
+  withEntryGate(() => new CuttleUI()),
 );
 
 router.init();

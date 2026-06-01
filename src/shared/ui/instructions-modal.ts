@@ -96,6 +96,16 @@ const INSTRUCTIONS: Record<string, { title: string; html: string }> = {
       <p><strong>Shoot the Moon:</strong> Take all 26 penalty points and everyone else gets 26 instead.</p>
     `,
   },
+  cuttle: {
+    title: "Cuttle",
+    html: `
+      <p><strong>Goal:</strong> Be first to have <strong>21 points</strong> of number cards on your field. Each turn, take exactly one action.</p>
+      <p><strong>Points:</strong> Play a number card (A–10) face-up for its value. <strong>Scuttle:</strong> play a number card on an opponent's lower point card to scrap both (ties broken by suit ♣&lt;♦&lt;♥&lt;♠).</p>
+      <p><strong>Royals:</strong> <strong>King</strong> lowers your win target (14 / 10 / 5 / 0 for 1–4 kings). <strong>Queen</strong> protects your other cards from Twos, Nines and Jacks. <strong>Jack</strong> steals an opponent's point card. <strong>Glasses (8)</strong> reveals their hand.</p>
+      <p><strong>One-offs</strong> (resolve, then scrap): <strong>A</strong> scrap all points · <strong>2</strong> scrap a royal <em>or</em> counter a one-off · <strong>3</strong> take a card from the scrap · <strong>4</strong> opponent discards two · <strong>5</strong> draw three · <strong>6</strong> scrap all royals · <strong>7</strong> dig the deck and play a card · <strong>9</strong> bounce a card back to hand.</p>
+      <p><strong>Counters:</strong> A Two can counter any one-off — and a Two can counter a Two. The effect lands only if an even number of Twos end the stack.</p>
+    `,
+  },
 };
 
 let backdrop: HTMLElement | null = null;

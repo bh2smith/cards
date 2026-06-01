@@ -3112,3 +3112,218 @@ body.light-theme .crib-dealer-dot.active {
   background: var(--gold);
   border-color: var(--gold);
 }
+
+/* ── CUTTLE ── */
+.cuttle {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  height: 100%;
+}
+
+.cuttle-side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.cuttle-readout {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  font-family: "Cinzel", serif;
+  font-size: 0.85rem;
+  color: var(--cream-dim);
+}
+
+.cuttle-readout .cuttle-name {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.cuttle-readout .cuttle-pts {
+  color: var(--cream);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.cuttle-glasses-note {
+  color: var(--gold-light);
+  font-style: italic;
+}
+
+.cuttle-hand {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-height: 64px;
+}
+
+.cuttle-my-hand {
+  min-height: 92px;
+}
+
+.cuttle-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  border-radius: var(--radius);
+  background: linear-gradient(155deg, var(--felt-mid) 0%, var(--felt) 100%);
+  border: 1px solid var(--wood-border);
+  min-height: 76px;
+}
+
+.cuttle-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-height: 62px;
+}
+
+.cuttle-royals {
+  min-height: 0;
+}
+
+.cuttle-empty {
+  color: rgba(244, 227, 190, 0.4);
+  font-style: italic;
+  font-size: 0.8rem;
+  align-self: center;
+}
+
+.cuttle-center {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.cuttle-pile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.cuttle-message {
+  flex: 1;
+  text-align: center;
+  color: var(--gold-light);
+  font-family: "Cinzel", serif;
+  font-size: 0.9rem;
+  padding: 0 0.5rem;
+}
+
+.cuttle-fieldcard {
+  position: relative;
+  display: inline-block;
+}
+
+.cuttle-jacks {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--gold);
+  color: var(--wood);
+  font-size: 0.65rem;
+  font-weight: 700;
+  border-radius: 8px;
+  padding: 0 4px;
+  border: 1px solid var(--wood);
+}
+
+.cuttle-handcard {
+  display: inline-block;
+}
+
+.cuttle-handcard[data-hand],
+.cuttle-handcard[data-discard],
+.cuttle-handcard[data-counter],
+.cuttle-handcard[data-seven] {
+  cursor: pointer;
+}
+
+.cuttle-target {
+  cursor: pointer;
+  border-radius: var(--radius);
+  box-shadow:
+    0 0 0 2px var(--gold-light),
+    0 0 12px var(--gold-glow);
+}
+
+.cuttle-can-counter .card {
+  box-shadow:
+    0 0 0 2px var(--gold-light),
+    0 0 12px var(--gold-glow);
+}
+
+.cuttle-control {
+  min-height: 56px;
+}
+
+.cuttle-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius);
+  background: linear-gradient(155deg, var(--wood-mid) 0%, var(--wood) 100%);
+  border: 1px solid var(--wood-border);
+  color: var(--cream);
+  font-family: "Crimson Pro", serif;
+}
+
+.cuttle-thinking {
+  font-style: italic;
+  color: var(--cream-dim);
+}
+
+.cuttle-hint {
+  color: var(--cream-dim);
+  font-style: italic;
+}
+
+.cuttle-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.cuttle-chip {
+  background: linear-gradient(150deg, var(--gold-light) 0%, var(--gold) 100%);
+  color: var(--wood);
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 0.7rem;
+  font-family: "Cinzel", serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cuttle-chip:hover {
+  background: linear-gradient(150deg, #e8ca55 0%, var(--gold-light) 100%);
+}
+
+.cuttle-cancel {
+  background: transparent;
+  border: 1px solid var(--wood-border);
+  color: var(--cream-dim);
+}
+
+.cuttle-seven {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.cuttle-scrap-pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  max-width: 180px;
+  max-height: 120px;
+  overflow-y: auto;
+}
