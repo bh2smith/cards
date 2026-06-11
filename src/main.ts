@@ -9,6 +9,7 @@ import { KlondikeUI } from "./games/klondike/ui";
 import { CrazyEightsUI } from "./games/crazy-eights/ui";
 import { FreecellUI } from "./games/freecell/ui";
 import { CuttleUI } from "./games/cuttle/ui";
+import { EuchreUI } from "./games/euchre/ui";
 import { initMiniapp } from "./shared/circles/miniapp";
 import { withEntryGate } from "./shared/circles/entryGate";
 import { mountSettings } from "./shared/ui/settings-modal";
@@ -86,6 +87,13 @@ router.register(
   "Cuttle",
   "A combative duel. Race to 21 points with number cards while royals and one-off effects disrupt your opponent.",
   withEntryGate(() => new CuttleUI()),
+);
+
+router.register(
+  "euchre",
+  "Euchre",
+  "Partnership trick-taking with bowers and trump. First team to 10 wins.",
+  withEntryGate(() => new EuchreUI()),
 );
 
 router.init();

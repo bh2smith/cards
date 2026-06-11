@@ -96,6 +96,17 @@ const INSTRUCTIONS: Record<string, { title: string; html: string }> = {
       <p><strong>Shoot the Moon:</strong> Take all 26 penalty points and everyone else gets 26 instead.</p>
     `,
   },
+  euchre: {
+    title: "Euchre",
+    html: `
+      <p><strong>Goal:</strong> Be the first team to <strong>10 points</strong>. You and <strong>Partner</strong> (across) play against Left and Right.</p>
+      <p><strong>Deck:</strong> 24 cards (9 → Ace). Each player gets 5; one card is turned up.</p>
+      <p><strong>Trump &amp; bowers:</strong> The <strong>right bower</strong> (Jack of trump) is the highest card; the <strong>left bower</strong> (other Jack of the same color) is second-highest and counts as trump. Then A, K, Q, 10, 9 of trump.</p>
+      <p><strong>Bidding:</strong> Round 1 — order up the turned card to make its suit trump (the dealer picks it up). Round 2 — if all pass, name any other suit. The dealer is stuck and must name a suit if it passes around again.</p>
+      <p><strong>Going alone:</strong> The maker may play alone — partner sits out — for a bigger reward.</p>
+      <p><strong>Scoring:</strong> Makers take 3–4 tricks = 1, all 5 = 2 (alone = 4). Fail to take 3 and the defenders are <strong>euchred</strong> for 2.</p>
+    `,
+  },
   cuttle: {
     title: "Cuttle",
     html: `
