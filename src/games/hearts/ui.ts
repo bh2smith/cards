@@ -1,6 +1,6 @@
 import { type PlayingCard } from "typedeck";
 import { HeartsGame } from "./game";
-import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
+import { renderCard } from "../../shared/ui/cards";
 import { cardKey } from "../../shared/deck";
 import {
   type HeartsState,
@@ -10,12 +10,24 @@ import {
 } from "./types";
 import { confirmIfEnabled } from "../../shared/settings";
 import { openInstructions } from "../../shared/ui/instructions-modal";
+import {
+  type TablePos,
+  tableLayoutHtml,
+  trickCardHtml,
+  faceDownFanHtml,
+  enterTableMode,
+  exitTableMode,
+} from "../../shared/ui/table-layout";
 import { LeaderboardReporter, GameId } from "../../shared/circles/leaderboard";
 
 const BOT_DELAY_MS = 600;
 const TRICK_HOLD_MS = 1100;
 
 const PLAYER_LABELS = ["You", "Left", "Top", "Right"];
+
+// player index → compass position on the table
+const POS: TablePos[] = ["self", "left", "top", "right"];
+const OPPONENTS: PlayerIndex[] = [1, 2, 3];
 
 export class HeartsUI {
   private game: HeartsGame;
@@ -24,9 +36,14 @@ export class HeartsUI {
   private reporter = new LeaderboardReporter(GameId.Hearts);
   private selectedPass: number[] = [];
   private completedTrickToShow: Trick | null = null;
+  private lastTrickCardKey: string | null = null;
 
   constructor() {
-    document.getElementById("app")!.innerHTML = HeartsUI.template();
+    enterTableMode();
+    document.getElementById("app")!.innerHTML = tableLayoutHtml({
+      title: "Hearts",
+      labels: { self: "You", left: "Left", top: "Top", right: "Right" },
+    });
     this.game = new HeartsGame();
     this.bindEvents();
     this.render();
@@ -34,60 +51,8 @@ export class HeartsUI {
 
   destroy(): void {
     this.destroyed = true;
+    exitTableMode();
     document.getElementById("app")!.innerHTML = "";
-  }
-
-  static template(): string {
-    return `
-      <div class="header">
-        <div class="header-left">
-          <a href="#" class="back-link">← Games</a>
-          <h1>Hearts</h1>
-        </div>
-        <div class="header-right">
-          <button class="help-btn" id="help-btn" type="button" aria-label="How to play">?</button>
-          <button id="new-game-btn">New Game</button>
-        </div>
-      </div>
-
-      <div class="hearts-scoreboard">
-        ${[0, 1, 2, 3]
-          .map(
-            (i) => `
-          <div class="hearts-score-cell" id="hearts-score-cell-${i}">
-            <div class="hearts-score-label">${PLAYER_LABELS[i]}</div>
-            <div class="hearts-score-total" id="hearts-score-total-${i}">0</div>
-            <div class="hearts-score-round" id="hearts-score-round-${i}">+0</div>
-          </div>`,
-          )
-          .join("")}
-      </div>
-
-      <div class="hearts-table">
-        <div class="hearts-seat hearts-seat-top">
-          <div class="hearts-seat-label">Top</div>
-          <div class="hearts-bot-hand" id="hearts-hand-2"></div>
-        </div>
-        <div class="hearts-seat hearts-seat-left">
-          <div class="hearts-seat-label">Left</div>
-          <div class="hearts-bot-hand" id="hearts-hand-1"></div>
-        </div>
-        <div class="hearts-play-area" id="hearts-play-area"></div>
-        <div class="hearts-seat hearts-seat-right">
-          <div class="hearts-seat-label">Right</div>
-          <div class="hearts-bot-hand" id="hearts-hand-3"></div>
-        </div>
-      </div>
-
-      <div class="hand-area" id="hearts-hand-0"></div>
-
-      <div class="message-bar" id="hearts-message"></div>
-
-      <div class="action-area">
-        <button id="hearts-pass-btn" class="hidden">Pass 3 Cards</button>
-        <button id="hearts-next-btn" class="hidden">Next Round</button>
-      </div>
-    `;
   }
 
   private $(id: string): HTMLElement {
@@ -103,11 +68,13 @@ export class HeartsUI {
         location.hash = "/";
       }),
     );
-    this.$("hearts-pass-btn").addEventListener("click", () => this.onPass());
-    this.$("hearts-next-btn").addEventListener("click", () => this.onNext());
-    this.$("hearts-hand-0").addEventListener("click", (e) =>
-      this.onHandClick(e),
-    );
+    this.$("tt-hand").addEventListener("click", (e) => this.onHandClick(e));
+    this.$("tt-actions").addEventListener("click", (e) => {
+      const btn = (e.target as HTMLElement).closest("button");
+      if (!btn) return;
+      if (btn.id === "tt-pass-btn") this.onPass();
+      else if (btn.id === "tt-next-btn") this.onNext();
+    });
   }
 
   private onHandClick(e: Event): void {
@@ -230,48 +197,37 @@ export class HeartsUI {
     this.reporter.reportVsAi(state.phase, state.winner === 0);
 
     this.renderScoreboard(state);
-    this.renderBotHands(state);
+    this.renderSeatHands(state);
     this.renderPlayerHand(state);
-    this.renderPlayArea(state);
+    this.renderTrick(state);
     this.renderMessage(state);
     this.renderButtons(state);
   }
 
   private renderScoreboard(state: HeartsState): void {
     for (let i = 0; i < 4; i++) {
-      this.$(`hearts-score-total-${i}`).textContent = String(state.scores[i]);
+      const pos = POS[i]!;
+      this.$(`tt-score-total-${pos}`).textContent = String(state.scores[i]);
       const round =
         state.roundResult?.pointsByPlayer[i] ?? state.roundScores[i] ?? 0;
-      this.$(`hearts-score-round-${i}`).textContent =
-        round > 0 ? `+${round}` : "+0";
-      const cell = this.$(`hearts-score-cell-${i}`);
-      cell.classList.toggle(
-        "hearts-score-cell-active",
-        state.phase === "PLAYING" && state.currentTurn === i,
-      );
+      this.$(`tt-score-sub-${pos}`).textContent = round > 0 ? `+${round}` : "";
+      const active = state.phase === "PLAYING" && state.currentTurn === i;
+      this.$(`tt-score-${pos}`).classList.toggle("tt-active", active);
     }
   }
 
-  private renderBotHands(state: HeartsState): void {
-    for (const i of [1, 2, 3] as PlayerIndex[]) {
-      const container = this.$(`hearts-hand-${i}`);
-      const cards = state.hands[i]!;
-      const reveal =
-        state.phase === "ROUND_OVER" || state.phase === "GAME_OVER";
-      if (reveal) {
-        container.innerHTML = cards
-          .map((c) => renderCard(c, { small: true }))
-          .join("");
-      } else {
-        container.innerHTML = cards
-          .map((_, idx) => renderFaceDownCard(idx, true))
-          .join("");
-      }
+  private renderSeatHands(state: HeartsState): void {
+    for (const i of OPPONENTS) {
+      const pos = POS[i]!;
+      const container = this.$(`tt-seathand-${pos}`);
+      container.innerHTML = faceDownFanHtml(state.hands[i]!.length);
+      const active = state.phase === "PLAYING" && state.currentTurn === i;
+      this.$(`tt-seat-${pos}`).classList.toggle("tt-active", active);
     }
   }
 
   private renderPlayerHand(state: HeartsState): void {
-    const container = this.$("hearts-hand-0");
+    const container = this.$("tt-hand");
     const hand = state.hands[0]!;
 
     if (state.phase === "PASSING") {
@@ -303,8 +259,8 @@ export class HeartsUI {
     container.style.cursor = isMyTurn ? "pointer" : "default";
   }
 
-  private renderPlayArea(state: HeartsState): void {
-    const area = this.$("hearts-play-area");
+  private renderTrick(state: HeartsState): void {
+    const area = this.$("tt-trick");
     let trick: Trick | null;
     if (this.completedTrickToShow) {
       trick = this.completedTrickToShow;
@@ -315,7 +271,9 @@ export class HeartsUI {
     }
 
     if (!trick) {
-      area.innerHTML = `<div class="hearts-play-empty">${state.phase === "PASSING" ? "Select 3 cards to pass" : ""}</div>`;
+      this.lastTrickCardKey = null;
+      const hint = state.phase === "PASSING" ? "Select 3 cards to pass" : "";
+      area.innerHTML = `<div class="tt-trick-empty">${hint}</div>`;
       return;
     }
 
@@ -324,22 +282,21 @@ export class HeartsUI {
       cardsByPlayer[play.player] = play.card;
     }
 
-    const positions: Array<{ idx: PlayerIndex; cls: string; label: string }> = [
-      { idx: 0, cls: "hearts-play-bottom", label: PLAYER_LABELS[0]! },
-      { idx: 1, cls: "hearts-play-left", label: PLAYER_LABELS[1]! },
-      { idx: 2, cls: "hearts-play-top", label: PLAYER_LABELS[2]! },
-      { idx: 3, cls: "hearts-play-right", label: PLAYER_LABELS[3]! },
-    ];
+    // Animate only the most-recently played card, and only once.
+    const newest = trick.plays[trick.plays.length - 1];
+    const newestKey = newest ? cardKey(newest.card) : null;
+    const animateKey =
+      newestKey && newestKey !== this.lastTrickCardKey ? newestKey : null;
+    this.lastTrickCardKey = newestKey;
 
-    area.innerHTML = positions
-      .map(({ idx, cls, label }) => {
-        const card = cardsByPlayer[idx];
-        const inner = card
-          ? renderCard(card, { small: true })
-          : `<div class="hearts-play-slot"></div>`;
-        return `<div class="hearts-play-cell ${cls}"><div class="hearts-play-name">${label}</div>${inner}</div>`;
-      })
-      .join("");
+    area.innerHTML = POS.map((pos, idx) => {
+      const card = cardsByPlayer[idx];
+      if (!card) {
+        return trickCardHtml(pos, `<div class="tt-trick-slot"></div>`);
+      }
+      const playIn = cardKey(card) === animateKey;
+      return trickCardHtml(pos, renderCard(card, { small: true }), { playIn });
+    }).join("");
   }
 
   private renderMessage(state: HeartsState): void {
@@ -377,28 +334,20 @@ export class HeartsUI {
           ? "You won the game!"
           : `${PLAYER_LABELS[state.winner ?? 0]} won the game.`;
     }
-    this.$("hearts-message").textContent = msg;
+    this.$("tt-message").textContent = msg;
   }
 
   private renderButtons(state: HeartsState): void {
-    const passBtn = this.$("hearts-pass-btn") as HTMLButtonElement;
-    const nextBtn = this.$("hearts-next-btn") as HTMLButtonElement;
-
+    const actions = this.$("tt-actions");
     if (state.phase === "PASSING" && state.passDirection !== "hold") {
-      passBtn.classList.remove("hidden");
-      passBtn.disabled = this.selectedPass.length !== 3;
-    } else {
-      passBtn.classList.add("hidden");
-    }
-
-    if (state.phase === "ROUND_OVER") {
-      nextBtn.classList.remove("hidden");
-      nextBtn.textContent = "Next Round";
+      const disabled = this.selectedPass.length !== 3 ? "disabled" : "";
+      actions.innerHTML = `<button id="tt-pass-btn" class="tt-btn" type="button" ${disabled}>Pass 3 Cards</button>`;
+    } else if (state.phase === "ROUND_OVER") {
+      actions.innerHTML = `<button id="tt-next-btn" class="tt-btn" type="button">Next Round</button>`;
     } else if (state.phase === "GAME_OVER") {
-      nextBtn.classList.remove("hidden");
-      nextBtn.textContent = "Back to Game Room";
+      actions.innerHTML = `<button id="tt-next-btn" class="tt-btn" type="button">Back to Game Room</button>`;
     } else {
-      nextBtn.classList.add("hidden");
+      actions.innerHTML = "";
     }
   }
 }
