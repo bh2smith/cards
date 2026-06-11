@@ -134,6 +134,11 @@ function getCategories(): Category[] {
           "Avoid hearts and the queen of spades across 4 players.",
         ),
         gameEntry(
+          "euchre",
+          "Euchre",
+          "Partnership trick-taking with bowers and trump. First team to 10 wins.",
+        ),
+        gameEntry(
           "spades",
           "Spades",
           "Bid and take tricks with your partner. Spades are always trump.",
