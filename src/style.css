@@ -2113,193 +2113,375 @@ body {
     0 10px 24px rgba(0, 0, 0, 0.5);
 }
 
-/* ── HEARTS ── */
+/* ── LANDSCAPE TABLE (shared by 3+ player games: Hearts, Euchre…) ── */
 
-.hearts-scoreboard {
+/* Landscape-locked: break out of the portrait column so the felt has room. */
+body.tt-mode #app {
+  max-width: min(100vw, 1040px);
+}
+
+.tt-scoreboard {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
-  margin-bottom: 10px;
-  padding: 6px;
-  background: var(--wood);
+  gap: 6px;
+  padding: 6px 8px;
+  background: linear-gradient(155deg, var(--wood-mid) 0%, var(--wood) 100%);
   border: 1px solid var(--wood-border);
   border-radius: var(--radius);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
-.hearts-score-cell {
+.tt-score-cell {
   text-align: center;
-  padding: 4px 2px;
+  padding: 3px 4px;
   border-radius: 6px;
   background: rgba(0, 0, 0, 0.18);
-  transition: background 0.2s;
+  border: 1px solid transparent;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
 }
 
-.hearts-score-cell.hearts-score-cell-active {
+.tt-score-cell.tt-active {
   background: var(--gold-glow);
-  outline: 1px solid var(--gold);
+  border-color: var(--gold);
 }
 
-.hearts-score-label {
-  font-size: 0.7rem;
-  color: var(--cream-dim);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.hearts-score-total {
+.tt-score-name {
   font-family: "Cinzel", serif;
-  font-size: 1.3rem;
+  font-size: 0.62rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--cream-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tt-score-total {
+  font-family: "Cinzel", serif;
+  font-size: 1.15rem;
+  font-weight: 700;
   color: var(--cream);
-  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
 }
 
-.hearts-score-round {
-  font-size: 0.75rem;
+.tt-score-sub {
+  font-size: 0.7rem;
   color: var(--gold-light);
+  min-height: 0.95rem;
 }
 
-.hearts-table {
+.tt-score-cell.tt-team-0 .tt-score-name {
+  color: #6fbf8c;
+}
+.tt-score-cell.tt-team-1 .tt-score-name {
+  color: #d8a878;
+}
+
+body.light-theme .tt-score-cell {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* ── The felt table ── */
+
+.tt-table {
   position: relative;
-  background: var(--felt);
-  border: 1px solid var(--wood-border);
-  border-radius: var(--radius);
+  flex: 1 1 auto;
+  min-height: 0;
   display: grid;
-  grid-template-columns: auto 1fr auto;
-  grid-template-rows: auto 1fr;
+  grid-template-columns: minmax(58px, 0.7fr) minmax(0, 1fr) minmax(58px, 0.7fr);
+  grid-template-rows: auto minmax(0, 1fr);
   grid-template-areas:
     ".    top   ."
-    "left play right";
+    "left felt  right";
   gap: 4px;
-  padding: 8px 6px;
-  margin-bottom: 8px;
-  min-height: 200px;
+  padding: 10px;
+  margin: 2px 0;
+  border-radius: 26px;
+  background: radial-gradient(
+    ellipse 72% 80% at 50% 48%,
+    var(--felt-mid) 0%,
+    var(--felt) 60%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+  border: 1px solid var(--wood-border);
+  box-shadow:
+    inset 0 0 0 6px rgba(0, 0, 0, 0.2),
+    inset 0 0 60px rgba(0, 0, 0, 0.4),
+    inset 0 2px 0 rgba(255, 255, 255, 0.04),
+    0 10px 40px rgba(0, 0, 0, 0.55);
 }
 
-.hearts-seat {
+/* gold rail */
+.tt-table::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 20px;
+  border: 1px solid rgba(201, 162, 39, 0.28);
+  box-shadow: inset 0 0 24px rgba(201, 162, 39, 0.06);
+  pointer-events: none;
+}
+
+/* faint felt weave */
+.tt-table::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 26px;
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    rgba(255, 255, 255, 0.03) 1px,
+    transparent 0
+  );
+  background-size: 16px 16px;
+  pointer-events: none;
+}
+
+.tt-seat {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
+  min-width: 0;
 }
-
-.hearts-seat-top {
+.tt-seat-top {
   grid-area: top;
 }
-
-.hearts-seat-left {
+.tt-seat-left {
   grid-area: left;
   justify-content: center;
 }
-
-.hearts-seat-right {
+.tt-seat-right {
   grid-area: right;
   justify-content: center;
 }
 
-.hearts-seat-label {
-  font-size: 0.65rem;
-  color: var(--cream-dim);
+.tt-plate {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(12, 8, 4, 0.55);
+  border: 1px solid rgba(201, 162, 39, 0.25);
+  font-family: "Cinzel", serif;
+  font-size: 0.6rem;
+  letter-spacing: 1.5px;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  color: var(--cream-dim);
+  transition:
+    border-color 0.2s,
+    color 0.2s,
+    box-shadow 0.2s;
 }
 
-.hearts-bot-hand {
+.tt-plate-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tt-plate-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+  flex-shrink: 0;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
+}
+
+/* whose turn it is */
+.tt-seat.tt-active .tt-plate {
+  border-color: var(--gold);
+  color: var(--cream);
+  box-shadow: 0 0 14px var(--gold-glow);
+}
+.tt-seat.tt-active .tt-plate-dot {
+  background: var(--gold-light);
+  box-shadow: 0 0 8px var(--gold-light);
+  animation: tt-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes tt-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* a seat sitting out (e.g. Euchre going alone) */
+.tt-seat.tt-out .tt-plate {
+  opacity: 0.4;
+}
+
+.tt-team-0 .tt-plate {
+  border-color: rgba(111, 191, 140, 0.4);
+}
+.tt-team-1 .tt-plate {
+  border-color: rgba(216, 168, 120, 0.4);
+}
+
+/* opponent hidden hands */
+.tt-seat-hand {
   display: flex;
-  flex-wrap: nowrap;
   justify-content: center;
   align-items: center;
-  gap: 0;
+}
+.tt-seat-hand .card {
+  width: 26px;
+  height: 36px;
+}
+.tt-seat-hand .card-corner,
+.tt-seat-hand .card-center {
+  display: none;
+}
+.tt-seat-top .tt-seat-hand .card + .card {
+  margin-left: -15px;
+}
+.tt-seat-left .tt-seat-hand,
+.tt-seat-right .tt-seat-hand {
+  flex-direction: column;
+}
+.tt-seat-left .tt-seat-hand .card,
+.tt-seat-right .tt-seat-hand .card {
+  width: 36px;
+  height: 26px;
+}
+.tt-seat-left .tt-seat-hand .card + .card,
+.tt-seat-right .tt-seat-hand .card + .card {
+  margin-top: -17px;
 }
 
-.hearts-bot-hand .card {
-  width: 24px;
-  height: 34px;
+/* center play area */
+.tt-felt {
+  grid-area: felt;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
 }
 
-.hearts-bot-hand .card-corner,
-.hearts-bot-hand .card-center {
+.tt-felt-badge {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.tt-felt-badge:empty {
   display: none;
 }
 
-.hearts-seat-top .hearts-bot-hand .card + .card {
-  margin-left: -14px;
-}
-
-.hearts-seat-left .hearts-bot-hand,
-.hearts-seat-right .hearts-bot-hand {
-  flex-direction: column;
-}
-
-.hearts-seat-left .hearts-bot-hand .card,
-.hearts-seat-right .hearts-bot-hand .card {
-  width: 34px;
-  height: 24px;
-}
-
-.hearts-seat-left .hearts-bot-hand .card + .card,
-.hearts-seat-right .hearts-bot-hand .card + .card {
-  margin-top: -14px;
-}
-
-.hearts-play-area {
-  grid-area: play;
+.tt-trick {
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   grid-template-rows: 1fr 1fr 1fr;
   grid-template-areas:
-    ".      top    ."
-    "left   .      right"
-    ".      bottom .";
-  min-height: 180px;
-  align-items: center;
-  justify-items: center;
+    ".    top    ."
+    "left .      right"
+    ".    bottom .";
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  max-width: 280px;
+  max-height: 230px;
+  margin: 0 auto;
 }
 
-.hearts-play-empty {
-  grid-column: 1 / -1;
-  grid-row: 1 / -1;
-  font-style: italic;
-  color: var(--cream-dim);
-  text-align: center;
-}
-
-.hearts-play-cell {
+.tt-trick-card {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
 }
-
-.hearts-play-top {
-  grid-area: top;
-}
-.hearts-play-bottom {
+.tt-pos-self {
   grid-area: bottom;
 }
-.hearts-play-left {
+.tt-pos-left {
   grid-area: left;
 }
-.hearts-play-right {
+.tt-pos-top {
+  grid-area: top;
+}
+.tt-pos-right {
   grid-area: right;
 }
 
-.hearts-play-name {
-  font-size: 0.65rem;
+.tt-trick-name {
+  display: none;
+}
+
+.tt-trick-empty {
+  grid-column: 1 / -1;
+  grid-row: 1 / -1;
+  align-self: center;
+  font-family: "Crimson Pro", serif;
+  font-style: italic;
   color: var(--cream-dim);
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  text-align: center;
+  opacity: 0.75;
+  font-size: 0.95rem;
 }
 
-.hearts-play-slot {
-  width: 38px;
-  height: 56px;
-  border: 1px dashed rgba(192, 168, 120, 0.25);
-  border-radius: 4px;
+.tt-trick-slot {
+  width: 40px;
+  height: 58px;
+  border: 1px dashed rgba(192, 168, 120, 0.22);
+  border-radius: 5px;
 }
 
-#hearts-pass-btn,
-#hearts-next-btn {
+@keyframes tt-play-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.tt-play-in {
+  animation: tt-play-in 0.22s ease-out;
+}
+
+/* player hand fan */
+.tt-hand {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  min-height: calc(var(--card-height) + 10px);
+  padding: 4px 0 2px;
+}
+.tt-hand .card + .card {
+  margin-left: -34px;
+}
+@media (max-width: 560px) {
+  .tt-hand .card + .card {
+    margin-left: -40px;
+  }
+}
+
+/* actions */
+.tt-actions:empty {
+  display: none;
+}
+.tt-btn {
   font-family: "Cinzel", serif;
   background: linear-gradient(180deg, var(--gold) 0%, #a07f15 100%);
   color: #1a1108;
@@ -2312,10 +2494,43 @@ body {
   text-transform: uppercase;
   cursor: pointer;
 }
-
-#hearts-pass-btn:disabled {
+.tt-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+/* short landscape (phones held sideways): compress chrome + shrink the hand
+   so the felt and seats fit without overflowing. */
+@media (max-height: 460px) {
+  .tt-scoreboard {
+    padding: 3px 6px;
+  }
+  .tt-score-total {
+    font-size: 0.95rem;
+  }
+  .tt-score-sub {
+    min-height: 0;
+  }
+  .tt-table {
+    padding: 6px;
+    border-radius: 18px;
+  }
+  .tt-hand {
+    min-height: 72px;
+  }
+  .tt-hand .card {
+    width: 48px;
+    height: 68px;
+  }
+  .tt-hand .card + .card {
+    margin-left: -26px;
+  }
+}
+
+/* reduce motion */
+body.reduce-motion .tt-play-in,
+body.reduce-motion .tt-seat.tt-active .tt-plate-dot {
+  animation: none;
 }
 
 /* ── SETTINGS BUTTON + MODAL ── */
@@ -2663,10 +2878,6 @@ body.light-theme .bj-confirm {
   border: 1px solid rgba(0, 0, 0, 0.12);
 }
 
-body.light-theme .hearts-score-cell {
-  background: rgba(0, 0, 0, 0.05);
-}
-
 body.light-theme #settings-btn {
   background: rgba(240, 228, 208, 0.85);
   border-color: rgba(140, 104, 16, 0.4);
@@ -2796,27 +3007,6 @@ body.reduce-motion #action-btn {
   #action-btn {
     padding: 9px 26px;
     font-size: 12px;
-  }
-}
-
-/* Hearts: ensure the table can shrink so the player hand stays visible */
-.hearts-table {
-  flex-shrink: 1;
-  min-height: 0;
-}
-
-@media (max-height: 700px) {
-  .hearts-table {
-    min-height: 150px;
-  }
-
-  .hearts-scoreboard {
-    padding: 4px;
-    margin-bottom: 6px;
-  }
-
-  .hearts-score-total {
-    font-size: 1.05rem;
   }
 }
 
