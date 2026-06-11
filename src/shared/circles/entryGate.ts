@@ -2,8 +2,9 @@ import {
   isInMiniapp,
   getWalletAddress,
   canPayEntryFee,
-  chargeEntryFee,
+  chargeEntryFeeWithStartGame,
 } from "./miniapp";
+import type { GameIdValue } from "./leaderboard";
 
 type GateStatus =
   | "checking"
@@ -15,6 +16,7 @@ type GateStatus =
   | "error";
 
 export function withEntryGate(
+  gameId: GameIdValue,
   factory: () => { destroy?(): void },
 ): () => { destroy?(): void } {
   if (!isInMiniapp()) return factory;
@@ -64,7 +66,7 @@ export function withEntryGate(
     async function onPay() {
       render("paying");
       try {
-        await chargeEntryFee();
+        await chargeEntryFeeWithStartGame(gameId);
         render("paid");
         setTimeout(() => {
           if (!destroyed) inner = factory();
