@@ -136,6 +136,57 @@ export class LeaderboardReporter {
   }
 }
 
+/**
+ * Order entries the way the on-chain top list does: solo games rank by
+ * fewest cumulative cards remaining, vs-AI games by net wins. Games played
+ * breaks ties deterministically.
+ */
+export function rankEntries(
+  entries: LeaderboardEntry[],
+  solo: boolean,
+): LeaderboardEntry[] {
+  const score = (s: PlayerStats): number =>
+    solo ? -s.totalCardsRemaining : s.wins - s.losses;
+  return [...entries].sort((a, b) => {
+    const diff = score(b.stats) - score(a.stats);
+    if (diff !== 0) return diff;
+    return b.stats.gamesPlayed - a.stats.gamesPlayed;
+  });
+}
+
+// The trust graph has no size bound; cap the stats lookup so one
+// super-connected avatar can't fan out into thousands of eth_calls.
+const MAX_FRIEND_LOOKUPS = 500;
+
+export async function fetchFriendsLeaderboard(
+  gameId: GameIdValue,
+  solo: boolean,
+  players: Address[],
+): Promise<LeaderboardEntry[]> {
+  const capped = players.slice(0, MAX_FRIEND_LOOKUPS);
+  if (capped.length === 0) return [];
+
+  const results = await client.multicall({
+    contracts: capped.map((player) => ({
+      address: LEADERBOARD_ADDRESS,
+      abi: leaderboardAbi,
+      functionName: "getPlayerStats" as const,
+      args: [gameId, player] as const,
+    })),
+    allowFailure: true,
+  });
+
+  const entries: LeaderboardEntry[] = [];
+  for (let i = 0; i < capped.length; i++) {
+    const result = results[i];
+    if (result?.status !== "success") continue;
+    const stats = parseStats(result.result as Parameters<typeof parseStats>[0]);
+    if (stats.gamesPlayed === 0) continue;
+    entries.push({ player: capped[i]!, stats });
+  }
+  return rankEntries(entries, solo);
+}
+
 export async function fetchTopLeaderboard(
   gameId: GameIdValue,
 ): Promise<LeaderboardEntry[]> {
