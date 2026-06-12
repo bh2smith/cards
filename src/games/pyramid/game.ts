@@ -1,5 +1,5 @@
 import type { PlayingCard } from "typedeck";
-import { createDeck, shuffle, cardOrder } from "../../shared/deck";
+import { createDeck, shuffle, seededRng, cardOrder } from "../../shared/deck";
 import type { PyramidState, PyramidCard } from "./types";
 
 const ROWS = 7;
@@ -28,8 +28,11 @@ export class PyramidGame {
     return this.state;
   }
 
-  deal(): void {
-    const deck = shuffle(createDeck());
+  deal(seed?: number): void {
+    const deck = shuffle(
+      createDeck(),
+      seed === undefined ? undefined : seededRng(seed),
+    );
     const pyramid: PyramidCard[][] = [];
     let idx = 0;
     for (let row = 0; row < ROWS; row++) {

@@ -1,6 +1,12 @@
 import type { PlayingCard } from "typedeck";
 import { CardName, Suit } from "typedeck";
-import { createDeck, shuffle, cardOrder, isRed } from "../../shared/deck";
+import {
+  createDeck,
+  shuffle,
+  seededRng,
+  cardOrder,
+  isRed,
+} from "../../shared/deck";
 import type { KlondikeState, TableauColumn } from "./types";
 
 const TABLEAU_COLS = 7;
@@ -33,8 +39,11 @@ export class KlondikeGame {
     return this.state;
   }
 
-  deal(): void {
-    const deck = shuffle(createDeck());
+  deal(seed?: number): void {
+    const deck = shuffle(
+      createDeck(),
+      seed === undefined ? undefined : seededRng(seed),
+    );
 
     const tableau: TableauColumn[] = [];
     let idx = 0;

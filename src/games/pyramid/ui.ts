@@ -1,18 +1,31 @@
 import { PyramidGame } from "./game";
 import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
+import { randomSeed } from "../../shared/deck";
 import { confirmIfEnabled } from "../../shared/settings";
 import { openInstructions } from "../../shared/ui/instructions-modal";
 import { LeaderboardReporter, GameId } from "../../shared/circles/leaderboard";
+import { getWalletAddress } from "../../shared/circles/miniapp";
+import { consumeChallenge, type Challenge } from "../../shared/challenge";
+import {
+  showChallengeBanner,
+  showChallengeOutcome,
+  showChallengeShare,
+} from "../../shared/ui/challenge";
 
 export class PyramidUI {
   private game: PyramidGame;
   private reporter = new LeaderboardReporter(GameId.Pyramid);
+  private challenge: Challenge | null;
+  private seed: number;
 
   constructor() {
     document.getElementById("app")!.innerHTML = PyramidUI.template();
+    this.challenge = consumeChallenge("pyramid");
+    this.seed = this.challenge?.seed ?? randomSeed();
     this.game = new PyramidGame();
-    this.game.deal();
+    this.game.deal(this.seed);
     this.bindEvents();
+    if (this.challenge) showChallengeBanner(this.challenge);
     this.render();
   }
 
@@ -120,6 +133,18 @@ export class PyramidUI {
     this.renderWaste();
     this.renderStock();
     this.renderActionButton();
+    if (state.phase === "GAME_OVER") this.onGameOver();
+  }
+
+  private onGameOver(): void {
+    const cards = this.game.pyramidCardsRemaining();
+    if (this.challenge) showChallengeOutcome(this.challenge, cards);
+    showChallengeShare({
+      game: "pyramid",
+      seed: this.seed,
+      cardsRemaining: cards,
+      by: getWalletAddress() ?? undefined,
+    });
   }
 
   private renderPyramid(): void {

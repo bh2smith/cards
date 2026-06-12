@@ -1,5 +1,5 @@
 import type { PlayingCard } from "typedeck";
-import { createDeck, shuffle, cardOrder } from "../../shared/deck";
+import { createDeck, shuffle, seededRng, cardOrder } from "../../shared/deck";
 import type { GolfState, GolfOptions } from "./types";
 
 const COLUMNS = 7;
@@ -29,8 +29,11 @@ export class GolfGame {
     return this.state;
   }
 
-  deal(): void {
-    const deck = shuffle(createDeck());
+  deal(seed?: number): void {
+    const deck = shuffle(
+      createDeck(),
+      seed === undefined ? undefined : seededRng(seed),
+    );
 
     const tableau: PlayingCard[][] = [];
     let idx = 0;
