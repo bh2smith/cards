@@ -1,5 +1,6 @@
 import {
   fetchTopLeaderboard,
+  fetchFriendsLeaderboard,
   fetchMyStats,
   GameId,
   type GameIdValue,
@@ -9,9 +10,13 @@ import {
 import {
   isInMiniapp,
   getWalletAddress,
+  fetchTrustedAddresses,
   resolveProfiles,
   type ResolvedProfile,
 } from "../circles/miniapp";
+import type { Address } from "viem";
+
+type Scope = "global" | "friends";
 
 const GAME_TABS: Array<{ id: GameIdValue; label: string; solo: boolean }> = [
   { id: GameId.Golf, label: "Golf", solo: true },
@@ -33,10 +38,12 @@ function shortAddr(addr: string): string {
 
 export class LeaderboardUI {
   private activeGame: GameIdValue = GameId.Golf;
+  private scope: Scope = "global";
   private entries: LeaderboardEntry[] = [];
   private myStats: PlayerStats | null = null;
   private profiles = new Map<string, ResolvedProfile>();
   private loading = true;
+  private loadToken = 0;
 
   constructor() {
     document.getElementById("app")!.innerHTML = LeaderboardUI.template();
@@ -64,6 +71,11 @@ export class LeaderboardUI {
         ).join("")}
       </div>
 
+      <div class="lb-scope hidden" id="lb-scope">
+        <button class="lb-scope-btn" data-scope="global">Global</button>
+        <button class="lb-scope-btn" data-scope="friends">My Circle</button>
+      </div>
+
       <div id="lb-my-stats" class="lb-my-stats hidden"></div>
 
       <div class="lb-table-wrap" id="lb-table-wrap">
@@ -85,31 +97,58 @@ export class LeaderboardUI {
       this.activeGame = gameId;
       this.load();
     });
+
+    this.$("lb-scope").addEventListener("click", (e) => {
+      const btn = (e.target as HTMLElement).closest(
+        ".lb-scope-btn",
+      ) as HTMLElement;
+      if (!btn) return;
+      const scope = btn.dataset.scope as Scope;
+      if (scope === this.scope) return;
+      this.scope = scope;
+      this.load();
+    });
   }
 
   private async load(): Promise<void> {
+    const token = ++this.loadToken;
     this.loading = true;
     this.render();
 
+    let entries: LeaderboardEntry[] = [];
+    let myStats: PlayerStats | null = null;
     try {
-      const [entries, myStats] = await Promise.all([
-        fetchTopLeaderboard(this.activeGame),
+      [entries, myStats] = await Promise.all([
+        this.scope === "friends"
+          ? this.fetchFriendsEntries()
+          : fetchTopLeaderboard(this.activeGame),
         isInMiniapp() ? fetchMyStats(this.activeGame) : null,
       ]);
-      this.entries = entries;
-      this.myStats = myStats;
     } catch {
-      this.entries = [];
-      this.myStats = null;
+      // fall through with empty entries
     }
+    if (token !== this.loadToken) return;
 
+    this.entries = entries;
+    this.myStats = myStats;
     this.loading = false;
     this.render();
 
     if (this.entries.length > 0) {
-      this.profiles = await resolveProfiles(this.entries.map((e) => e.player));
+      const profiles = await resolveProfiles(this.entries.map((e) => e.player));
+      if (token !== this.loadToken) return;
+      this.profiles = profiles;
       this.render();
     }
+  }
+
+  private async fetchFriendsEntries(): Promise<LeaderboardEntry[]> {
+    const me = getWalletAddress();
+    const trusted = await fetchTrustedAddresses();
+    const players = [
+      ...new Set([...(me ? [me.toLowerCase()] : []), ...trusted]),
+    ] as Address[];
+    return fetchFriendsLeaderboard(this.activeGame, this.isSolo(), players);
   }
 
   private isSolo(): boolean {
@@ -118,6 +157,7 @@ export class LeaderboardUI {
 
   private render(): void {
     this.renderTabs();
+    this.renderScope();
     this.renderMyStats();
     this.renderTable();
   }
@@ -127,6 +167,18 @@ export class LeaderboardUI {
     tabs.querySelectorAll<HTMLElement>(".lb-tab").forEach((btn) => {
       const id = parseInt(btn.dataset.game ?? "-1");
       btn.classList.toggle("lb-tab-active", id === this.activeGame);
+    });
+  }
+
+  private renderScope(): void {
+    const el = this.$("lb-scope");
+    const available = isInMiniapp() && getWalletAddress() !== null;
+    el.classList.toggle("hidden", !available);
+    el.querySelectorAll<HTMLElement>(".lb-scope-btn").forEach((btn) => {
+      btn.classList.toggle(
+        "lb-scope-btn-active",
+        btn.dataset.scope === this.scope,
+      );
     });
   }
 
@@ -167,7 +219,10 @@ export class LeaderboardUI {
     }
 
     if (this.entries.length === 0) {
-      wrap.innerHTML = `<div class="lb-empty">No results yet. Be the first!</div>`;
+      wrap.innerHTML =
+        this.scope === "friends"
+          ? `<div class="lb-empty">No one in your circle has played this game yet. Spread the word!</div>`
+          : `<div class="lb-empty">No results yet. Be the first!</div>`;
       return;
     }
 

@@ -1116,6 +1116,40 @@ body {
   color: var(--gold);
 }
 
+.lb-scope {
+  display: flex;
+  gap: 4px;
+}
+
+.lb-scope-btn {
+  flex: 1;
+  font-family: "Cinzel", serif;
+  font-size: 9px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--cream-dim);
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.lb-scope-btn:hover {
+  border-color: rgba(201, 162, 39, 0.4);
+  color: var(--cream);
+}
+
+.lb-scope-btn.lb-scope-btn-active {
+  background: rgba(201, 162, 39, 0.15);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
 .lb-my-stats {
   background: linear-gradient(155deg, var(--wood-mid) 0%, var(--wood) 100%);
   border-radius: var(--radius);

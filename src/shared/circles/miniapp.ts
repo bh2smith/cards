@@ -17,6 +17,7 @@ const config = circlesConfig[100]!;
 let connectedAddress: string | null = null;
 let sdk: Sdk | null = null;
 let rpc: CirclesRpc | null = null;
+let trustedCache: string[] | null = null;
 
 export function initMiniapp(): void {
   if (!isMiniappMode()) return;
@@ -24,6 +25,7 @@ export function initMiniapp(): void {
   rpc = new CirclesRpc(CIRCLES_RPC);
   onWalletChange((address) => {
     connectedAddress = address;
+    trustedCache = null;
   });
 }
 
@@ -66,6 +68,28 @@ export async function chargeEntryFee(): Promise<string[]> {
   }));
 
   return sendTransactions(miniappTxs);
+}
+
+/**
+ * Addresses the connected user trusts (outgoing and mutual relations),
+ * lowercased and deduped. Empty outside the miniapp or before the wallet
+ * connects.
+ */
+export async function fetchTrustedAddresses(): Promise<string[]> {
+  if (trustedCache) return trustedCache;
+  if (!rpc || !connectedAddress) return [];
+
+  const relations = await rpc.trust.getAggregatedTrustRelations(
+    connectedAddress as `0x${string}`,
+  );
+  const seen = new Set<string>();
+  for (const rel of relations) {
+    if (rel.relation !== "trusts" && rel.relation !== "mutuallyTrusts")
+      continue;
+    seen.add(rel.objectAvatar.toLowerCase());
+  }
+  trustedCache = [...seen];
+  return trustedCache;
 }
 
 export interface ResolvedProfile {
