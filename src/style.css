@@ -661,6 +661,11 @@ body {
   color: #e74c3c;
 }
 
+.entry-gate-back {
+  display: inline-block;
+  margin-top: 18px;
+}
+
 /* ── UTILS ── */
 
 .hidden {
