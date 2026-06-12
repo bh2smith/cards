@@ -2527,6 +2527,26 @@ body.light-theme .tt-score-cell {
   }
 }
 
+/* Phones: lock the table games to landscape. When a touch device is held in
+   portrait, rotate the whole view 90° so it always renders as a wide landscape
+   table — the player simply turns the phone. Scoped to `pointer: coarse` so
+   desktop browser windows are never rotated. */
+@media (orientation: portrait) and (pointer: coarse) {
+  body.tt-mode #app {
+    position: fixed;
+    inset: auto;
+    top: 100dvh;
+    left: 0;
+    width: 100dvh;
+    height: 100dvw;
+    max-width: none;
+    max-height: none;
+    padding: 8px 12px;
+    transform: rotate(-90deg);
+    transform-origin: left top;
+  }
+}
+
 /* reduce motion */
 body.reduce-motion .tt-play-in,
 body.reduce-motion .tt-seat.tt-active .tt-plate-dot {
