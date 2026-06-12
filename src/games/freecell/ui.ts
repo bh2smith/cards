@@ -5,6 +5,14 @@ import { SUIT_SYMBOL } from "../../shared/deck";
 import { confirmIfEnabled } from "../../shared/settings";
 import { openInstructions } from "../../shared/ui/instructions-modal";
 import { LeaderboardReporter, GameId } from "../../shared/circles/leaderboard";
+import { getWalletAddress } from "../../shared/circles/miniapp";
+import { consumeChallenge, type Challenge } from "../../shared/challenge";
+import {
+  showChallengeBanner,
+  showChallengeOutcome,
+  showChallengeShare,
+  clearChallengeUi,
+} from "../../shared/ui/challenge";
 
 const FOUNDATION_SUITS = [Suit.Clubs, Suit.Spades, Suit.Diamonds, Suit.Hearts];
 
@@ -12,11 +20,14 @@ export class FreecellUI {
   private game: FreecellGame;
   private reporter = new LeaderboardReporter(GameId.Freecell);
   private autoCompleteTimer: ReturnType<typeof setInterval> | null = null;
+  private challenge: Challenge | null;
 
   constructor() {
     document.getElementById("app")!.innerHTML = FreecellUI.template();
-    this.game = new FreecellGame();
+    this.challenge = consumeChallenge("freecell");
+    this.game = new FreecellGame(this.challenge?.seed);
     this.bindEvents();
+    if (this.challenge) showChallengeBanner(this.challenge);
     this.render();
   }
 
@@ -81,6 +92,8 @@ export class FreecellUI {
     );
     this.$("new-game-btn").addEventListener("click", () =>
       confirmIfEnabled("Deal a new game?", () => {
+        this.challenge = null;
+        clearChallengeUi();
         this.game.newDeal();
         this.render();
       }),
@@ -91,6 +104,8 @@ export class FreecellUI {
     });
     this.$("restart-btn").addEventListener("click", () =>
       confirmIfEnabled("Restart this deal?", () => {
+        clearChallengeUi();
+        if (this.challenge) showChallengeBanner(this.challenge);
         this.game.restart();
         this.render();
       }),
@@ -221,6 +236,7 @@ export class FreecellUI {
     this.renderFoundations();
     this.renderTableau();
     this.renderButtons();
+    if (state.phase === "GAME_OVER") this.onGameOver();
 
     if (!this.autoCompleteTimer && this.game.canAutoComplete()) {
       this.$("message").textContent = "Auto-completing…";
@@ -232,6 +248,17 @@ export class FreecellUI {
         this.render();
       }, 120);
     }
+  }
+
+  private onGameOver(): void {
+    const cards = 52 - this.game.foundationCount();
+    if (this.challenge) showChallengeOutcome(this.challenge, cards);
+    showChallengeShare({
+      game: "freecell",
+      seed: this.game.getState().dealNumber,
+      cardsRemaining: cards,
+      by: getWalletAddress() ?? undefined,
+    });
   }
 
   private renderFreeCells(): void {

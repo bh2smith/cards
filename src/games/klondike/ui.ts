@@ -1,10 +1,17 @@
 import { Suit } from "typedeck";
 import { KlondikeGame } from "./game";
 import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
-import { SUIT_SYMBOL } from "../../shared/deck";
+import { SUIT_SYMBOL, randomSeed } from "../../shared/deck";
 import { confirmIfEnabled } from "../../shared/settings";
 import { openInstructions } from "../../shared/ui/instructions-modal";
 import { LeaderboardReporter, GameId } from "../../shared/circles/leaderboard";
+import { getWalletAddress } from "../../shared/circles/miniapp";
+import { consumeChallenge, type Challenge } from "../../shared/challenge";
+import {
+  showChallengeBanner,
+  showChallengeOutcome,
+  showChallengeShare,
+} from "../../shared/ui/challenge";
 
 const FOUNDATION_SUITS = [Suit.Clubs, Suit.Spades, Suit.Diamonds, Suit.Hearts];
 
@@ -12,12 +19,17 @@ export class KlondikeUI {
   private game: KlondikeGame;
   private reporter = new LeaderboardReporter(GameId.Klondike);
   private autoCompleteTimer: ReturnType<typeof setInterval> | null = null;
+  private challenge: Challenge | null;
+  private seed: number;
 
   constructor() {
     document.getElementById("app")!.innerHTML = KlondikeUI.template();
+    this.challenge = consumeChallenge("klondike");
+    this.seed = this.challenge?.seed ?? randomSeed();
     this.game = new KlondikeGame();
-    this.game.deal();
+    this.game.deal(this.seed);
     this.bindEvents();
+    if (this.challenge) showChallengeBanner(this.challenge);
     this.render();
   }
 
@@ -212,6 +224,7 @@ export class KlondikeUI {
     this.renderWaste();
     this.renderTableau();
     this.renderActionButton();
+    if (state.phase === "GAME_OVER") this.onGameOver();
 
     if (!this.autoCompleteTimer && this.game.canAutoComplete()) {
       this.$("message").textContent = "Auto-completing...";
@@ -223,6 +236,17 @@ export class KlondikeUI {
         this.render();
       }, 150);
     }
+  }
+
+  private onGameOver(): void {
+    const cards = 52 - this.game.foundationCount();
+    if (this.challenge) showChallengeOutcome(this.challenge, cards);
+    showChallengeShare({
+      game: "klondike",
+      seed: this.seed,
+      cardsRemaining: cards,
+      by: getWalletAddress() ?? undefined,
+    });
   }
 
   private renderFoundations(): void {

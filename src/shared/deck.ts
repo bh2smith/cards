@@ -57,10 +57,25 @@ export function createDeck(): PlayingCard[] {
   return [...deck.getCards()] as PlayingCard[];
 }
 
-export function shuffle<T>(arr: T[]): T[] {
+/** Deterministic PRNG (mulberry32) so a numeric seed replays the same deal. */
+export function seededRng(seed: number): () => number {
+  let s = seed >>> 0;
+  return () => {
+    s = (s + 0x6d2b79f5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+export function randomSeed(): number {
+  return Math.floor(Math.random() * 0x7fffffff);
+}
+
+export function shuffle<T>(arr: T[], rng: () => number = Math.random): T[] {
   const result = [...arr];
   for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(rng() * (i + 1));
     const tmp = result[i]!;
     result[i] = result[j]!;
     result[j] = tmp;

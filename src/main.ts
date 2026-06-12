@@ -12,10 +12,12 @@ import { CuttleUI } from "./games/cuttle/ui";
 import { EuchreUI } from "./games/euchre/ui";
 import { initMiniapp } from "./shared/circles/miniapp";
 import { withEntryGate } from "./shared/circles/entryGate";
+import { initChallenges } from "./shared/challenge";
 import { mountSettings } from "./shared/ui/settings-modal";
 import { injectCardSprite } from "./shared/ui/cards";
 
 initMiniapp();
+initChallenges();
 mountSettings();
 injectCardSprite();
 

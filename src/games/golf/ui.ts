@@ -1,18 +1,31 @@
 import { GolfGame } from "./game";
 import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
+import { randomSeed } from "../../shared/deck";
 import { confirmIfEnabled } from "../../shared/settings";
 import { openInstructions } from "../../shared/ui/instructions-modal";
 import { LeaderboardReporter, GameId } from "../../shared/circles/leaderboard";
+import { getWalletAddress } from "../../shared/circles/miniapp";
+import { consumeChallenge, type Challenge } from "../../shared/challenge";
+import {
+  showChallengeBanner,
+  showChallengeOutcome,
+  showChallengeShare,
+} from "../../shared/ui/challenge";
 
 export class GolfUI {
   private game: GolfGame;
   private reporter = new LeaderboardReporter(GameId.Golf);
+  private challenge: Challenge | null;
+  private seed: number;
 
   constructor() {
     document.getElementById("app")!.innerHTML = GolfUI.template();
+    this.challenge = consumeChallenge("golf");
+    this.seed = this.challenge?.seed ?? randomSeed();
     this.game = new GolfGame();
-    this.game.deal();
+    this.game.deal(this.seed);
     this.bindEvents();
+    if (this.challenge) showChallengeBanner(this.challenge);
     this.render();
   }
 
@@ -110,6 +123,18 @@ export class GolfUI {
     this.renderWaste();
     this.renderStock();
     this.renderActionButton();
+    if (state.phase === "GAME_OVER") this.onGameOver();
+  }
+
+  private onGameOver(): void {
+    const cards = this.game.cardsRemaining();
+    if (this.challenge) showChallengeOutcome(this.challenge, cards);
+    showChallengeShare({
+      game: "golf",
+      seed: this.seed,
+      cardsRemaining: cards,
+      by: getWalletAddress() ?? undefined,
+    });
   }
 
   private renderTableau(): void {
