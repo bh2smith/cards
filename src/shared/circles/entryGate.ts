@@ -26,16 +26,20 @@ export function withEntryGate(
 
     function render(status: GateStatus, message?: string) {
       if (destroyed) return;
+      const showBack = status !== "paying" && status !== "paid";
       app.innerHTML = `
         <div class="entry-gate">
           <div class="entry-gate-card">
             <h2>The Card Room</h2>
             <div class="entry-gate-status">${statusContent(status, message)}</div>
+            ${showBack ? `<a href="#" class="back-link entry-gate-back">← Games</a>` : ""}
           </div>
         </div>
       `;
       if (status === "ready") {
         app.querySelector("#pay-btn")?.addEventListener("click", onPay);
+      } else if (status === "error") {
+        app.querySelector("#pay-btn")?.addEventListener("click", () => check());
       }
     }
 
