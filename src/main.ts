@@ -10,15 +10,17 @@ import { CrazyEightsUI } from "./games/crazy-eights/ui";
 import { FreecellUI } from "./games/freecell/ui";
 import { CuttleUI } from "./games/cuttle/ui";
 import { EuchreUI } from "./games/euchre/ui";
-import { initMiniapp } from "./shared/circles/miniapp";
+import { initCircles } from "./shared/circles/miniapp";
 import { withEntryGate } from "./shared/circles/entryGate";
 import { initChallenges } from "./shared/challenge";
 import { mountSettings } from "./shared/ui/settings-modal";
+import { mountLoginChip } from "./shared/ui/login-chip";
 import { injectCardSprite } from "./shared/ui/cards";
 
-initMiniapp();
+initCircles();
 initChallenges();
 mountSettings();
+mountLoginChip();
 injectCardSprite();
 
 router.register(

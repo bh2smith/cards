@@ -5,10 +5,10 @@ import {
   type Address,
 } from "viem";
 import { gnosis } from "viem/chains";
-import { sendTransactions, type Transaction } from "@aboutcircles/miniapp-sdk";
+import { type Transaction } from "@aboutcircles/miniapp-sdk";
 import { leaderboardAbi } from "./leaderboardAbi";
 import { CIRCLES_RPC, LEADERBOARD_ADDRESS } from "./config";
-import { getWalletAddress, isInMiniapp } from "./miniapp";
+import { getWalletAddress, isConnected, submitTransactions } from "./miniapp";
 
 export const GameId = {
   Golf: 0,
@@ -72,7 +72,7 @@ export async function submitSoloResult(
   });
 
   const tx: Transaction = { to: LEADERBOARD_ADDRESS, data };
-  return sendTransactions([tx]);
+  return submitTransactions([tx]);
 }
 
 export async function submitVsAiResult(
@@ -86,7 +86,7 @@ export async function submitVsAiResult(
   });
 
   const tx: Transaction = { to: LEADERBOARD_ADDRESS, data };
-  return sendTransactions([tx]);
+  return submitTransactions([tx]);
 }
 
 export async function fetchMyStats(
@@ -124,14 +124,14 @@ export class LeaderboardReporter {
   reportSolo(phase: string, won: boolean, cardsRemaining: number): void {
     if (phase !== this.terminalPhase || this.submitted) return;
     this.submitted = true;
-    if (!isInMiniapp()) return;
+    if (!isConnected()) return;
     submitSoloResult(this.gameId, won, cardsRemaining).catch(() => {});
   }
 
   reportVsAi(phase: string, won: boolean): void {
     if (phase !== this.terminalPhase || this.submitted) return;
     this.submitted = true;
-    if (!isInMiniapp()) return;
+    if (!isConnected()) return;
     submitVsAiResult(this.gameId, won).catch(() => {});
   }
 }

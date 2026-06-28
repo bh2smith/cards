@@ -8,10 +8,11 @@ import {
   type PlayerStats,
 } from "../circles/leaderboard";
 import {
-  isInMiniapp,
+  isConnected,
   getWalletAddress,
   fetchTrustedAddresses,
   resolveProfiles,
+  onSessionChange,
   type ResolvedProfile,
 } from "../circles/miniapp";
 import type { Address } from "viem";
@@ -44,14 +45,18 @@ export class LeaderboardUI {
   private profiles = new Map<string, ResolvedProfile>();
   private loading = true;
   private loadToken = 0;
+  private unsubscribe: () => void;
 
   constructor() {
     document.getElementById("app")!.innerHTML = LeaderboardUI.template();
     this.bindEvents();
+    // Re-fetch when the user logs in or out while viewing the board.
+    this.unsubscribe = onSessionChange(() => this.load());
     this.load();
   }
 
   destroy(): void {
+    this.unsubscribe();
     document.getElementById("app")!.innerHTML = "";
   }
 
@@ -122,7 +127,7 @@ export class LeaderboardUI {
         this.scope === "friends"
           ? this.fetchFriendsEntries()
           : fetchTopLeaderboard(this.activeGame),
-        isInMiniapp() ? fetchMyStats(this.activeGame) : null,
+        isConnected() ? fetchMyStats(this.activeGame) : null,
       ]);
     } catch {
       // fall through with empty entries
@@ -172,8 +177,7 @@ export class LeaderboardUI {
 
   private renderScope(): void {
     const el = this.$("lb-scope");
-    const available = isInMiniapp() && getWalletAddress() !== null;
-    el.classList.toggle("hidden", !available);
+    el.classList.toggle("hidden", !isConnected());
     el.querySelectorAll<HTMLElement>(".lb-scope-btn").forEach((btn) => {
       btn.classList.toggle(
         "lb-scope-btn-active",
@@ -184,7 +188,7 @@ export class LeaderboardUI {
 
   private renderMyStats(): void {
     const el = this.$("lb-my-stats");
-    if (!this.myStats || !isInMiniapp()) {
+    if (!this.myStats || !isConnected()) {
       el.classList.add("hidden");
       return;
     }
