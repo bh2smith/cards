@@ -3916,3 +3916,155 @@ body.light-theme .crc-modal-header {
 body.light-theme .login-chip-addr {
   border-bottom-color: rgba(0, 0, 0, 0.1);
 }
+
+/* ── RULES CATALOG ── */
+.catalog {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 16px 32px;
+}
+
+.catalog-search {
+  width: 100%;
+  padding: 10px 14px;
+  margin: 12px 0 20px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  font-size: 1rem;
+}
+
+.catalog-search:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.catalog-group {
+  margin-bottom: 20px;
+}
+
+.catalog-group-title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.6;
+  margin: 0 0 8px;
+}
+
+.catalog-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.catalog-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  text-decoration: none;
+  color: inherit;
+}
+
+.catalog-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.catalog-item-name {
+  flex: 1;
+  font-weight: 600;
+}
+
+.catalog-item-meta {
+  font-size: 0.75rem;
+  opacity: 0.6;
+  letter-spacing: 0.05em;
+}
+
+.catalog-badge {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(80, 200, 120, 0.2);
+  color: #7ee2a8;
+}
+
+.catalog-aka {
+  font-style: italic;
+  opacity: 0.7;
+  margin: 4px 0 0;
+}
+
+.catalog-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.catalog-chip {
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.catalog-chip-ref {
+  opacity: 0.7;
+}
+
+.catalog-rules {
+  line-height: 1.55;
+}
+
+.catalog-rules p {
+  margin: 0 0 10px;
+}
+
+.catalog-rules ul {
+  margin: 0 0 10px;
+  padding-left: 20px;
+}
+
+.catalog-empty {
+  opacity: 0.6;
+  text-align: center;
+  margin-top: 24px;
+}
+
+.catalog-play-btn {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 10px 22px;
+  border-radius: 8px;
+  background: #2e7d4f;
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.catalog-play-btn:hover {
+  background: #379159;
+}
+
+body.light-theme .catalog-search {
+  border-color: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.04);
+}
+
+body.light-theme .catalog-item {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+body.light-theme .catalog-item:hover {
+  background: rgba(0, 0, 0, 0.08);
+}
+
+body.light-theme .catalog-chip {
+  background: rgba(0, 0, 0, 0.06);
+}

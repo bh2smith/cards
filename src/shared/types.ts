@@ -1,5 +1,9 @@
 export type Player = "player" | "computer";
 
+export interface Destroyable {
+  destroy?(): void;
+}
+
 export interface BaseGameState {
   phase: string;
   message: string;

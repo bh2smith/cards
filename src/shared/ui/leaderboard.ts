@@ -16,22 +16,18 @@ import {
   type ResolvedProfile,
 } from "../circles/miniapp";
 import type { Address } from "viem";
+import { GAMES } from "../../games";
 
 type Scope = "global" | "friends";
 
-const GAME_TABS: Array<{ id: GameIdValue; label: string; solo: boolean }> = [
-  { id: GameId.Golf, label: "Golf", solo: true },
-  { id: GameId.Pyramid, label: "Pyramid", solo: true },
-  { id: GameId.Cribbage, label: "Cribbage", solo: false },
-  { id: GameId.Blackjack, label: "Blackjack", solo: false },
-  { id: GameId.GinRummy, label: "Gin Rummy", solo: false },
-  { id: GameId.Hearts, label: "Hearts", solo: false },
-  { id: GameId.Klondike, label: "Klondike", solo: true },
-  { id: GameId.CrazyEights, label: "Crazy Eights", solo: false },
-  { id: GameId.Freecell, label: "Freecell", solo: true },
-  { id: GameId.Cuttle, label: "Cuttle", solo: false },
-  { id: GameId.Euchre, label: "Euchre", solo: false },
-];
+const GAME_TABS: Array<{ id: GameIdValue; label: string; solo: boolean }> =
+  GAMES.filter((m) => m.gameId !== undefined)
+    .sort((a, b) => a.gameId! - b.gameId!)
+    .map((m) => ({
+      id: m.gameId!,
+      label: m.tabLabel ?? m.title,
+      solo: m.solo === true,
+    }));
 
 function shortAddr(addr: string): string {
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
