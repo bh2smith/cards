@@ -5,7 +5,21 @@ import {
   cardStrength,
   effectiveSuit,
 } from "./types";
-import { cardKey } from "../../shared/deck";
+import {
+  legalPlays as coreLegalPlays,
+  trickWinner as coreTrickWinner,
+  removeCardFromHand,
+  type TrickRules,
+} from "../../shared/engine/trick";
+
+export { removeCardFromHand };
+
+function euchreRules(trump: Suit): TrickRules {
+  return {
+    effectiveSuit: (card) => effectiveSuit(card, trump),
+    strength: (card, ledSuit) => cardStrength(card, trump, ledSuit),
+  };
+}
 
 /**
  * Legal plays for a hand. Leading: anything. Following: must follow the led
@@ -17,35 +31,11 @@ export function legalPlays(
   trick: Trick | null,
   trump: Suit,
 ): PlayingCard[] {
-  if (!trick || trick.plays.length === 0) return [...hand];
-  const ledSuit = effectiveSuit(trick.plays[0]!.card, trump);
-  const canFollow = hand.filter((c) => effectiveSuit(c, trump) === ledSuit);
-  return canFollow.length > 0 ? canFollow : [...hand];
+  const ledCard = trick?.plays[0]?.card ?? null;
+  return coreLegalPlays(hand, ledCard, euchreRules(trump));
 }
 
 /** The winning player of a completed (or in-progress) trick. */
 export function trickWinner(trick: Trick, trump: Suit): PlayerIndex {
-  if (trick.plays.length === 0) {
-    throw new Error("Cannot determine winner of empty trick");
-  }
-  const ledSuit = effectiveSuit(trick.plays[0]!.card, trump);
-  let best = trick.plays[0]!;
-  let bestStrength = cardStrength(best.card, trump, ledSuit);
-  for (const play of trick.plays.slice(1)) {
-    const s = cardStrength(play.card, trump, ledSuit);
-    if (s > bestStrength) {
-      bestStrength = s;
-      best = play;
-    }
-  }
-  return best.player;
-}
-
-export function removeCardFromHand(
-  hand: PlayingCard[],
-  card: PlayingCard,
-): PlayingCard {
-  const idx = hand.findIndex((c) => cardKey(c) === cardKey(card));
-  if (idx < 0) throw new Error(`Card ${cardKey(card)} not in hand`);
-  return hand.splice(idx, 1)[0]!;
+  return coreTrickWinner(trick.plays, euchreRules(trump));
 }
