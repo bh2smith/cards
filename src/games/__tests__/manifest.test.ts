@@ -2,7 +2,12 @@ import { test, expect } from "bun:test";
 import { GAMES } from "../index";
 import { GameId } from "../../shared/circles/leaderboard";
 
-const CATEGORIES = ["Solitaire", "Head-to-Head", "Trick-Taking"];
+const CATEGORIES = [
+  "Solitaire",
+  "Head-to-Head",
+  "Trick-Taking",
+  "Family & Kids",
+];
 
 test("game ids are unique", () => {
   const ids = GAMES.map((m) => m.id);

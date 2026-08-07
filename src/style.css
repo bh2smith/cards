@@ -1,3 +1,8 @@
+@import "./games/war/style.css";
+@import "./games/go-fish/style.css";
+@import "./games/old-maid/style.css";
+@import "./games/michigan/style.css";
+
 @import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,400&display=swap");
 
 * {
@@ -4067,4 +4072,42 @@ body.light-theme .catalog-item:hover {
 
 body.light-theme .catalog-chip {
   background: rgba(0, 0, 0, 0.06);
+}
+
+/* ── PRESET PICKER ── */
+.preset-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  padding: 6px 12px;
+}
+
+.preset-chip {
+  font-size: 0.75rem;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  text-decoration: none;
+  opacity: 0.75;
+}
+
+.preset-chip:hover {
+  opacity: 1;
+}
+
+.preset-chip.active {
+  background: #2e7d4f;
+  color: #fff;
+  opacity: 1;
+}
+
+body.light-theme .preset-chip {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+body.light-theme .preset-chip.active {
+  background: #2e7d4f;
+  color: #fff;
 }

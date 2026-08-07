@@ -11,6 +11,10 @@ import { cuttleManifest } from "./cuttle/manifest";
 import { heartsManifest } from "./hearts/manifest";
 import { euchreManifest } from "./euchre/manifest";
 import { spadesManifest } from "./spades/manifest";
+import { warManifest } from "./war/manifest";
+import { goFishManifest } from "./go-fish/manifest";
+import { oldMaidManifest } from "./old-maid/manifest";
+import { michiganManifest } from "./michigan/manifest";
 
 /** Order within a category is the lobby display order. */
 export const GAMES: GameManifest[] = [
@@ -26,4 +30,8 @@ export const GAMES: GameManifest[] = [
   heartsManifest,
   euchreManifest,
   spadesManifest,
+  warManifest,
+  goFishManifest,
+  oldMaidManifest,
+  michiganManifest,
 ];

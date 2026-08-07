@@ -1,0 +1,186 @@
+/* ── MICHIGAN ── */
+.mich-status {
+  text-align: center;
+  font-size: 0.85rem;
+  opacity: 0.8;
+  margin: 4px 0 8px;
+}
+
+.mich-table {
+  display: grid;
+  grid-template-columns: minmax(90px, 1fr) minmax(0, 2fr) minmax(90px, 1fr);
+  grid-template-areas:
+    ". top ."
+    "left center right"
+    ". self .";
+  gap: 10px;
+  align-items: center;
+  justify-items: center;
+  margin: 6px 0 10px;
+}
+
+.mich-seat-top {
+  grid-area: top;
+}
+.mich-seat-left {
+  grid-area: left;
+}
+.mich-seat-right {
+  grid-area: right;
+}
+.mich-seat-self {
+  grid-area: self;
+}
+.mich-center {
+  grid-area: center;
+  min-height: 150px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.mich-seat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+}
+.mich-seat.mich-active {
+  border-color: #e8b019;
+  box-shadow: 0 0 6px rgba(232, 176, 25, 0.5);
+}
+.mich-seat-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.82rem;
+}
+.mich-seat-name {
+  font-weight: 600;
+}
+.mich-seat-chips {
+  opacity: 0.75;
+}
+
+.mich-fan {
+  display: flex;
+}
+.mich-fan .card {
+  margin-left: -22px;
+}
+.mich-fan .card:first-child {
+  margin-left: 0;
+}
+
+.mich-boodle {
+  display: flex;
+  gap: 10px;
+}
+.mich-boodle-slot {
+  position: relative;
+}
+.mich-chip-badge {
+  position: absolute;
+  bottom: -6px;
+  right: -6px;
+  background: #e8b019;
+  color: #222;
+  font-size: 0.72rem;
+  font-weight: 700;
+  min-width: 20px;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+  border-radius: 50%;
+}
+
+.mich-run {
+  display: flex;
+  gap: 4px;
+  min-height: 60px;
+  align-items: center;
+}
+.mich-run-empty {
+  opacity: 0.6;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+.mich-note {
+  font-size: 0.78rem;
+  opacity: 0.7;
+}
+
+.mich-ft-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  max-width: 220px;
+}
+.mich-ft-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 10px;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 8px;
+}
+.mich-ft-suit {
+  font-size: 1.2rem;
+}
+.mich-ft-suit.red {
+  color: #c0392b;
+}
+.mich-ft-span {
+  font-weight: 600;
+}
+
+.mich-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+.mich-overlay-note {
+  max-width: 320px;
+  font-size: 0.88rem;
+  opacity: 0.85;
+}
+.mich-results {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 200px;
+}
+.mich-result-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  font-size: 0.9rem;
+}
+.mich-result-row.you {
+  font-weight: 700;
+}
+
+.mich-hand .card.mich-playable {
+  outline: 2px solid #e8b019;
+  outline-offset: -2px;
+  transform: translateY(-6px);
+}
+
+.mich-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}

@@ -1,0 +1,74 @@
+/* ── WAR ── */
+
+.war-table {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin: 16px 0;
+}
+
+.war-side {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 20px;
+  min-height: calc(var(--card-height) + 24px);
+}
+
+.war-pile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.war-buried-stack {
+  display: flex;
+}
+
+.war-buried-stack .card + .card {
+  margin-left: calc(var(--card-width) * -0.45);
+}
+
+.war-battlefield {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  min-height: calc(var(--card-height) + 16px);
+  padding: 10px 0;
+  border-top: 1px solid var(--wood-border);
+  border-bottom: 1px solid var(--wood-border);
+  width: min(100%, 420px);
+}
+
+.war-battle-slot.war-winner .card {
+  box-shadow:
+    0 0 0 3px var(--gold),
+    0 0 14px var(--gold-glow);
+}
+
+.war-spoils {
+  flex-basis: 100%;
+  text-align: center;
+  color: var(--gold-light);
+  font-size: 0.9rem;
+}
+
+.war-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 12px 0;
+}
+
+.war-auto-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--cream-dim);
+  cursor: pointer;
+}

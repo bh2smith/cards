@@ -15,6 +15,7 @@ export const CH19_CHILDREN: CatalogEntry[] = [
     deck: "standard 52",
     complexity: 1,
     bookPage: 362,
+    playableId: "war",
     rulesHtml: `
       <p><strong>Goal:</strong> Capture every card in the deck.</p>
       <p><strong>Deal:</strong> Split the deck evenly, face-down. Nobody looks at their cards.</p>
@@ -51,6 +52,7 @@ export const CH19_CHILDREN: CatalogEntry[] = [
     deck: "standard 52",
     complexity: 1,
     bookPage: 364,
+    playableId: "go-fish",
     rulesHtml: `
       <p><strong>Goal:</strong> Collect the most <strong>books</strong> (all four cards of a rank).</p>
       <p><strong>Deal:</strong> 7 cards each with two players, 5 each with more. The rest becomes the fishing pond.</p>
@@ -85,6 +87,7 @@ export const CH19_CHILDREN: CatalogEntry[] = [
     deck: "51 cards (one Queen removed)",
     complexity: 1,
     bookPage: 363,
+    playableId: "old-maid",
     rulesHtml: `
       <p><strong>Goal:</strong> Don't be the one holding the odd Queen at the end.</p>
       <p><strong>Setup:</strong> Remove one Queen from the deck, then deal everything out.</p>

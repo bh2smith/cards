@@ -1,12 +1,15 @@
 import { Suit, type PlayingCard } from "typedeck";
 import type { Player } from "../../shared/types";
 import { createDeck, shuffle } from "../../shared/deck";
+import { resolvePreset } from "../../shared/engine/variant";
 import { botChoosePlay, botChooseSuit } from "./ai";
 import {
+  CRAZY_EIGHTS_FAMILY,
+  WILD_LABEL,
+  type CrazyEightsConfig,
+} from "./config";
+import {
   type CrazyEightsState,
-  HAND_SIZE,
-  WILD_RANK,
-  WINNING_SCORE,
   STALEMATE_RESHUFFLES,
   handValue,
   isLegalPlay,
@@ -22,10 +25,18 @@ export interface BotMove {
 
 export class CrazyEightsGame {
   private state: CrazyEightsState;
+  private readonly config: CrazyEightsConfig;
+  /** Cards drawn by the side to move since their turn started. */
+  private drawsThisTurn = 0;
 
-  constructor() {
+  constructor(presetId?: string) {
+    this.config = resolvePreset(CRAZY_EIGHTS_FAMILY, presetId);
     this.state = this.initialState();
     this.deal();
+  }
+
+  getConfig(): Readonly<CrazyEightsConfig> {
+    return this.config;
   }
 
   private initialState(): CrazyEightsState {
@@ -54,21 +65,23 @@ export class CrazyEightsGame {
   }
 
   deal(): void {
+    const handSize = this.config.handSize;
     const deck = shuffle(createDeck());
-    const playerHand = deck.slice(0, HAND_SIZE);
-    const computerHand = deck.slice(HAND_SIZE, HAND_SIZE * 2);
-    sortHand(playerHand);
-    let cut = HAND_SIZE * 2;
+    const playerHand = deck.slice(0, handSize);
+    const computerHand = deck.slice(handSize, handSize * 2);
+    sortHand(playerHand, this.config.wildRank);
+    let cut = handSize * 2;
 
-    // The starter must not be an eight — bury eights until a normal card turns up.
-    while (deck[cut]!.cardName === WILD_RANK) cut++;
+    // The starter must not be wild — bury wilds until a normal card turns up.
+    while (deck[cut]!.cardName === this.config.wildRank) cut++;
     const starter = deck[cut]!;
-    const rest = deck.slice(HAND_SIZE * 2);
+    const rest = deck.slice(handSize * 2);
     const starterIdx = rest.indexOf(starter);
     rest.splice(starterIdx, 1);
 
     const nonDealer: Player =
       this.state.dealer === "player" ? "computer" : "player";
+    this.drawsThisTurn = 0;
 
     this.state = {
       ...this.state,
@@ -100,9 +113,23 @@ export class CrazyEightsGame {
     const topRank = this.topCard().cardName;
     const out: number[] = [];
     for (let i = 0; i < hand.length; i++) {
-      if (isLegalPlay(hand[i]!, this.state.activeSuit, topRank)) out.push(i);
+      if (
+        isLegalPlay(
+          hand[i]!,
+          this.state.activeSuit,
+          topRank,
+          this.config.wildRank,
+        )
+      )
+        out.push(i);
     }
     return out;
+  }
+
+  /** Whether the side to move has exhausted a per-turn draw limit. */
+  private drawsExhausted(): boolean {
+    const max = this.config.maxDrawsPerTurn;
+    return max !== null && this.drawsThisTurn >= max;
   }
 
   canPlayerDraw(): boolean {
@@ -127,15 +154,23 @@ export class CrazyEightsGame {
     const card = this.state.playerHand.splice(index, 1)[0]!;
     this.state.discardPile.push(card);
     this.state.consecutivePasses = 0;
+    this.drawsThisTurn = 0;
 
     if (this.state.playerHand.length === 0) {
-      this.awardRound("player", handValue(this.state.computerHand));
+      this.awardRound(
+        "player",
+        handValue(
+          this.state.computerHand,
+          this.config.wildRank,
+          this.config.wildValue,
+        ),
+      );
       return true;
     }
 
-    if (card.cardName === WILD_RANK) {
+    if (card.cardName === this.config.wildRank) {
       this.state.phase = "CHOOSE_SUIT";
-      this.state.message = "You played an eight — choose the next suit.";
+      this.state.message = `You played ${WILD_LABEL[this.config.wildRank] ?? "a wild card"} — choose the next suit.`;
     } else {
       this.state.activeSuit = card.suit;
       this.endPlayerTurn();
@@ -149,18 +184,29 @@ export class CrazyEightsGame {
     this.endPlayerTurn();
   }
 
-  /** Draw a single card when the player has no legal play, or pass if none left. */
+  /**
+   * Draw a single card when the player has no legal play — or pass, when
+   * nothing is left to draw or the preset's per-turn draw limit is spent.
+   */
   playerDraw(): void {
     if (!this.canPlayerDraw()) return;
+    if (this.drawsExhausted()) {
+      this.drawsThisTurn = 0;
+      this.passTurn("player");
+      return;
+    }
     this.ensureStock();
     if (this.state.stock.length === 0) {
       this.passTurn("player");
       return;
     }
     this.state.playerHand.push(this.state.stock.pop()!);
-    sortHand(this.state.playerHand);
+    this.drawsThisTurn++;
+    sortHand(this.state.playerHand, this.config.wildRank);
     if (this.legalPlays(this.state.playerHand).length > 0) {
       this.state.message = "You drew a playable card.";
+    } else if (this.drawsExhausted()) {
+      this.state.message = "No match — draw limit reached, you must pass.";
     } else if (this.hasDrawableCard()) {
       this.state.message = "Still no match — draw again.";
     } else {
@@ -174,6 +220,11 @@ export class CrazyEightsGame {
     let drewCount = 0;
     let legal = this.legalPlays(this.state.computerHand);
     while (legal.length === 0) {
+      const max = this.config.maxDrawsPerTurn;
+      if (max !== null && drewCount >= max) {
+        this.passTurn("computer");
+        return { drewCount, playedCard: null, chosenSuit: null, passed: true };
+      }
       this.ensureStock();
       if (this.state.stock.length === 0) {
         this.passTurn("computer");
@@ -184,19 +235,31 @@ export class CrazyEightsGame {
       legal = this.legalPlays(this.state.computerHand);
     }
 
-    const idx = botChoosePlay(this.state.computerHand, legal);
+    const idx = botChoosePlay(
+      this.state.computerHand,
+      legal,
+      this.config.wildRank,
+      this.config.wildValue,
+    );
     const card = this.state.computerHand.splice(idx, 1)[0]!;
     this.state.discardPile.push(card);
     this.state.consecutivePasses = 0;
 
     if (this.state.computerHand.length === 0) {
-      this.awardRound("computer", handValue(this.state.playerHand));
+      this.awardRound(
+        "computer",
+        handValue(
+          this.state.playerHand,
+          this.config.wildRank,
+          this.config.wildValue,
+        ),
+      );
       return { drewCount, playedCard: card, chosenSuit: null, passed: false };
     }
 
     let chosenSuit: Suit | null = null;
-    if (card.cardName === WILD_RANK) {
-      chosenSuit = botChooseSuit(this.state.computerHand);
+    if (card.cardName === this.config.wildRank) {
+      chosenSuit = botChooseSuit(this.state.computerHand, this.config.wildRank);
       this.state.activeSuit = chosenSuit;
     } else {
       this.state.activeSuit = card.suit;
@@ -230,6 +293,7 @@ export class CrazyEightsGame {
   }
 
   private passTurn(who: Player): void {
+    this.drawsThisTurn = 0;
     this.state.consecutivePasses++;
     if (this.state.consecutivePasses >= 2) {
       this.resolveBlocked();
@@ -245,8 +309,13 @@ export class CrazyEightsGame {
   }
 
   private resolveBlocked(): void {
-    const playerValue = handValue(this.state.playerHand);
-    const computerValue = handValue(this.state.computerHand);
+    const { wildRank, wildValue } = this.config;
+    const playerValue = handValue(this.state.playerHand, wildRank, wildValue);
+    const computerValue = handValue(
+      this.state.computerHand,
+      wildRank,
+      wildValue,
+    );
     if (playerValue === computerValue) {
       this.awardRound(null, 0, true);
     } else if (playerValue < computerValue) {
@@ -267,8 +336,8 @@ export class CrazyEightsGame {
     else if (winner === "computer") this.state.computerScore += points;
 
     const reachedTarget =
-      this.state.playerScore >= WINNING_SCORE ||
-      this.state.computerScore >= WINNING_SCORE;
+      this.state.playerScore >= this.config.targetScore ||
+      this.state.computerScore >= this.config.targetScore;
 
     if (reachedTarget) {
       this.state.phase = "GAME_OVER";

@@ -1,7 +1,11 @@
 import type { Destroyable } from "../shared/types";
 import type { GameIdValue } from "../shared/circles/leaderboard";
 
-export type GameCategory = "Solitaire" | "Head-to-Head" | "Trick-Taking";
+export type GameCategory =
+  | "Solitaire"
+  | "Head-to-Head"
+  | "Trick-Taking"
+  | "Family & Kids";
 
 export interface GameManifest {
   id: string;

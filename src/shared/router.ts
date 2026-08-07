@@ -20,6 +20,7 @@ const CATEGORY_ORDER: GameCategory[] = [
   "Solitaire",
   "Head-to-Head",
   "Trick-Taking",
+  "Family & Kids",
 ];
 
 const registry = new Map<string, () => Destroyable>();
@@ -41,7 +42,7 @@ function handle(): void {
   if (current?.destroy) current.destroy();
   current = null;
 
-  const id = location.hash.replace(/^#\/?/, "");
+  const id = location.hash.replace(/^#\/?/, "").split("?")[0]!;
   const factory = id ? registry.get(id) : undefined;
 
   if (id === "leaderboard") {
