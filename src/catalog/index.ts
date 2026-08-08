@@ -1,5 +1,7 @@
 import type { CatalogEntry } from "./types";
 import { EXISTING_GAMES } from "./data/existing-games";
+import { CH04_RUMMY } from "./data/ch04-rummy";
+import { CH05_GIN } from "./data/ch05-gin";
 import { CH17_STOPS } from "./data/ch17-stops";
 import { CH19_CHILDREN } from "./data/ch19-children";
 
@@ -33,6 +35,8 @@ export const BEYOND_THE_BOOK = "Beyond the Book";
 
 export const ALL_ENTRIES: CatalogEntry[] = [
   ...EXISTING_GAMES,
+  ...CH04_RUMMY,
+  ...CH05_GIN,
   ...CH17_STOPS,
   ...CH19_CHILDREN,
 ];

@@ -1,0 +1,117 @@
+/* ── RUMMY ── */
+.rummy-table {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 6px 0;
+}
+
+.rummy-meld-zone {
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 12px;
+  padding: 8px;
+  min-height: 70px;
+}
+
+.rummy-zone-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  opacity: 0.7;
+  margin-bottom: 6px;
+}
+
+.rummy-zone-empty {
+  opacity: 0.5;
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+.rummy-melds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rummy-meld {
+  display: flex;
+  padding: 2px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+}
+
+.rummy-meld .card {
+  margin-left: -14px;
+}
+
+.rummy-meld .card:first-child {
+  margin-left: 0;
+}
+
+.rummy-meld.rummy-layoff-target {
+  border-color: #e8b019;
+  box-shadow: 0 0 6px rgba(232, 176, 25, 0.5);
+  cursor: pointer;
+}
+
+.rummy-play-area {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px;
+  margin: 8px 0;
+}
+
+.rummy-discard-row {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 420px;
+}
+
+.rummy-discard-row .card {
+  margin-left: -18px;
+  cursor: pointer;
+}
+
+.rummy-discard-row .card:first-child {
+  margin-left: 0;
+}
+
+.rummy-discard-row .card:hover {
+  transform: translateY(-4px);
+}
+
+.rummy-hand .card {
+  cursor: pointer;
+}
+
+.rummy-hand .card.selected {
+  transform: translateY(-8px);
+}
+
+.rummy-bot-hand {
+  min-height: 60px;
+}
+
+.rummy-action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.rummy-action-buttons button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+#rummy-knock-summary {
+  margin: 4px 0;
+}
+
+.rummy-knock-row {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}

@@ -28,6 +28,19 @@ export interface KnockResult {
   pointsTo: Player;
 }
 
+export interface HollywoodColumn {
+  playerScore: number;
+  computerScore: number;
+  closed: boolean;
+  winner: Player | null;
+}
+
+export interface HollywoodState {
+  columns: [HollywoodColumn, HollywoodColumn, HollywoodColumn];
+  playerWins: number;
+  computerWins: number;
+}
+
 export interface GinState extends BaseGameState {
   phase: GinPhase;
   playerScore: number;
@@ -38,13 +51,16 @@ export interface GinState extends BaseGameState {
   computerHand: PlayingCard[];
   stock: PlayingCard[];
   discardPile: PlayingCard[];
+  /** The card turned up when the round was dealt (Oklahoma knock cap). */
+  initialUpcard: PlayingCard | null;
+  /** Resolved knock cap for the current round. */
+  knockThreshold: number;
   knockResult: KnockResult | null;
+  /** Three-column bookkeeping; null unless the Hollywood preset is active. */
+  hollywood: HollywoodState | null;
   winner: Player | null;
 }
 
-export const WINNING_SCORE = 100;
-export const GIN_BONUS = 25;
-export const UNDERCUT_BONUS = 25;
 export const KNOCK_THRESHOLD = 10;
 
 export function pipValue(card: PlayingCard): number {

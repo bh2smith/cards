@@ -1,6 +1,18 @@
 import { test, expect } from "bun:test";
 import { ALL_ENTRIES, getEntry, searchEntries, groupedEntries } from "../index";
 import { GAMES } from "../../games";
+import type { FamilyDef } from "../../shared/engine/variant";
+import { CRAZY_EIGHTS_FAMILY } from "../../games/crazy-eights/config";
+import { MICHIGAN_FAMILY } from "../../games/michigan/config";
+import { RUMMY_FAMILY } from "../../games/rummy/config";
+import { GIN_FAMILY } from "../../games/gin/config";
+
+const FAMILY_DEFS: Record<string, FamilyDef<object>> = {
+  "crazy-eights": CRAZY_EIGHTS_FAMILY,
+  michigan: MICHIGAN_FAMILY,
+  rummy: RUMMY_FAMILY,
+  gin: GIN_FAMILY,
+};
 
 test("catalog slugs are unique", () => {
   const slugs = ALL_ENTRIES.map((e) => e.slug);
@@ -26,6 +38,16 @@ test("playableId references a registered playable game", () => {
     if (e.playableId) {
       expect(playable.has(e.playableId)).toBe(true);
     }
+  }
+});
+
+test("every presetId resolves against its engine's family definition", () => {
+  for (const e of ALL_ENTRIES) {
+    if (!e.presetId) continue;
+    expect(e.playableId).toBeDefined();
+    const def = FAMILY_DEFS[e.playableId!];
+    expect(def).toBeDefined();
+    expect(def!.presets[e.presetId]).toBeDefined();
   }
 });
 
