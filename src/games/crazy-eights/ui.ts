@@ -3,10 +3,12 @@ import { CrazyEightsGame } from "./game";
 import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
 import { SUIT_SYMBOL } from "../../shared/deck";
 import type { CrazyEightsState } from "./types";
-import { WINNING_SCORE } from "./types";
 import { confirmIfEnabled } from "../../shared/settings";
 import { openInstructions } from "../../shared/ui/instructions-modal";
 import { LeaderboardReporter, GameId } from "../../shared/circles/leaderboard";
+import { presetFromHash } from "../../shared/engine/variant";
+import { presetChipsHtml } from "../../shared/ui/preset-picker";
+import { CRAZY_EIGHTS_FAMILY } from "./config";
 
 const SUIT_ORDER: Suit[] = [
   Suit.Clubs,
@@ -22,10 +24,12 @@ export class CrazyEightsUI {
   private destroyed = false;
   private animating = false;
   private reporter = new LeaderboardReporter(GameId.CrazyEights);
+  private presetId: string | undefined;
 
   constructor() {
-    document.getElementById("app")!.innerHTML = CrazyEightsUI.template();
-    this.game = new CrazyEightsGame();
+    this.presetId = presetFromHash(location.hash);
+    document.getElementById("app")!.innerHTML = this.template();
+    this.game = new CrazyEightsGame(this.presetId);
     this.bindEvents();
     this.render();
     if (this.game.getState().phase === "BOT_TURN") this.scheduleBotTurn();
@@ -36,18 +40,23 @@ export class CrazyEightsUI {
     document.getElementById("app")!.innerHTML = "";
   }
 
-  static template(): string {
+  private template(): string {
+    const presetName = this.presetId
+      ? CRAZY_EIGHTS_FAMILY.presets[this.presetId]?.name
+      : undefined;
     return `
       <div class="header">
         <div class="header-left">
           <a href="#" class="back-link">← Games</a>
-          <h1>Crazy Eights</h1>
+          <h1>${presetName ?? "Crazy Eights"}</h1>
         </div>
         <div class="header-right">
           <button class="help-btn" id="help-btn" type="button" aria-label="How to play">?</button>
           <button id="new-game-btn">New Game</button>
         </div>
       </div>
+
+      ${presetChipsHtml("crazy-eights", CRAZY_EIGHTS_FAMILY, this.presetId)}
 
       <div class="scoreboard">
         <div class="score-row">
@@ -174,12 +183,13 @@ export class CrazyEightsUI {
 
     this.reporter.reportVsAi(state.phase, state.winner === "player");
 
+    const target = this.game.getConfig().targetScore;
     this.$("player-score").textContent = String(state.playerScore);
     this.$("computer-score").textContent = String(state.computerScore);
     this.$("player-peg").style.width =
-      `${Math.min(100, (state.playerScore / WINNING_SCORE) * 100)}%`;
+      `${Math.min(100, (state.playerScore / target) * 100)}%`;
     this.$("computer-peg").style.width =
-      `${Math.min(100, (state.computerScore / WINNING_SCORE) * 100)}%`;
+      `${Math.min(100, (state.computerScore / target) * 100)}%`;
     this.$("message").textContent = state.message;
 
     this.renderComputerHand(state);

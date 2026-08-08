@@ -1,15 +1,8 @@
 import { LeaderboardUI } from "./ui/leaderboard";
-
-interface GameMeta {
-  label: string;
-  description: string;
-  factory: () => Destroyable;
-  available: boolean;
-}
-
-interface Destroyable {
-  destroy?(): void;
-}
+import { CatalogUI } from "../catalog/ui";
+import { GAMES } from "../games";
+import type { GameCategory } from "../games/types";
+import type { Destroyable } from "./types";
 
 interface GameEntry {
   id: string;
@@ -23,18 +16,20 @@ interface Category {
   games: GameEntry[];
 }
 
-const registry = new Map<string, GameMeta>();
+const CATEGORY_ORDER: GameCategory[] = [
+  "Solitaire",
+  "Head-to-Head",
+  "Trick-Taking",
+  "Family & Kids",
+];
+
+const registry = new Map<string, () => Destroyable>();
 let current: Destroyable | null = null;
 let openSection: string | null = null;
 
 export const router = {
-  register(
-    id: string,
-    label: string,
-    description: string,
-    factory: () => Destroyable,
-  ): void {
-    registry.set(id, { label, description, factory, available: true });
+  register(id: string, factory: () => Destroyable): void {
+    registry.set(id, factory);
   },
 
   init(): void {
@@ -47,105 +42,30 @@ function handle(): void {
   if (current?.destroy) current.destroy();
   current = null;
 
-  const id = location.hash.replace(/^#\/?/, "");
-  const route = id ? registry.get(id) : undefined;
+  const id = location.hash.replace(/^#\/?/, "").split("?")[0]!;
+  const factory = id ? registry.get(id) : undefined;
 
   if (id === "leaderboard") {
     current = new LeaderboardUI();
-  } else if (route?.available) {
-    current = route.factory();
+  } else if (id === "rules" || id.startsWith("rules/")) {
+    current = new CatalogUI(id.startsWith("rules/") ? id.slice(6) : null);
+  } else if (factory) {
+    current = factory();
   } else {
     renderLobby();
   }
 }
 
-function gameEntry(id: string, label: string, description: string): GameEntry {
-  return {
-    id,
-    label,
-    description,
-    available: registry.get(id)?.available ?? false,
-  };
-}
-
 function getCategories(): Category[] {
-  return [
-    {
-      name: "Solitaire",
-      games: [
-        gameEntry(
-          "golf",
-          "Golf Solitaire",
-          "Clear the tableau by playing cards one rank above or below the waste top.",
-        ),
-        gameEntry(
-          "pyramid",
-          "Pyramid",
-          "Pair exposed cards that sum to 13 to clear the pyramid.",
-        ),
-        gameEntry(
-          "klondike",
-          "Klondike",
-          "The classic. Build four foundation piles from Ace to King by suit.",
-        ),
-        gameEntry(
-          "freecell",
-          "Freecell",
-          "All cards face-up. Use four free cells to maneuver cards to the foundations.",
-        ),
-      ],
-    },
-    {
-      name: "Head-to-Head",
-      games: [
-        gameEntry(
-          "cribbage",
-          "Cribbage",
-          "Score points through pegging and showing your hand. First to 121 wins.",
-        ),
-        gameEntry(
-          "gin",
-          "Gin Rummy",
-          "Form melds and knock before the bot does. Score runs and sets.",
-        ),
-        gameEntry(
-          "blackjack",
-          "Blackjack",
-          "Beat the dealer. Get as close to 21 as you can without going bust.",
-        ),
-        gameEntry(
-          "crazy-eights",
-          "Crazy Eights",
-          "Match the suit or rank. Play an eight to change suits. First to empty wins.",
-        ),
-        gameEntry(
-          "cuttle",
-          "Cuttle",
-          "A card duel. Race to 21 points while one-offs and royals disrupt your foe.",
-        ),
-      ],
-    },
-    {
-      name: "Trick-Taking",
-      games: [
-        gameEntry(
-          "hearts",
-          "Hearts",
-          "Avoid hearts and the queen of spades across 4 players.",
-        ),
-        gameEntry(
-          "euchre",
-          "Euchre",
-          "Partnership trick-taking with bowers and trump. First team to 10 wins.",
-        ),
-        gameEntry(
-          "spades",
-          "Spades",
-          "Bid and take tricks with your partner. Spades are always trump.",
-        ),
-      ],
-    },
-  ];
+  return CATEGORY_ORDER.map((name) => ({
+    name,
+    games: GAMES.filter((m) => m.category === name).map((m) => ({
+      id: m.id,
+      label: m.title,
+      description: m.blurb,
+      available: !m.comingSoon && m.load !== undefined,
+    })),
+  }));
 }
 
 function renderLobby(): void {
@@ -187,6 +107,7 @@ function renderLobby(): void {
       </div>
       <div class="lobby-footer">
         <button class="lobby-leaderboard-btn" id="lobby-leaderboard-btn">Leaderboard</button>
+        <button class="lobby-leaderboard-btn" id="lobby-rules-btn">Rules Library</button>
       </div>
     </div>
   `;
@@ -210,4 +131,8 @@ function renderLobby(): void {
     ?.addEventListener("click", () => {
       location.hash = "/leaderboard";
     });
+
+  document.getElementById("lobby-rules-btn")?.addEventListener("click", () => {
+    location.hash = "/rules";
+  });
 }

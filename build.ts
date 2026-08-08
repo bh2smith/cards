@@ -5,6 +5,7 @@ const result = await Bun.build({
   outdir: "./dist",
   minify: true,
   target: "browser",
+  splitting: true,
 });
 
 if (!result.success) {

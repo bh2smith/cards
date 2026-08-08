@@ -1,0 +1,42 @@
+/* ── OLD MAID ── */
+
+.oldmaid-side {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  margin: 12px 0;
+  min-height: 110px;
+}
+
+.oldmaid-pile {
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.oldmaid-pile-count {
+  margin-top: 4px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.oldmaid-hand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  min-height: 90px;
+}
+
+.oldmaid-hand .card {
+  margin-left: -28px;
+  transition: transform 0.15s ease;
+}
+
+.oldmaid-hand .card:first-child {
+  margin-left: 0;
+}
+
+.oldmaid-bot-hand .card.oldmaid-drawable:hover {
+  transform: translateY(-10px);
+  z-index: 2;
+}
