@@ -5,6 +5,7 @@ import { klondikeManifest } from "./klondike/manifest";
 import { freecellManifest } from "./freecell/manifest";
 import { cribbageManifest } from "./cribbage/manifest";
 import { ginManifest } from "./gin/manifest";
+import { rummyManifest } from "./rummy/manifest";
 import { blackjackManifest } from "./blackjack/manifest";
 import { crazyEightsManifest } from "./crazy-eights/manifest";
 import { cuttleManifest } from "./cuttle/manifest";
@@ -24,6 +25,7 @@ export const GAMES: GameManifest[] = [
   freecellManifest,
   cribbageManifest,
   ginManifest,
+  rummyManifest,
   blackjackManifest,
   crazyEightsManifest,
   cuttleManifest,

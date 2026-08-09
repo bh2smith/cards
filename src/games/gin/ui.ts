@@ -1,21 +1,27 @@
+import type { PlayingCard } from "typedeck";
 import { GinRummyGame } from "./game";
 import { renderCard, renderFaceDownCard } from "../../shared/ui/cards";
 import { RANK_DISPLAY, SUIT_SYMBOL, cardKey } from "../../shared/deck";
 import { findBestMelds } from "./melds";
-import type { GinState, KnockResult, Meld } from "./types";
+import { ginRunOptions, GIN_FAMILY } from "./config";
+import type { GinState, HollywoodState, KnockResult, Meld } from "./types";
 import { confirmIfEnabled } from "../../shared/settings";
 import { openInstructions } from "../../shared/ui/instructions-modal";
 import { LeaderboardReporter, GameId } from "../../shared/circles/leaderboard";
+import { presetFromHash } from "../../shared/engine/variant";
+import { presetChipsHtml } from "../../shared/ui/preset-picker";
 
 export class GinRummyUI {
   private game: GinRummyGame;
   private destroyed = false;
   private animating = false;
   private reporter = new LeaderboardReporter(GameId.GinRummy);
+  private presetId: string | undefined;
 
   constructor() {
-    document.getElementById("app")!.innerHTML = GinRummyUI.template();
-    this.game = new GinRummyGame();
+    this.presetId = presetFromHash(location.hash);
+    this.game = new GinRummyGame(this.presetId);
+    document.getElementById("app")!.innerHTML = this.template();
     this.bindEvents();
     this.render();
   }
@@ -25,12 +31,15 @@ export class GinRummyUI {
     document.getElementById("app")!.innerHTML = "";
   }
 
-  static template(): string {
+  private template(): string {
+    const presetName = this.presetId
+      ? GIN_FAMILY.presets[this.presetId]?.name
+      : undefined;
     return `
       <div class="header">
         <div class="header-left">
           <a href="#" class="back-link">← Games</a>
-          <h1>Gin Rummy</h1>
+          <h1>${presetName ?? "Gin Rummy"}</h1>
         </div>
         <div class="header-right">
           <button class="help-btn" id="help-btn" type="button" aria-label="How to play">?</button>
@@ -38,18 +47,9 @@ export class GinRummyUI {
         </div>
       </div>
 
-      <div class="scoreboard">
-        <div class="score-row">
-          <span class="score-label">You</span>
-          <span class="score-value" id="player-score">0</span>
-        </div>
-        <div class="board-track"><div class="board-peg" id="player-peg" style="width:0%"></div></div>
-        <div class="score-row">
-          <span class="score-label">Computer</span>
-          <span class="score-value" id="computer-score">0</span>
-        </div>
-        <div class="board-track"><div class="board-peg" id="computer-peg" style="width:0%"></div></div>
-      </div>
+      ${presetChipsHtml("gin", GIN_FAMILY, this.presetId)}
+
+      ${this.scoreboardTemplate()}
 
       <div class="hand-area gin-bot-hand" id="computer-hand"></div>
 
@@ -62,6 +62,7 @@ export class GinRummyUI {
 
       <div id="knock-display" class="hidden"></div>
 
+      <div class="message-bar hidden" id="knock-cap"></div>
       <div class="message-bar" id="message"></div>
 
       <div class="action-area">
@@ -69,6 +70,26 @@ export class GinRummyUI {
           <button id="action-btn" class="hidden">Next Round</button>
           <button id="knock-btn" class="hidden">Knock</button>
         </div>
+      </div>
+    `;
+  }
+
+  private scoreboardTemplate(): string {
+    if (this.game.getConfig().hollywood) {
+      return `<div class="scoreboard" id="hollywood-scoreboard"></div>`;
+    }
+    return `
+      <div class="scoreboard">
+        <div class="score-row">
+          <span class="score-label">You</span>
+          <span class="score-value" id="player-score">0</span>
+        </div>
+        <div class="board-track"><div class="board-peg" id="player-peg" style="width:0%"></div></div>
+        <div class="score-row">
+          <span class="score-label">Computer</span>
+          <span class="score-value" id="computer-score">0</span>
+        </div>
+        <div class="board-track"><div class="board-peg" id="computer-peg" style="width:0%"></div></div>
       </div>
     `;
   }
@@ -174,12 +195,20 @@ export class GinRummyUI {
 
     this.reporter.reportVsAi(state.phase, state.winner === "player");
 
-    this.$("player-score").textContent = String(state.playerScore);
-    this.$("computer-score").textContent = String(state.computerScore);
-    this.$("player-peg").style.width = `${Math.min(100, state.playerScore)}%`;
-    this.$("computer-peg").style.width =
-      `${Math.min(100, state.computerScore)}%`;
+    if (state.hollywood) {
+      this.renderHollywoodScoreboard(state.hollywood);
+    } else {
+      const target = this.game.getConfig().targetScore;
+      this.$("player-score").textContent = String(state.playerScore);
+      this.$("computer-score").textContent = String(state.computerScore);
+      this.$("player-peg").style.width =
+        `${Math.min(100, (state.playerScore / target) * 100)}%`;
+      this.$("computer-peg").style.width =
+        `${Math.min(100, (state.computerScore / target) * 100)}%`;
+    }
+
     this.$("message").textContent = state.message;
+    this.renderKnockCap(state);
 
     this.renderComputerHand(state);
     this.renderPlayerHand(state);
@@ -188,11 +217,51 @@ export class GinRummyUI {
     this.renderButtons(state);
   }
 
+  private renderKnockCap(state: GinState): void {
+    const el = this.$("knock-cap");
+    if (typeof this.game.getConfig().knockThreshold !== "function") {
+      el.classList.add("hidden");
+      return;
+    }
+    el.classList.remove("hidden");
+    el.textContent =
+      state.knockThreshold === 0
+        ? "Gin only this round"
+        : `Knock ≤ ${state.knockThreshold}`;
+  }
+
+  private renderHollywoodScoreboard(hw: HollywoodState): void {
+    const cell = (value: number, closed: boolean) =>
+      `<td style="text-align:center;padding:2px 10px;${closed ? "opacity:0.6;" : ""}">${value}</td>`;
+    const head = hw.columns
+      .map(
+        (c, i) =>
+          `<th style="text-align:center;padding:2px 10px;">Game ${i + 1}${c.closed ? " ✓" : ""}</th>`,
+      )
+      .join("");
+    this.$("hollywood-scoreboard").innerHTML = `
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr><th></th>${head}</tr></thead>
+        <tbody>
+          <tr>
+            <th class="score-label" style="text-align:left;">You</th>
+            ${hw.columns.map((c) => cell(c.playerScore, c.closed)).join("")}
+          </tr>
+          <tr>
+            <th class="score-label" style="text-align:left;">Computer</th>
+            ${hw.columns.map((c) => cell(c.computerScore, c.closed)).join("")}
+          </tr>
+        </tbody>
+      </table>
+    `;
+  }
+
   private groupedHandHtml(
     hand: readonly PlayingCard[],
     opts: { small?: boolean; dimmed?: boolean } = {},
   ): string {
-    const { melds, deadwood } = findBestMelds([...hand]);
+    const runOptions = ginRunOptions(this.game.getConfig());
+    const { melds, deadwood } = findBestMelds([...hand], runOptions);
     const meldKeys = new Set<string>();
     const parts: string[] = [];
 
