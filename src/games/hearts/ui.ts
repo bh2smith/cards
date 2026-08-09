@@ -1,5 +1,8 @@
-import { type PlayingCard } from "typedeck";
+import { CardName, PlayingCard, Suit } from "typedeck";
 import { HeartsGame } from "./game";
+import { HEARTS_FAMILY } from "./config";
+import { presetFromHash } from "../../shared/engine/variant";
+import { presetChipsHtml } from "../../shared/ui/preset-picker";
 import { renderCard } from "../../shared/ui/cards";
 import { cardKey } from "../../shared/deck";
 import {
@@ -34,19 +37,49 @@ export class HeartsUI {
   private destroyed = false;
   private animating = false;
   private reporter = new LeaderboardReporter(GameId.Hearts);
+  private presetId: string | undefined;
   private selectedPass: number[] = [];
   private completedTrickToShow: Trick | null = null;
   private lastTrickCardKey: string | null = null;
 
   constructor() {
     enterTableMode();
+    this.presetId = presetFromHash(location.hash);
+    const presetName = this.presetId
+      ? HEARTS_FAMILY.presets[this.presetId]?.name
+      : undefined;
     document.getElementById("app")!.innerHTML = tableLayoutHtml({
-      title: "Hearts",
+      title: presetName ?? "Hearts",
       labels: { self: "You", left: "Left", top: "Top", right: "Right" },
     });
-    this.game = new HeartsGame();
+    document
+      .querySelector("#app .header")!
+      .insertAdjacentHTML(
+        "afterend",
+        presetChipsHtml("hearts", HEARTS_FAMILY, this.presetId, "Black Lady"),
+      );
+    this.game = new HeartsGame(this.presetId);
+    this.$("tt-felt-badge").textContent = this.ruleLegend();
     this.bindEvents();
     this.render();
+  }
+
+  /** Compact legend of rule deltas vs. Black Lady (empty for base rules). */
+  private ruleLegend(): string {
+    const cfg = this.game.getConfig();
+    const parts: string[] = [];
+    if (cfg.heartValue(new PlayingCard(CardName.Ace, Suit.Hearts)) !== 1) {
+      parts.push("Hearts count pips");
+    }
+    const { queen, king, ace } = cfg.spadePenalties;
+    if (queen === 0) parts.push("no Q♠ penalty");
+    if (king > 0 || ace > 0)
+      parts.push(`Q♠ ${queen}`, `K♠ ${king}`, `A♠ ${ace}`);
+    if (cfg.jackDiamondsBonus !== 0) {
+      parts.push(`J♦ ${String(cfg.jackDiamondsBonus).replace("-", "−")}`);
+    }
+    if (cfg.targetScore !== 100) parts.push(`to ${cfg.targetScore}`);
+    return parts.join(" · ");
   }
 
   destroy(): void {
@@ -210,7 +243,9 @@ export class HeartsUI {
       this.$(`tt-score-total-${pos}`).textContent = String(state.scores[i]);
       const round =
         state.roundResult?.pointsByPlayer[i] ?? state.roundScores[i] ?? 0;
-      this.$(`tt-score-sub-${pos}`).textContent = round > 0 ? `+${round}` : "";
+      // Negative rounds happen in Omnibus (J♦ −10).
+      this.$(`tt-score-sub-${pos}`).textContent =
+        round === 0 ? "" : round > 0 ? `+${round}` : `−${-round}`;
       const active = state.phase === "PLAYING" && state.currentTurn === i;
       this.$(`tt-score-${pos}`).classList.toggle("tt-active", active);
     }
@@ -312,7 +347,7 @@ export class HeartsUI {
       if (state.currentTurn === 0) {
         const trickPts =
           state.currentTrick?.plays.reduce(
-            (s, p) => s + cardPoints(p.card),
+            (s, p) => s + cardPoints(p.card, this.game.getConfig()),
             0,
           ) ?? 0;
         const lead = state.currentTrick?.plays.length === 0;

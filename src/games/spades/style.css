@@ -1,0 +1,84 @@
+/* ── SPADES ── */
+
+.spades-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--cream-dim);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.spades-suit {
+  color: var(--cream);
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.spades-bid-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  max-width: 480px;
+}
+
+.spades-bid-btn,
+.spades-nil-btn {
+  min-width: 42px;
+  padding: 6px 0;
+}
+
+.spades-nil-btn {
+  border-color: var(--gold);
+  color: var(--gold-light);
+}
+
+.spades-btn-ghost {
+  opacity: 0.75;
+}
+
+.spades-summary {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--text);
+  font-size: 0.82rem;
+  text-align: center;
+  max-width: 420px;
+}
+
+.spades-sum-title {
+  font-family: "Cinzel", serif;
+  font-size: 1rem;
+  color: var(--gold-light);
+}
+
+.spades-sum-team {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.spades-sum-name {
+  font-weight: 600;
+  color: var(--cream);
+}
+
+.spades-sum-nil {
+  color: var(--cream-dim);
+  font-size: 0.76rem;
+}
+
+.spades-sum-total {
+  color: var(--gold-light);
+  font-weight: 600;
+}

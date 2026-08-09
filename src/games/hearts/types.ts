@@ -1,4 +1,5 @@
 import { type PlayingCard, CardName, Suit } from "typedeck";
+import { HEARTS_FAMILY, type HeartsConfig } from "./config";
 
 export type PlayerIndex = 0 | 1 | 2 | 3;
 
@@ -81,9 +82,19 @@ export function isTwoOfClubs(card: PlayingCard): boolean {
   return card.suit === Suit.Clubs && card.cardName === CardName.Two;
 }
 
-export function cardPoints(card: PlayingCard): number {
-  if (card.suit === Suit.Hearts) return 1;
-  if (isQueenOfSpades(card)) return 13;
+export function cardPoints(
+  card: PlayingCard,
+  cfg: HeartsConfig = HEARTS_FAMILY.base,
+): number {
+  if (card.suit === Suit.Hearts) return cfg.heartValue(card);
+  if (card.suit === Suit.Spades) {
+    if (card.cardName === CardName.Queen) return cfg.spadePenalties.queen;
+    if (card.cardName === CardName.King) return cfg.spadePenalties.king;
+    if (card.cardName === CardName.Ace) return cfg.spadePenalties.ace;
+  }
+  if (card.suit === Suit.Diamonds && card.cardName === CardName.Jack) {
+    return cfg.jackDiamondsBonus;
+  }
   return 0;
 }
 

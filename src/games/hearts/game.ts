@@ -2,15 +2,17 @@ import { type PlayingCard, Suit } from "typedeck";
 import { createDeck, shuffle, cardKey } from "../../shared/deck";
 import {
   type HeartsState,
+  type PassDirection,
   type PlayerIndex,
   type Trick,
   HAND_SIZE,
-  WINNING_SCORE,
   isTwoOfClubs,
   passDirectionForRound,
   passTarget,
   sortByHearts,
 } from "./types";
+import { resolvePreset } from "../../shared/engine/variant";
+import { HEARTS_FAMILY, type HeartsConfig } from "./config";
 import {
   isLeading,
   legalPlays,
@@ -22,10 +24,16 @@ import { botChoosePass, botChoosePlay } from "./bot";
 
 export class HeartsGame {
   private state: HeartsState;
+  private readonly config: HeartsConfig;
 
-  constructor() {
+  constructor(presetId?: string) {
+    this.config = resolvePreset(HEARTS_FAMILY, presetId);
     this.state = this.initialState();
     this.deal();
+  }
+
+  getConfig(): Readonly<HeartsConfig> {
+    return this.config;
   }
 
   private initialState(): HeartsState {
@@ -83,7 +91,7 @@ export class HeartsGame {
     ];
     hands.forEach((h) => sortByHearts(h));
     this.state.hands = hands;
-    this.state.passDirection = passDirectionForRound(this.state.roundNumber);
+    this.state.passDirection = this.roundPassDirection();
 
     if (this.state.passDirection === "hold") {
       this.state.phase = "PLAYING";
@@ -92,6 +100,15 @@ export class HeartsGame {
       this.state.phase = "PASSING";
       this.state.message = `Round ${this.state.roundNumber} — pass 3 cards ${this.state.passDirection}.`;
     }
+  }
+
+  /** No Pass plays every hand as dealt; Black Maria always passes right. */
+  private roundPassDirection(): PassDirection {
+    if (!this.config.passing) return "hold";
+    return (
+      this.config.fixedPassDirection ??
+      passDirectionForRound(this.state.roundNumber)
+    );
   }
 
   selectPass(player: PlayerIndex, cardIndices: number[]): boolean {
@@ -151,7 +168,7 @@ export class HeartsGame {
     for (let p = 1 as PlayerIndex; p < 4; p = (p + 1) as PlayerIndex) {
       if (this.state.pendingPasses[p]) continue;
       const hand = this.state.hands[p]!;
-      const idx = botChoosePass(hand);
+      const idx = botChoosePass(hand, this.config);
       this.selectPass(p, idx);
     }
   }
@@ -229,14 +246,14 @@ export class HeartsGame {
   }
 
   private completeRound(): void {
-    const result = scoreRound(this.state.completedTricks);
+    const result = scoreRound(this.state.completedTricks, this.config);
     this.state.roundResult = result;
     this.state.roundScores = result.pointsByPlayer;
     for (let i = 0; i < 4; i++) {
       this.state.scores[i]! += result.pointsByPlayer[i]!;
     }
 
-    const winner = gameWinner(this.state.scores, WINNING_SCORE);
+    const winner = gameWinner(this.state.scores, this.config.targetScore);
     if (winner !== null) {
       this.state.winner = winner;
       this.state.phase = "GAME_OVER";
@@ -258,7 +275,7 @@ export class HeartsGame {
     if (this.state.phase !== "PLAYING") return null;
     if (this.state.currentTurn === 0) return null;
     const player = this.state.currentTurn;
-    const card = botChoosePlay(this.state, player);
+    const card = botChoosePlay(this.state, player, this.config);
     this.playCard(player, card);
     return card;
   }
