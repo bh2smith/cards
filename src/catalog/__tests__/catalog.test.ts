@@ -6,12 +6,18 @@ import { CRAZY_EIGHTS_FAMILY } from "../../games/crazy-eights/config";
 import { MICHIGAN_FAMILY } from "../../games/michigan/config";
 import { RUMMY_FAMILY } from "../../games/rummy/config";
 import { GIN_FAMILY } from "../../games/gin/config";
+import { EUCHRE_FAMILY } from "../../games/euchre/config";
+import { HEARTS_FAMILY } from "../../games/hearts/config";
+import { WHIST_FAMILY } from "../../games/whist/config";
 
 const FAMILY_DEFS: Record<string, FamilyDef<object>> = {
   "crazy-eights": CRAZY_EIGHTS_FAMILY,
   michigan: MICHIGAN_FAMILY,
   rummy: RUMMY_FAMILY,
   gin: GIN_FAMILY,
+  euchre: EUCHRE_FAMILY,
+  hearts: HEARTS_FAMILY,
+  whist: WHIST_FAMILY,
 };
 
 test("catalog slugs are unique", () => {

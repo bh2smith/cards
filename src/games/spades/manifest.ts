@@ -5,5 +5,8 @@ export const spadesManifest: GameManifest = {
   title: "Spades",
   blurb: "Bid and take tricks with your partner. Spades are always trump.",
   category: "Trick-Taking",
-  comingSoon: true,
+  load: async () => {
+    const { SpadesUI } = await import("./ui");
+    return () => new SpadesUI();
+  },
 };

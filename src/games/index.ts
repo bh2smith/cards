@@ -12,6 +12,7 @@ import { cuttleManifest } from "./cuttle/manifest";
 import { heartsManifest } from "./hearts/manifest";
 import { euchreManifest } from "./euchre/manifest";
 import { spadesManifest } from "./spades/manifest";
+import { whistManifest } from "./whist/manifest";
 import { warManifest } from "./war/manifest";
 import { goFishManifest } from "./go-fish/manifest";
 import { oldMaidManifest } from "./old-maid/manifest";
@@ -32,6 +33,7 @@ export const GAMES: GameManifest[] = [
   heartsManifest,
   euchreManifest,
   spadesManifest,
+  whistManifest,
   warManifest,
   goFishManifest,
   oldMaidManifest,

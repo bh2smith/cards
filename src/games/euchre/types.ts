@@ -9,6 +9,7 @@ export type EuchrePhase =
   | "BID1" // round 1: order up the turned card, or pass
   | "BID2" // round 2: name a suit (not the turned-down suit), or pass
   | "DISCARD" // human dealer discards after picking up the up-card
+  | "ALONE_DISCARD" // railroad: human loner discards after the partner's gift
   | "PLAYING"
   | "HAND_OVER"
   | "GAME_OVER";
@@ -24,13 +25,20 @@ export interface Trick {
   winner: PlayerIndex | null;
 }
 
+/**
+ * A "side" is a scoring unit: a team (0/1) in partnership play, an individual
+ * player (0–2) in cutthroat. `awards` lists every side that scores this hand
+ * (cutthroat euchre pays each defender); `scoringTeam`/`points` mirror the
+ * first award for the common single-scorer case.
+ */
 export interface HandResult {
-  makerTeam: Team;
+  makerTeam: number;
   maker: PlayerIndex;
   alone: boolean;
-  trickWins: [number, number];
-  scoringTeam: Team;
+  trickWins: number[];
+  scoringTeam: number;
   points: number;
+  awards: { side: number; points: number }[];
   kind: "made" | "march" | "alone-march" | "euchre";
 }
 
@@ -50,11 +58,14 @@ export interface EuchreState {
   currentTurn: PlayerIndex; // whose turn to play
   currentTrick: Trick | null;
   completedTricks: Trick[];
-  trickWins: [number, number]; // tricks won this hand, per team
-  scores: [number, number]; // game points, per team
+  trickWins: SideScores; // tricks won this hand, per side
+  scores: SideScores; // game points, per side
   handResult: HandResult | null;
-  winner: Team | null;
+  winner: number | null; // winning side
 }
+
+/** Per-side tallies: two teams in partnership play, three players cutthroat. */
+export type SideScores = [number, number] | [number, number, number];
 
 export const GAME_POINTS = 10;
 export const HAND_SIZE = 5;
@@ -111,9 +122,17 @@ export function isLeftBower(card: PlayingCard, trump: Suit): boolean {
   return card.cardName === CardName.Jack && card.suit === sameColorSuit(trump);
 }
 
-/** The suit a card plays as: the left bower plays as trump, everything else as printed. */
+/** Railroad joker — only ever in the deck when the variant enables it. */
+export function isJoker(card: PlayingCard): boolean {
+  return card.cardName === CardName.Joker;
+}
+
+/**
+ * The suit a card plays as: the joker and the left bower play as trump,
+ * everything else as printed.
+ */
 export function effectiveSuit(card: PlayingCard, trump: Suit): Suit {
-  return isLeftBower(card, trump) ? trump : card.suit;
+  return isJoker(card) || isLeftBower(card, trump) ? trump : card.suit;
 }
 
 export function isTrump(card: PlayingCard, trump: Suit): boolean {
@@ -138,8 +157,9 @@ function faceRank(cardName: CardName): number {
   }
 }
 
-// Trump ordering: right bower > left bower > A > K > Q > 10 > 9.
+// Trump ordering: joker (railroad) > right bower > left bower > A > K > Q > 10 > 9.
 function trumpRank(card: PlayingCard, trump: Suit): number {
+  if (isJoker(card)) return 7;
   if (isRightBower(card, trump)) return 6;
   if (isLeftBower(card, trump)) return 5;
   switch (card.cardName) {

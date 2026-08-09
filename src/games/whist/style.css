@@ -1,0 +1,98 @@
+/* ── WHIST ── */
+.whist-trump {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+.whist-trump .card.small {
+  transform: scale(0.8);
+}
+.whist-suit {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+.whist-suit.red {
+  color: #c0392b;
+}
+
+.whist-overlay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+  height: 100%;
+}
+.whist-overlay-note {
+  max-width: 340px;
+  font-size: 0.88rem;
+  opacity: 0.85;
+}
+
+.whist-results {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 180px;
+}
+.whist-result-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  font-size: 0.9rem;
+}
+.whist-result-row.you {
+  font-weight: 700;
+}
+
+.whist-suit-btn {
+  font-size: 1.2rem;
+  min-width: 48px;
+  padding: 6px 10px;
+}
+.whist-suit-btn.red {
+  color: #c0392b;
+}
+
+.whist-bid-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+.whist-bid-btn {
+  min-width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  border: 1px solid rgba(128, 128, 128, 0.5);
+  background: transparent;
+  color: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.whist-bid-btn:hover:not(:disabled) {
+  border-color: #e8b019;
+}
+.whist-bid-btn.hook {
+  opacity: 0.35;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.whist-btn-ghost {
+  opacity: 0.75;
+}
+
+.tt-seat.tt-out {
+  opacity: 0.35;
+}
+.tt-seat.tt-out .tt-plate-name::after {
+  content: " · out";
+  font-size: 0.75em;
+  opacity: 0.8;
+}

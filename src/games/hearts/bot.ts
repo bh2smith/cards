@@ -6,17 +6,27 @@ import {
   heartsRank,
   isQueenOfSpades,
 } from "./types";
+import { HEARTS_FAMILY, type HeartsConfig } from "./config";
 import { isLeading, legalPlays } from "./trick";
+
+function isJackOfDiamonds(card: PlayingCard): boolean {
+  return card.suit === Suit.Diamonds && card.cardName === CardName.Jack;
+}
 
 /**
  * Pass selection: dump dangerous cards.
  * Priority:
- *   1. Q♠ if not guarded (fewer than 4 spades, OR no K♠/A♠ to protect with)
- *   2. K♠ / A♠ (high spades that risk eating the queen)
- *   3. High hearts (A♥, K♥, Q♥) ordered descending
- *   4. Highest cards in shortest off-suit (creates a void)
+ *   1. Q♠ if penalized and not guarded (fewer than 4 spades)
+ *   2. K♠ / A♠ when high spades are risky (guard the queen, or their own
+ *      Black Maria penalties)
+ *   3. High hearts (A♥, K♥, Q♥, J♥) ordered descending — the costliest
+ *      hearts in Spot
+ *   4. Highest remaining cards, keeping a guarded Q♠ and a bonus J♦
  */
-export function botChoosePass(hand: PlayingCard[]): number[] {
+export function botChoosePass(
+  hand: PlayingCard[],
+  cfg: HeartsConfig = HEARTS_FAMILY.base,
+): number[] {
   const indices: number[] = [];
   const used = new Set<number>();
 
@@ -34,18 +44,24 @@ export function botChoosePass(hand: PlayingCard[]): number[] {
     indices.push(idx);
   };
 
+  const spadesRisky =
+    cfg.spadePenalties.queen > 0 ||
+    cfg.spadePenalties.king > 0 ||
+    cfg.spadePenalties.ace > 0;
   const spadesCount = hand.filter((c) => c.suit === Suit.Spades).length;
   const queenGuarded = spadesCount >= 4;
-  if (!queenGuarded) {
+  if (spadesRisky && cfg.spadePenalties.queen > 0 && !queenGuarded) {
     const qIdx = findIdx(isQueenOfSpades);
     if (qIdx >= 0) pick(qIdx);
   }
 
-  const dangerSpades = [CardName.Ace, CardName.King];
-  for (const rank of dangerSpades) {
-    if (indices.length >= 3) break;
-    const idx = findIdx((c) => c.suit === Suit.Spades && c.cardName === rank);
-    if (idx >= 0) pick(idx);
+  if (spadesRisky) {
+    const dangerSpades = [CardName.Ace, CardName.King];
+    for (const rank of dangerSpades) {
+      if (indices.length >= 3) break;
+      const idx = findIdx((c) => c.suit === Suit.Spades && c.cardName === rank);
+      if (idx >= 0) pick(idx);
+    }
   }
 
   const highHearts = [
@@ -66,7 +82,8 @@ export function botChoosePass(hand: PlayingCard[]): number[] {
     for (let i = 0; i < hand.length; i++) {
       if (used.has(i)) continue;
       const card = hand[i]!;
-      if (queenGuarded && isQueenOfSpades(card)) continue;
+      if (queenGuarded && spadesRisky && isQueenOfSpades(card)) continue;
+      if (cfg.jackDiamondsBonus < 0 && isJackOfDiamonds(card)) continue;
       const score = heartsRank(card);
       if (score > bestScore) {
         bestScore = score;
@@ -82,14 +99,16 @@ export function botChoosePass(hand: PlayingCard[]): number[] {
 
 /**
  * Lead/follow play selection.
- *   Lead: lowest non-heart, non-Q♠ if possible, else lowest legal.
- *   Follow (has led suit): if trick has points, play highest card that doesn't win;
- *     if trick is clean, play highest in led suit (try to dump if Q♠ at risk).
- *   Follow (void): dump Q♠ if held; else dump highest heart; else highest non-spade.
+ *   Lead: lowest zero-point card if possible, else lowest legal.
+ *   Follow (has led suit): if trick has penalty points, play highest card that
+ *     doesn't win; if it holds a net bonus (J♦ in Omnibus), try to win it
+ *     cheaply; if clean, play low.
+ *   Follow (void): dump the highest-penalty card; else highest safe card.
  */
 export function botChoosePlay(
   state: HeartsState,
   player: PlayerIndex,
+  cfg: HeartsConfig = HEARTS_FAMILY.base,
 ): PlayingCard {
   const hand = state.hands[player]!;
   const trick = state.currentTrick!;
@@ -102,22 +121,20 @@ export function botChoosePlay(
   );
 
   if (isLeading(trick)) {
-    return chooseLead(legals);
+    return chooseLead(legals, cfg);
   }
 
   const ledSuit = trick.ledSuit!;
   const hasLedSuit = hand.some((c) => c.suit === ledSuit);
   if (hasLedSuit) {
-    return chooseFollow(legals, trick.plays, ledSuit);
+    return chooseFollow(legals, trick.plays, ledSuit, cfg);
   }
 
-  return chooseDump(legals);
+  return chooseDump(legals, cfg);
 }
 
-function chooseLead(legals: PlayingCard[]): PlayingCard {
-  const safe = legals.filter(
-    (c) => c.suit !== Suit.Hearts && !isQueenOfSpades(c),
-  );
+function chooseLead(legals: PlayingCard[], cfg: HeartsConfig): PlayingCard {
+  const safe = legals.filter((c) => cardPoints(c, cfg) === 0);
   const pool = safe.length > 0 ? safe : legals;
   return pool.reduce((lo, c) => (heartsRank(c) < heartsRank(lo) ? c : lo));
 }
@@ -126,8 +143,9 @@ function chooseFollow(
   legals: PlayingCard[],
   plays: { card: PlayingCard }[],
   ledSuit: Suit,
+  cfg: HeartsConfig,
 ): PlayingCard {
-  const points = plays.reduce((s, p) => s + cardPoints(p.card), 0);
+  const points = plays.reduce((s, p) => s + cardPoints(p.card, cfg), 0);
   const highestSoFar = plays.reduce(
     (max, p) =>
       p.card.suit === ledSuit && heartsRank(p.card) > max
@@ -146,21 +164,47 @@ function chooseFollow(
     return legals.reduce((lo, c) => (heartsRank(c) < heartsRank(lo) ? c : lo));
   }
 
+  if (points < 0) {
+    // Net bonus on the table (J♦): win it with the cheapest winning card.
+    const winners = legals.filter((c) => heartsRank(c) > highestSoFar);
+    if (winners.length > 0) {
+      return winners.reduce((lo, c) =>
+        heartsRank(c) < heartsRank(lo) ? c : lo,
+      );
+    }
+  }
+
   return legals.reduce((lo, c) => (heartsRank(c) < heartsRank(lo) ? c : lo));
 }
 
-function chooseDump(legals: PlayingCard[]): PlayingCard {
-  const queen = legals.find(isQueenOfSpades);
-  if (queen) return queen;
-
-  const hearts = legals.filter((c) => c.suit === Suit.Hearts);
-  if (hearts.length > 0) {
-    return hearts.reduce((hi, c) => (heartsRank(c) > heartsRank(hi) ? c : hi));
+function chooseDump(legals: PlayingCard[], cfg: HeartsConfig): PlayingCard {
+  // Highest-penalty card first (Q♠, Black Maria's A♠/K♠, hearts — worth the
+  // most pips first in Spot); rank breaks ties.
+  let worst: PlayingCard | null = null;
+  for (const c of legals) {
+    const pts = cardPoints(c, cfg);
+    if (pts <= 0) continue;
+    if (
+      worst === null ||
+      pts > cardPoints(worst, cfg) ||
+      (pts === cardPoints(worst, cfg) && heartsRank(c) > heartsRank(worst))
+    ) {
+      worst = c;
+    }
   }
+  if (worst) return worst;
 
-  const nonSpades = legals.filter((c) => c.suit !== Suit.Spades);
-  const pool = nonSpades.length > 0 ? nonSpades : legals;
-  return pool.reduce((hi, c) =>
-    heartsRank(c) > heartsRank(hi) && !isQueenOfSpades(c) ? c : hi,
+  // No penalty cards: shed the highest, keeping spades (which guard the Q♠)
+  // and a bonus J♦ back when possible.
+  const preferred = legals.filter(
+    (c) => c.suit !== Suit.Spades && cardPoints(c, cfg) === 0,
   );
+  const zeroPoint = legals.filter((c) => cardPoints(c, cfg) === 0);
+  const pool =
+    preferred.length > 0
+      ? preferred
+      : zeroPoint.length > 0
+        ? zeroPoint
+        : legals;
+  return pool.reduce((hi, c) => (heartsRank(c) > heartsRank(hi) ? c : hi));
 }

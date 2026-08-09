@@ -2,6 +2,9 @@ import type { CatalogEntry } from "./types";
 import { EXISTING_GAMES } from "./data/existing-games";
 import { CH04_RUMMY } from "./data/ch04-rummy";
 import { CH05_GIN } from "./data/ch05-gin";
+import { CH08_WHIST } from "./data/ch08-whist";
+import { CH13_EUCHRE } from "./data/ch13-euchre";
+import { CH14_HEARTS } from "./data/ch14-hearts";
 import { CH17_STOPS } from "./data/ch17-stops";
 import { CH19_CHILDREN } from "./data/ch19-children";
 
@@ -37,6 +40,9 @@ export const ALL_ENTRIES: CatalogEntry[] = [
   ...EXISTING_GAMES,
   ...CH04_RUMMY,
   ...CH05_GIN,
+  ...CH08_WHIST,
+  ...CH13_EUCHRE,
+  ...CH14_HEARTS,
   ...CH17_STOPS,
   ...CH19_CHILDREN,
 ];

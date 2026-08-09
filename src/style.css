@@ -1,4 +1,6 @@
 @import "./games/rummy/style.css";
+@import "./games/spades/style.css";
+@import "./games/whist/style.css";
 @import "./games/war/style.css";
 @import "./games/go-fish/style.css";
 @import "./games/old-maid/style.css";

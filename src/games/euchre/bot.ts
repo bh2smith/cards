@@ -4,6 +4,7 @@ import {
   type Trick,
   cardStrength,
   effectiveSuit,
+  isJoker,
   isLeftBower,
   isRightBower,
   isTrump,
@@ -17,6 +18,7 @@ const ALONE_THRESHOLD = 12;
 const OFF_SUITS = [Suit.Hearts, Suit.Diamonds, Suit.Clubs, Suit.Spades];
 
 function trumpValue(card: PlayingCard, trump: Suit): number {
+  if (isJoker(card)) return 5; // railroad: the permanent top trump
   if (isRightBower(card, trump)) return 4;
   if (isLeftBower(card, trump)) return 3;
   switch (card.cardName) {
@@ -57,16 +59,17 @@ export function botBidRound1(
   upCard: PlayingCard,
   player: PlayerIndex,
   dealer: PlayerIndex,
+  cutthroat = false,
 ): BidDecision {
   const trump = upCard.suit;
   let score = evaluateSuit(hand, trump);
   const upVal = trumpValue(upCard, trump);
   if (player === dealer) score += upVal;
-  else if (partnerOf(player) === dealer) score += upVal * 0.5;
+  else if (!cutthroat && partnerOf(player) === dealer) score += upVal * 0.5;
   else score -= upVal * 0.5;
 
   if (score >= ORDER_THRESHOLD) {
-    return { action: "orderup", alone: score >= ALONE_THRESHOLD };
+    return { action: "orderup", alone: !cutthroat && score >= ALONE_THRESHOLD };
   }
   return { action: "pass", alone: false };
 }
@@ -77,6 +80,7 @@ export function botBidRound2(
   player: PlayerIndex,
   dealer: PlayerIndex,
   mustName: boolean,
+  cutthroat = false,
 ): BidDecision {
   let bestSuit: Suit | null = null;
   let bestScore = -Infinity;
@@ -94,10 +98,22 @@ export function botBidRound2(
     return {
       action: "name",
       suit: bestSuit,
-      alone: bestScore >= ALONE_THRESHOLD,
+      alone: !cutthroat && bestScore >= ALONE_THRESHOLD,
     };
   }
   return { action: "pass", alone: false };
+}
+
+/**
+ * Railroad alone exchange: the card a partner passes to the loner — their
+ * highest trump, else their highest card.
+ */
+export function bestPartnerGive(hand: PlayingCard[], trump: Suit): PlayingCard {
+  const trumps = hand.filter((c) => isTrump(c, trump));
+  const pool = trumps.length > 0 ? trumps : hand;
+  return pool.reduce((hi, c) =>
+    globalValue(c, trump) > globalValue(hi, trump) ? c : hi,
+  );
 }
 
 /** Dealer's discard after picking up the up-card. Sheds the weakest card. */
@@ -148,10 +164,17 @@ function globalValue(card: PlayingCard, trump: Suit): number {
   return cardStrength(card, trump, effectiveSuit(card, trump));
 }
 
+export interface BotPlayContext {
+  me: PlayerIndex;
+  /** Is this other player on my side? Cutthroat allies the two defenders. */
+  isAlly: (player: PlayerIndex) => boolean;
+}
+
 export function botPlay(
   hand: PlayingCard[],
   trick: Trick,
   trump: Suit,
+  ctx?: BotPlayContext,
 ): PlayingCard {
   const legal = legalPlays(hand, trick, trump);
 
@@ -170,12 +193,12 @@ export function botPlay(
     }
   }
 
-  // Is our partner currently winning the trick?
-  const me = nextToPlay(trick);
-  const winningIsPartner = bestPlay.player === partnerOf(me);
+  // Is an ally (partner, or fellow cutthroat defender) currently winning?
+  const isAlly =
+    ctx?.isAlly ?? ((p: PlayerIndex) => p === partnerOf(nextToPlay(trick)));
 
-  if (winningIsPartner) {
-    return lowest(legal, trump); // partner has it — throw our lowest
+  if (isAlly(bestPlay.player)) {
+    return lowest(legal, trump); // our side has it — throw our lowest
   }
 
   const winners = legal.filter(

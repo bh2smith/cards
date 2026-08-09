@@ -62,6 +62,13 @@ export function renderCard(
     .filter(Boolean)
     .join(" ");
 
+  // Jokers carry a nominal suit only for identity/color (no printed suit).
+  if (card.cardName === CardName.Joker) {
+    return `<div class="card ${red ? "red" : "black"} face-card ${selected ? "selected" : ""} ${dimmed ? "dimmed" : ""} ${small ? "small" : ""}" data-index="${index}" data-key="${cardKey(card)}">
+      <svg viewBox="0 0 169.075 244.640" class="face-portrait"><use href="#${red ? "joker" : "joker_black"}"/></svg>
+    </div>`;
+  }
+
   if (isFace) {
     return `<div class="${classes}" data-index="${index}" data-key="${cardKey(card)}">
       ${faceCardSvg(card)}

@@ -9,6 +9,7 @@ import {
   suitName,
   teamOf,
 } from "./types";
+import { EUCHRE_FAMILY } from "./config";
 import { confirmIfEnabled } from "../../shared/settings";
 import { openInstructions } from "../../shared/ui/instructions-modal";
 import {
@@ -20,14 +21,17 @@ import {
   exitTableMode,
 } from "../../shared/ui/table-layout";
 import { LeaderboardReporter, GameId } from "../../shared/circles/leaderboard";
+import { presetFromHash } from "../../shared/engine/variant";
+import { presetChipsHtml } from "../../shared/ui/preset-picker";
 
 const BID_DELAY_MS = 700;
 const BOT_DELAY_MS = 650;
 const TRICK_HOLD_MS = 1050;
 
-const LABELS = ["You", "Left", "Partner", "Right"];
-const POS: TablePos[] = ["self", "left", "top", "right"];
-const OPPONENTS: PlayerIndex[] = [1, 2, 3];
+const TEAM_LABELS = ["You", "Left", "Partner", "Right"];
+const TEAM_POS: TablePos[] = ["self", "left", "top", "right"];
+const CUTTHROAT_LABELS = ["You", "Left", "Right"];
+const CUTTHROAT_POS: TablePos[] = ["self", "left", "right"];
 const RED_SUITS = new Set<Suit>([Suit.Hearts, Suit.Diamonds]);
 
 export class EuchreUI {
@@ -38,15 +42,47 @@ export class EuchreUI {
   private completedTrickToShow: Trick | null = null;
   private lastTrickCardKey: string | null = null;
   private aloneSelected = false;
+  private presetId: string | undefined;
+  private cutthroat: boolean;
 
   constructor() {
+    this.presetId = presetFromHash(location.hash);
+    this.game = new EuchreGame(this.presetId);
+    this.cutthroat = this.game.getConfig().players === 3;
+
+    const presetName = this.presetId
+      ? EUCHRE_FAMILY.presets[this.presetId]?.name
+      : undefined;
+    const title = presetName ?? "Euchre";
+
     enterTableMode();
-    document.getElementById("app")!.innerHTML = tableLayoutHtml({
-      title: "Euchre",
-      labels: { self: "You", left: "Left", top: "Partner", right: "Right" },
-      teams: { self: 0, left: 1, top: 0, right: 1 },
-    });
-    this.game = new EuchreGame();
+    document.getElementById("app")!.innerHTML = tableLayoutHtml(
+      this.cutthroat
+        ? {
+            title,
+            labels: { self: "You", left: "Left", top: "", right: "Right" },
+          }
+        : {
+            title,
+            labels: {
+              self: "You",
+              left: "Left",
+              top: "Partner",
+              right: "Right",
+            },
+            teams: { self: 0, left: 1, top: 0, right: 1 },
+          },
+    );
+    document
+      .querySelector(".header")!
+      .insertAdjacentHTML(
+        "afterend",
+        presetChipsHtml("euchre", EUCHRE_FAMILY, this.presetId, "Partnership"),
+      );
+    if (this.cutthroat) {
+      this.$("tt-seat-top").style.display = "none";
+      this.$("tt-score-top").style.display = "none";
+    }
     this.bindEvents();
     this.render();
     this.advance();
@@ -60,6 +96,22 @@ export class EuchreUI {
 
   private $(id: string): HTMLElement {
     return document.getElementById(id)!;
+  }
+
+  private seats(): PlayerIndex[] {
+    return this.cutthroat ? [0, 1, 2] : [0, 1, 2, 3];
+  }
+
+  private opponents(): PlayerIndex[] {
+    return this.cutthroat ? [1, 2] : [1, 2, 3];
+  }
+
+  private posOf(seat: PlayerIndex): TablePos {
+    return (this.cutthroat ? CUTTHROAT_POS : TEAM_POS)[seat]!;
+  }
+
+  private labelOf(seat: PlayerIndex): string {
+    return (this.cutthroat ? CUTTHROAT_LABELS : TEAM_LABELS)[seat]!;
   }
 
   private bindEvents(): void {
@@ -91,6 +143,16 @@ export class EuchreUI {
       const card = state.hands[0]![index];
       if (!card) return;
       this.game.discard(0, card);
+      this.render();
+      this.advance();
+      return;
+    }
+
+    // Railroad: the loner sheds the sixth card after the partner's exchange.
+    if (state.phase === "ALONE_DISCARD") {
+      const card = state.hands[0]![index];
+      if (!card) return;
+      this.game.aloneDiscard(card);
       this.render();
       this.advance();
       return;
@@ -236,18 +298,23 @@ export class EuchreUI {
     return false;
   }
 
+  private scoreOf(state: EuchreState, seat: PlayerIndex): number {
+    const scores: readonly number[] = state.scores;
+    return this.cutthroat ? scores[seat]! : scores[teamOf(seat)]!;
+  }
+
   private renderScoreboard(state: EuchreState): void {
-    for (let i = 0 as PlayerIndex; i < 4; i = (i + 1) as PlayerIndex) {
-      const pos = POS[i]!;
+    for (const i of this.seats()) {
+      const pos = this.posOf(i);
       this.$(`tt-score-total-${pos}`).textContent = String(
-        state.scores[teamOf(i)],
+        this.scoreOf(state, i),
       );
       const nameEl = document.querySelector(
         `#tt-score-${pos} .tt-score-name`,
       ) as HTMLElement;
       const marks =
         (state.maker === i ? " ★" : "") + (state.dealer === i ? " (D)" : "");
-      nameEl.textContent = LABELS[i] + marks;
+      nameEl.textContent = this.labelOf(i) + marks;
 
       const tricks = state.completedTricks.filter((t) => t.winner === i).length;
       this.$(`tt-score-sub-${pos}`).textContent =
@@ -263,8 +330,8 @@ export class EuchreUI {
   }
 
   private renderSeatHands(state: EuchreState): void {
-    for (const i of OPPONENTS) {
-      const pos = POS[i]!;
+    for (const i of this.opponents()) {
+      const pos = this.posOf(i);
       this.$(`tt-seathand-${pos}`).innerHTML = faceDownFanHtml(
         state.hands[i]!.length,
       );
@@ -323,23 +390,30 @@ export class EuchreUI {
       newestKey && newestKey !== this.lastTrickCardKey ? newestKey : null;
     this.lastTrickCardKey = newestKey;
 
-    area.innerHTML = POS.map((pos, idx) => {
-      const card = byPlayer[idx];
-      if (!card) {
-        // Don't draw an empty slot for a loner's sitting-out partner.
-        if (state.aloneSitter === idx) return "";
-        return trickCardHtml(pos, `<div class="tt-trick-slot"></div>`);
-      }
-      const playIn = cardKey(card) === animateKey;
-      return trickCardHtml(pos, renderCard(card, { small: true }), { playIn });
-    }).join("");
+    area.innerHTML = this.seats()
+      .map((idx) => {
+        const pos = this.posOf(idx);
+        const card = byPlayer[idx];
+        if (!card) {
+          // Don't draw an empty slot for a loner's sitting-out partner.
+          if (state.aloneSitter === idx) return "";
+          return trickCardHtml(pos, `<div class="tt-trick-slot"></div>`);
+        }
+        const playIn = cardKey(card) === animateKey;
+        return trickCardHtml(pos, renderCard(card, { small: true }), {
+          playIn,
+        });
+      })
+      .join("");
   }
 
   private renderPlayerHand(state: EuchreState): void {
     const container = this.$("tt-hand");
     const hand = state.hands[0]!;
 
-    const discarding = state.phase === "DISCARD" && state.dealer === 0;
+    const discarding =
+      (state.phase === "DISCARD" && state.dealer === 0) ||
+      state.phase === "ALONE_DISCARD";
     const myPlay = state.phase === "PLAYING" && state.currentTurn === 0;
     const sittingOut = state.aloneSitter === 0;
 
@@ -366,6 +440,8 @@ export class EuchreUI {
       msg = `Your turn — ${suitName(state.trump!)} is trump.`;
     } else if (state.phase === "DISCARD" && state.dealer === 0) {
       msg = "You picked it up — tap a card to discard.";
+    } else if (state.phase === "ALONE_DISCARD") {
+      msg = "Partner passed you their best card — tap one to discard.";
     } else if (state.phase === "BID1" && state.bidTurn === 0) {
       msg = `Order up ${suitName(state.upCard!.suit)}, or pass?`;
     } else if (state.phase === "BID2" && state.bidTurn === 0) {
@@ -379,9 +455,12 @@ export class EuchreUI {
 
     if (state.phase === "BID1" && state.bidTurn === 0) {
       const orderLabel = state.dealer === 0 ? "Pick It Up" : "Order Up";
+      const aloneBtn = this.cutthroat
+        ? ""
+        : `<button class="tt-btn eu-btn-alt" data-act="order-alone" type="button">Alone</button>`;
       actions.innerHTML = `
         <button class="tt-btn" data-act="order" type="button">${orderLabel}</button>
-        <button class="tt-btn eu-btn-alt" data-act="order-alone" type="button">Alone</button>
+        ${aloneBtn}
         <button class="tt-btn eu-btn-ghost" data-act="pass" type="button">Pass</button>`;
       return;
     }
@@ -400,11 +479,14 @@ export class EuchreUI {
         })
         .join("");
       const aloneCls = this.aloneSelected ? "eu-toggle on" : "eu-toggle";
+      const aloneBtn = this.cutthroat
+        ? ""
+        : `<button class="${aloneCls}" data-act="toggle-alone" type="button">Alone</button>`;
       const pass = this.game.canPass(0)
         ? `<button class="tt-btn eu-btn-ghost" data-act="pass" type="button">Pass</button>`
         : "";
       actions.innerHTML = `
-        <button class="${aloneCls}" data-act="toggle-alone" type="button">Alone</button>
+        ${aloneBtn}
         ${suitBtns}
         ${pass}`;
       return;
