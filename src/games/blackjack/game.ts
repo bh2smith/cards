@@ -1,7 +1,23 @@
 import type { PlayingCard } from "typedeck";
 import { createDeck, shuffle, cardOrder } from "../../shared/deck";
 import type { BlackjackState, RoundResult } from "./types";
-import { STARTING_CHIPS, WIN_TARGET } from "./types";
+import { WIN_TARGET } from "./types";
+import {
+  balance,
+  placeWager,
+  winReturn,
+  pushReturn,
+  type Wager,
+} from "../../shared/engine/betting";
+import { resolvePreset } from "../../shared/engine/variant";
+import {
+  BLACKJACK_FAMILY,
+  doubleAllowed,
+  type BlackjackConfig,
+} from "./config";
+
+/** Multi-deck shoes reshuffle before a round that starts below this depth. */
+const RESHUFFLE_BELOW = 15;
 
 export function handValue(cards: PlayingCard[]): number {
   let value = 0;
@@ -54,20 +70,33 @@ export function isSoft(cards: PlayingCard[]): boolean {
   return softAces > 0;
 }
 
-export function shouldDealerHit(cards: PlayingCard[]): boolean {
+export function shouldDealerHit(
+  cards: PlayingCard[],
+  hitsSoft17 = true,
+): boolean {
   const value = handValue(cards);
-  return value < 17 || (value === 17 && isSoft(cards));
+  return value < 17 || (value === 17 && hitsSoft17 && isSoft(cards));
 }
 
 export class BlackjackGame {
   private state: BlackjackState;
   private deck: PlayingCard[] = [];
+  private readonly config: BlackjackConfig;
+  // Active house wagers per hand: index 0 the original bet, a double
+  // appends a second equal wager. Settled (and cleared) at round end.
+  private handWagers: [Wager[], Wager[]] = [[], []];
 
-  constructor(chips = STARTING_CHIPS) {
-    this.state = this.bettingState(chips);
+  constructor(presetId?: string) {
+    this.config = resolvePreset(BLACKJACK_FAMILY, presetId);
+    this.deck = this.buildShoe();
+    this.state = this.bettingState();
   }
 
-  private bettingState(chips: number): BlackjackState {
+  getConfig(): BlackjackConfig {
+    return this.config;
+  }
+
+  private bettingState(): BlackjackState {
     return {
       phase: "BETTING",
       playerHand: [],
@@ -76,8 +105,9 @@ export class BlackjackGame {
       activeHand: 0,
       dealerHand: [],
       holeRevealed: false,
-      chips,
+      chips: balance(),
       bet: 0,
+      shoeDepth: this.deck.length,
       roundResult: null,
       splitResult: null,
       message: "Place your bet.",
@@ -90,12 +120,15 @@ export class BlackjackGame {
   }
 
   canBet(amount: number): boolean {
-    return this.state.phase === "BETTING" && amount <= this.state.chips;
+    return this.state.phase === "BETTING" && amount > 0 && amount <= balance();
   }
 
   placeBet(amount: number): void {
     if (!this.canBet(amount)) return;
-    this.deck = shuffle(createDeck());
+    const wager = placeWager(amount);
+    if (wager === null) return;
+    this.handWagers = [[wager], []];
+    this.prepareShoe();
 
     const playerHand = [this.draw(), this.draw()];
     const dealerHand = [this.draw(), this.draw()];
@@ -110,8 +143,9 @@ export class BlackjackGame {
       activeHand: 0,
       dealerHand,
       holeRevealed: false,
-      chips: this.state.chips - amount,
+      chips: balance(),
       bet: amount,
+      shoeDepth: this.deck.length,
       roundResult: null,
       splitResult: null,
       message: playerBJ ? "Blackjack!" : "Hit or stand?",
@@ -123,22 +157,27 @@ export class BlackjackGame {
     return (
       this.state.phase === "PLAYER_TURN" &&
       this.state.activeHand === 0 &&
+      // One split max: config.resplit is false in every preset, and the
+      // two-hand data model couldn't hold a re-split hand anyway.
       this.state.splitHand === null &&
       this.state.playerHand.length === 2 &&
       cardOrder(this.state.playerHand[0]!) ===
         cardOrder(this.state.playerHand[1]!) &&
-      this.state.chips >= this.state.bet
+      balance() >= this.state.bet
     );
   }
 
   split(): void {
     if (!this.canSplit()) return;
+    const wager = placeWager(this.state.bet);
+    if (wager === null) return;
+    this.handWagers[1] = [wager];
     const [c0, c1] = this.state.playerHand;
-    this.state.chips -= this.state.bet;
     this.state.splitBet = this.state.bet;
     this.state.playerHand = [c0!, this.draw()];
     this.state.splitHand = [c1!, this.draw()];
     this.state.activeHand = 0;
+    this.state.chips = balance();
     this.state.roundResult = null;
     this.state.splitResult = null;
     this.state.message = "Playing first hand — Hit or Stand?";
@@ -152,27 +191,59 @@ export class BlackjackGame {
     if (this.state.phase !== "PLAYER_TURN") return false;
     const hand = this.activeHandCards();
     const bet = this.activeBet();
-    const val = handValue(hand);
     return (
-      hand.length === 2 && val >= 8 && val <= 11 && this.state.chips >= bet
+      hand.length === 2 &&
+      doubleAllowed(this.config.doubleOn, handValue(hand)) &&
+      balance() >= bet
     );
   }
 
   doubleDown(): void {
     if (!this.canDoubleDown()) return;
     const bet = this.activeBet();
-    this.state.chips -= bet;
+    const wager = placeWager(bet);
+    if (wager === null) return;
+    this.handWagers[this.state.activeHand].push(wager);
     if (this.state.activeHand === 0) {
       this.state.bet *= 2;
     } else {
       this.state.splitBet *= 2;
     }
+    this.state.chips = balance();
     const newHand = [...this.activeHandCards(), this.draw()];
     this.setActiveHandCards(newHand);
     if (isBust(newHand)) {
       this.markCurrentHandBust();
     }
     this.onHandComplete();
+  }
+
+  canSurrender(): boolean {
+    return (
+      this.config.surrender &&
+      this.state.phase === "PLAYER_TURN" &&
+      // First two cards only, never after a split.
+      this.state.splitHand === null &&
+      this.state.playerHand.length === 2 &&
+      // Late surrender: the dealer checks for blackjack first.
+      !isBlackjack(this.state.dealerHand)
+    );
+  }
+
+  /** Late surrender: forfeit half the bet (floored refund), round over. */
+  surrender(): void {
+    if (!this.canSurrender()) return;
+    const refund = Math.floor(this.state.bet / 2);
+    this.settleWagers(0, refund);
+    this.state = {
+      ...this.state,
+      phase: "ROUND_OVER",
+      holeRevealed: true,
+      roundResult: "surrender",
+      chips: balance(),
+      message: `Surrendered — ${refund} of ${this.state.bet} returned.`,
+      winner: "computer",
+    };
   }
 
   hit(): void {
@@ -207,7 +278,8 @@ export class BlackjackGame {
 
   dealerDrawOne(): boolean {
     if (this.state.phase !== "DEALER_TURN") return false;
-    if (!shouldDealerHit(this.state.dealerHand)) return false;
+    if (!shouldDealerHit(this.state.dealerHand, this.config.dealerHitsSoft17))
+      return false;
     this.state.dealerHand = [...this.state.dealerHand, this.draw()];
     return true;
   }
@@ -227,11 +299,14 @@ export class BlackjackGame {
       if (priorResult === "bust") return { result: "bust", payout: 0 };
       const playerVal = handValue(hand);
       if (isBlackjack(hand) && !dealerBJ) {
-        return { result: "blackjack", payout: Math.floor(bet * 2.5) };
+        return {
+          result: "blackjack",
+          payout: winReturn(bet, this.config.blackjackPays),
+        };
       } else if (dealerBust || playerVal > dealerVal) {
-        return { result: "win", payout: bet * 2 };
+        return { result: "win", payout: winReturn(bet, 1) };
       } else if (playerVal === dealerVal) {
-        return { result: "push", payout: bet };
+        return { result: "push", payout: pushReturn(bet) };
       } else {
         return { result: "lose", payout: 0 };
       }
@@ -251,8 +326,8 @@ export class BlackjackGame {
           )
         : null;
 
-    const totalPayout = h0.payout + (h1?.payout ?? 0);
-    const newChips = this.state.chips + totalPayout;
+    this.settleWagers(0, h0.payout);
+    if (h1 !== null) this.settleWagers(1, h1.payout);
 
     const msg = (r: RoundResult, val: number, bet: number): string => {
       switch (r) {
@@ -268,6 +343,8 @@ export class BlackjackGame {
           return `Lose — ${dealerVal} > ${val}`;
         case "bust":
           return `Bust`;
+        case "surrender":
+          return `Surrendered`; // never reaches settleRound
       }
     };
 
@@ -291,7 +368,7 @@ export class BlackjackGame {
         case "lose":
           message = `Dealer wins. ${dealerVal} beats ${handValue(this.state.playerHand)}.`;
           break;
-        case "bust":
+        default:
           message = `Bust!`;
           break;
       }
@@ -311,7 +388,7 @@ export class BlackjackGame {
       phase: "ROUND_OVER",
       roundResult: h0.result,
       splitResult: h1?.result ?? this.state.splitResult,
-      chips: newChips,
+      chips: balance(),
       message,
       winner: anyWin ? "player" : allLost ? "computer" : null,
     };
@@ -319,15 +396,15 @@ export class BlackjackGame {
 
   newRound(): void {
     if (this.isSessionOver()) return;
-    this.state = this.bettingState(this.state.chips);
+    this.state = this.bettingState();
   }
 
   isSessionOver(): boolean {
-    return this.state.chips === 0 || this.state.chips >= WIN_TARGET;
+    return balance() === 0 || balance() >= WIN_TARGET;
   }
 
   isSessionWon(): boolean {
-    return this.state.chips >= WIN_TARGET;
+    return balance() >= WIN_TARGET;
   }
 
   checkSession(): void {
@@ -336,8 +413,9 @@ export class BlackjackGame {
     this.state = {
       ...this.state,
       phase: "SESSION_OVER",
+      chips: balance(),
       message: won
-        ? `You did it! Turned ${STARTING_CHIPS} chips into ${this.state.chips}!`
+        ? `You did it! Bankroll up to ${balance()} chips!`
         : "Out of chips! Better luck next time.",
       winner: won ? "player" : "computer",
     };
@@ -364,14 +442,24 @@ export class BlackjackGame {
     const allBust = h0Bust && (this.state.splitHand === null || h1Bust);
 
     if (allBust) {
+      // Nothing comes back on an all-bust round, but the wagers still settle.
+      this.settleWagers(0, 0);
+      this.settleWagers(1, 0);
       this.state.holeRevealed = true;
       this.state.phase = "ROUND_OVER";
+      this.state.chips = balance();
       this.state.message = this.state.splitHand
         ? "Both hands bust!"
         : `Bust! You had ${handValue(this.state.playerHand)}.`;
     } else {
       this.beginDealerTurn();
     }
+  }
+
+  /** Credit a hand's return to its first wager, close the rest, clear them. */
+  private settleWagers(hand: 0 | 1, returned: number): void {
+    this.handWagers[hand].forEach((w, i) => w.settle(i === 0 ? returned : 0));
+    this.handWagers[hand] = [];
   }
 
   private markCurrentHandBust(): void {
@@ -401,10 +489,27 @@ export class BlackjackGame {
     return this.state.activeHand === 1 ? this.state.splitBet : this.state.bet;
   }
 
+  private buildShoe(): PlayingCard[] {
+    const cards: PlayingCard[] = [];
+    for (let i = 0; i < this.config.decks; i++) {
+      cards.push(...createDeck());
+    }
+    return shuffle(cards);
+  }
+
+  /** Single deck reshuffles every round; a shoe persists until it runs low. */
+  private prepareShoe(): void {
+    if (this.config.decks === 1 || this.deck.length < RESHUFFLE_BELOW) {
+      this.deck = this.buildShoe();
+    }
+  }
+
   private draw(): PlayingCard {
     if (this.deck.length === 0) {
-      this.deck = shuffle(createDeck());
+      this.deck = this.buildShoe();
     }
-    return this.deck.pop()!;
+    const card = this.deck.pop()!;
+    this.state.shoeDepth = this.deck.length;
+    return card;
   }
 }

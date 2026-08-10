@@ -1,0 +1,110 @@
+/* ── FARO ── */
+
+.faro-turn {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 22px;
+  margin: 12px 0;
+}
+
+.faro-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.faro-layout {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(52px, 74px));
+  justify-content: center;
+  gap: 8px;
+  margin: 10px 0 4px;
+}
+
+.faro-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px 10px;
+  background: var(--felt);
+  border: 1px solid var(--wood-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+.faro-cell.faro-dead,
+.faro-case-col.faro-dead {
+  opacity: 0.35;
+}
+
+.faro-cell.faro-case-rank,
+.faro-case-col.faro-case-rank {
+  box-shadow: 0 0 8px var(--gold-glow);
+}
+
+.faro-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--wood);
+  border: 2px dashed var(--cream);
+}
+
+.faro-chip.faro-coppered {
+  background: #a15c2f;
+  color: var(--cream);
+}
+
+.faro-cell-ctrls button {
+  padding: 0 6px;
+  margin: 0 2px;
+}
+
+.faro-casekeeper {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 6px 0;
+}
+
+.faro-slot-label,
+.faro-case-col {
+  font-size: 0.78rem;
+  color: var(--cream-dim);
+}
+
+.faro-case-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.faro-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1px solid var(--cream-dim);
+}
+
+.faro-dot.faro-seen {
+  background: var(--gold);
+  border-color: var(--gold);
+}
+
+.faro-chip-row {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.faro-chip-btn.faro-selected {
+  background: var(--gold);
+  color: var(--wood);
+}

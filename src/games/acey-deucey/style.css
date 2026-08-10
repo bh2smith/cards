@@ -1,0 +1,56 @@
+/* ── ACEY-DEUCEY ── */
+.acey-table {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0 10px;
+}
+
+.acey-cards {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  min-height: 100px;
+}
+
+.acey-bracket {
+  font-size: 0.9rem;
+  font-weight: 600;
+  opacity: 0.85;
+  min-height: 1.2em;
+}
+
+.acey-bet-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.acey-bet-btn {
+  min-width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  font-weight: 700;
+}
+
+.acey-call-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.message-bar.acey-win {
+  color: #2ecc71;
+  font-weight: 700;
+}
+.message-bar.acey-lose,
+.message-bar.acey-post {
+  color: #c0392b;
+  font-weight: 700;
+}
+.message-bar.acey-push {
+  color: #e8b019;
+  font-weight: 700;
+}

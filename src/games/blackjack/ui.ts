@@ -5,6 +5,9 @@ import { optimalAction, type Action } from "./strategy";
 import { confirmIfEnabled } from "../../shared/settings";
 import { openInstructions } from "../../shared/ui/instructions-modal";
 import { LeaderboardReporter, GameId } from "../../shared/circles/leaderboard";
+import { presetFromHash } from "../../shared/engine/variant";
+import { presetChipsHtml } from "../../shared/ui/preset-picker";
+import { BLACKJACK_FAMILY } from "./config";
 
 const DEALER_DELAY_MS = 600;
 
@@ -13,10 +16,12 @@ export class BlackjackUI {
   private destroyed = false;
   private reporter = new LeaderboardReporter(GameId.Blackjack, "SESSION_OVER");
   private pendingNonOptimal: (() => void) | null = null;
+  private presetId: string | undefined;
 
   constructor() {
-    document.getElementById("app")!.innerHTML = BlackjackUI.template();
-    this.game = new BlackjackGame();
+    this.presetId = presetFromHash(location.hash);
+    this.game = new BlackjackGame(this.presetId);
+    document.getElementById("app")!.innerHTML = this.template();
     this.bindEvents();
     this.render();
   }
@@ -26,12 +31,26 @@ export class BlackjackUI {
     document.getElementById("app")!.innerHTML = "";
   }
 
-  static template(): string {
+  private template(): string {
+    const config = this.game.getConfig();
+    const presetName = this.presetId
+      ? BLACKJACK_FAMILY.presets[this.presetId]?.name
+      : undefined;
+    const shoeRow =
+      config.decks > 1
+        ? `<div class="score-row">
+            <span class="score-label">Shoe</span>
+            <span class="score-value" id="shoe-display">—</span>
+          </div>`
+        : "";
+    const surrenderBtn = config.surrender
+      ? `<button id="surrender-btn">Surrender</button>`
+      : "";
     return `
       <div class="header">
         <div class="header-left">
           <a href="#" class="back-link">← Games</a>
-          <h1>Blackjack</h1>
+          <h1>${presetName ?? "Blackjack"}</h1>
         </div>
         <div class="header-right">
           <button class="help-btn" id="help-btn" type="button" aria-label="How to play">?</button>
@@ -39,10 +58,12 @@ export class BlackjackUI {
         </div>
       </div>
 
+      ${presetChipsHtml("blackjack", BLACKJACK_FAMILY, this.presetId, "Vegas Strip")}
+
       <div class="scoreboard">
         <div class="score-row">
-          <span class="score-label">Chips</span>
-          <span class="score-value" id="chips-display">100</span>
+          <span class="score-label">Bankroll</span>
+          <span class="score-value" id="chips-display"></span>
         </div>
         <div class="score-row">
           <span class="score-label">Target</span>
@@ -52,12 +73,13 @@ export class BlackjackUI {
           <span class="score-label">Bet</span>
           <span class="score-value" id="bet-display">—</span>
         </div>
+        ${shoeRow}
       </div>
 
       <div class="bj-table">
         <div class="bj-hand-section">
           <div class="bj-hand-label">Dealer <span class="bj-hand-value" id="dealer-value"></span></div>
-          <div class="bj-rule-label">Dealer hits soft 17</div>
+          <div class="bj-rule-label">Dealer ${config.dealerHitsSoft17 ? "hits" : "stands on"} soft 17</div>
           <div class="bj-hand" id="dealer-hand"></div>
         </div>
         <div id="player-hands"></div>
@@ -78,6 +100,7 @@ export class BlackjackUI {
           <button id="stand-btn">Stand</button>
           <button id="double-btn">Double</button>
           <button id="split-btn">Split</button>
+          ${surrenderBtn}
         </div>
         <button class="hidden" id="next-round-btn">Next Round</button>
       </div>
@@ -137,6 +160,13 @@ export class BlackjackUI {
       }),
     );
 
+    // Surrender bypasses the basic-strategy confirm: the hint table
+    // carries no surrender advice, so there is nothing to check against.
+    document.getElementById("surrender-btn")?.addEventListener("click", () => {
+      this.game.surrender();
+      this.afterPlayerAction();
+    });
+
     this.$("next-round-btn").addEventListener("click", () => {
       if (this.game.getState().phase === "SESSION_OVER") {
         location.hash = "/";
@@ -165,6 +195,10 @@ export class BlackjackUI {
   }
 
   private getOptimal(): Action | null {
+    // The basic-strategy table encodes H17 play; several cells differ under
+    // S17 (e.g. 11 vs A, soft 18/19 doubles), so rather than highlight wrong
+    // advice the hints are disabled when the dealer stands on soft 17.
+    if (!this.game.getConfig().dealerHitsSoft17) return null;
     const state = this.game.getState();
     if (state.phase !== "PLAYER_TURN" || state.dealerHand.length === 0)
       return null;
@@ -244,6 +278,8 @@ export class BlackjackUI {
           : String(state.bet)
         : "—";
     this.$("bet-display").textContent = betText;
+    const shoeEl = document.getElementById("shoe-display");
+    if (shoeEl) shoeEl.textContent = `${state.shoeDepth} cards`;
     this.$("message").textContent = state.message;
 
     this.renderDealerHand();
@@ -373,6 +409,10 @@ export class BlackjackUI {
           !this.game.canDoubleDown();
         (this.$("split-btn") as HTMLButtonElement).disabled =
           !this.game.canSplit();
+        const surrenderBtn = document.getElementById(
+          "surrender-btn",
+        ) as HTMLButtonElement | null;
+        if (surrenderBtn) surrenderBtn.disabled = !this.game.canSurrender();
 
         const optimal = this.getOptimal();
         if (optimal && actionBtns[optimal]) {
