@@ -9,6 +9,8 @@ import { GIN_FAMILY } from "../../games/gin/config";
 import { EUCHRE_FAMILY } from "../../games/euchre/config";
 import { HEARTS_FAMILY } from "../../games/hearts/config";
 import { WHIST_FAMILY } from "../../games/whist/config";
+import { BACCARAT_FAMILY } from "../../games/baccarat/config";
+import { BLACKJACK_FAMILY } from "../../games/blackjack/config";
 
 const FAMILY_DEFS: Record<string, FamilyDef<object>> = {
   "crazy-eights": CRAZY_EIGHTS_FAMILY,
@@ -18,6 +20,8 @@ const FAMILY_DEFS: Record<string, FamilyDef<object>> = {
   euchre: EUCHRE_FAMILY,
   hearts: HEARTS_FAMILY,
   whist: WHIST_FAMILY,
+  baccarat: BACCARAT_FAMILY,
+  blackjack: BLACKJACK_FAMILY,
 };
 
 test("catalog slugs are unique", () => {

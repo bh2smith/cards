@@ -1,3 +1,7 @@
+@import "./games/baccarat/style.css";
+@import "./games/red-dog/style.css";
+@import "./games/acey-deucey/style.css";
+@import "./games/faro/style.css";
 @import "./games/rummy/style.css";
 @import "./games/spades/style.css";
 @import "./games/whist/style.css";

@@ -5,6 +5,7 @@ import { CH05_GIN } from "./data/ch05-gin";
 import { CH08_WHIST } from "./data/ch08-whist";
 import { CH13_EUCHRE } from "./data/ch13-euchre";
 import { CH14_HEARTS } from "./data/ch14-hearts";
+import { CH16_BANKING } from "./data/ch16-banking";
 import { CH17_STOPS } from "./data/ch17-stops";
 import { CH19_CHILDREN } from "./data/ch19-children";
 
@@ -43,6 +44,7 @@ export const ALL_ENTRIES: CatalogEntry[] = [
   ...CH08_WHIST,
   ...CH13_EUCHRE,
   ...CH14_HEARTS,
+  ...CH16_BANKING,
   ...CH17_STOPS,
   ...CH19_CHILDREN,
 ];

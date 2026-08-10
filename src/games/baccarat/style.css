@@ -1,0 +1,120 @@
+/* ── BACCARAT ── */
+.bacc-status {
+  text-align: center;
+  font-size: 0.85rem;
+  opacity: 0.8;
+  margin: 4px 0 8px;
+}
+.bacc-seats {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.bacc-seat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 12px;
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-radius: 10px;
+  min-width: 92px;
+  font-size: 0.8rem;
+}
+.bacc-seat.bacc-banking {
+  border-color: #e8b019;
+}
+.bacc-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: rgba(128, 128, 128, 0.25);
+}
+.bacc-badge.bank {
+  background: #e8b019;
+  color: #222;
+}
+.bacc-table {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  margin: 10px 0;
+  flex-wrap: wrap;
+}
+.bacc-hand-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+.bacc-hand {
+  display: flex;
+  gap: 4px;
+  min-height: 96px;
+  align-items: center;
+}
+.bacc-total {
+  display: inline-block;
+  min-width: 24px;
+  border-radius: 12px;
+  background: rgba(128, 128, 128, 0.25);
+  font-size: 0.8rem;
+  text-align: center;
+  padding: 1px 6px;
+}
+.bacc-banner {
+  text-align: center;
+  font-weight: 700;
+  padding: 8px 14px;
+  border-radius: 10px;
+  margin: 6px auto;
+  max-width: 420px;
+  border: 1px solid #e8b019;
+}
+.bacc-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.bacc-row {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.bacc-chip {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px dashed #e8b019;
+  background: transparent;
+  color: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.bacc-chip.active {
+  background: #e8b019;
+  color: #222;
+  border-style: solid;
+}
+.bacc-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 14px;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  border-radius: 10px;
+  min-width: 88px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.bacc-zone-amt {
+  font-weight: 600;
+  color: #e8b019;
+  min-height: 1.1em;
+}

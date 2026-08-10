@@ -7,6 +7,10 @@ import { cribbageManifest } from "./cribbage/manifest";
 import { ginManifest } from "./gin/manifest";
 import { rummyManifest } from "./rummy/manifest";
 import { blackjackManifest } from "./blackjack/manifest";
+import { baccaratManifest } from "./baccarat/manifest";
+import { redDogManifest } from "./red-dog/manifest";
+import { aceyDeuceyManifest } from "./acey-deucey/manifest";
+import { faroManifest } from "./faro/manifest";
 import { crazyEightsManifest } from "./crazy-eights/manifest";
 import { cuttleManifest } from "./cuttle/manifest";
 import { heartsManifest } from "./hearts/manifest";
@@ -28,6 +32,10 @@ export const GAMES: GameManifest[] = [
   ginManifest,
   rummyManifest,
   blackjackManifest,
+  baccaratManifest,
+  redDogManifest,
+  aceyDeuceyManifest,
+  faroManifest,
   crazyEightsManifest,
   cuttleManifest,
   heartsManifest,

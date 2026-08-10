@@ -1,4 +1,4 @@
-import { test, expect, describe } from "bun:test";
+import { test, expect, describe, beforeEach } from "bun:test";
 import { CardName, Suit } from "typedeck";
 import {
   handValue,
@@ -8,11 +8,26 @@ import {
   shouldDealerHit,
   BlackjackGame,
 } from "../game";
+import { WIN_TARGET } from "../types";
+import {
+  resetBankrollForTests,
+  getBankroll,
+  adjustBankroll,
+} from "../../../shared/engine/bankroll";
 import type { PlayingCard } from "typedeck";
 
 function card(name: CardName, suit = Suit.Spades): PlayingCard {
   return { cardName: name, suit } as PlayingCard;
 }
+
+/** Pin the shared bankroll to an exact value, consuming the daily top-up. */
+function setBankroll(n: number): void {
+  adjustBankroll(-getBankroll()); // down to 0
+  getBankroll(); // daily top-up fires once and is marked used
+  adjustBankroll(n - getBankroll());
+}
+
+beforeEach(() => resetBankrollForTests());
 
 const A = card(CardName.Ace);
 const K = card(CardName.King);
@@ -71,18 +86,22 @@ describe("shouldDealerHit", () => {
 });
 
 describe("BlackjackGame", () => {
-  test("starts in BETTING phase", () => {
+  test("starts in BETTING phase with the shared bankroll", () => {
+    setBankroll(100);
     const g = new BlackjackGame();
     expect(g.getState().phase).toBe("BETTING");
     expect(g.getState().chips).toBe(100);
+    expect(g.getState().chips).toBe(getBankroll());
   });
 
-  test("placing bet deals cards and deducts chips", () => {
+  test("placing bet deals cards and deducts the bankroll", () => {
+    setBankroll(100);
     const g = new BlackjackGame();
     g.placeBet(10);
     const s = g.getState();
     expect(s.phase === "PLAYER_TURN" || s.phase === "DEALER_TURN").toBe(true);
     expect(s.chips).toBe(90);
+    expect(getBankroll()).toBe(90);
     expect(s.bet).toBe(10);
     expect(s.playerHand.length).toBe(2);
     expect(s.dealerHand.length).toBe(2);
@@ -90,6 +109,7 @@ describe("BlackjackGame", () => {
 
   test("player natural blackjack skips to DEALER_TURN", () => {
     for (let i = 0; i < 500; i++) {
+      setBankroll(100);
       const g = new BlackjackGame();
       g.placeBet(10);
       const s = g.getState();
@@ -101,13 +121,15 @@ describe("BlackjackGame", () => {
     }
   });
 
-  test("cannot bet more than chips", () => {
-    const g = new BlackjackGame(10);
+  test("cannot bet more than the bankroll", () => {
+    setBankroll(10);
+    const g = new BlackjackGame();
     expect(g.canBet(25)).toBe(false);
     expect(g.canBet(10)).toBe(true);
   });
 
   test("hit adds a card", () => {
+    setBankroll(100);
     const g = new BlackjackGame();
     g.placeBet(10);
     const before = g.getState().playerHand.length;
@@ -119,6 +141,7 @@ describe("BlackjackGame", () => {
   });
 
   test("newRound resets to BETTING", () => {
+    setBankroll(100);
     const g = new BlackjackGame();
     g.placeBet(10);
     g.beginDealerTurn();
@@ -129,8 +152,9 @@ describe("BlackjackGame", () => {
     expect(g.getState().phase).toBe("BETTING");
   });
 
-  test("session over on loss — chips reach 0", () => {
-    const g = new BlackjackGame(5);
+  test("session over on loss — bankroll reaches 0", () => {
+    setBankroll(5);
+    const g = new BlackjackGame();
     g.placeBet(5);
     g.beginDealerTurn();
     while (g.dealerDrawOne()) {}
@@ -143,13 +167,14 @@ describe("BlackjackGame", () => {
     }
   });
 
-  test("session over on win — chips reach target", () => {
-    const g = new BlackjackGame(295);
+  test("session over on win — bankroll reaches target", () => {
+    setBankroll(WIN_TARGET - 5);
+    const g = new BlackjackGame();
     g.placeBet(5);
     g.beginDealerTurn();
     while (g.dealerDrawOne()) {}
     g.settleRound();
-    if (g.getState().chips >= 300) {
+    if (g.getState().chips >= WIN_TARGET) {
       g.checkSession();
       expect(g.getState().phase).toBe("SESSION_OVER");
       expect(g.isSessionWon()).toBe(true);
@@ -158,34 +183,41 @@ describe("BlackjackGame", () => {
   });
 
   test("newRound does nothing when session is over", () => {
-    const g = new BlackjackGame(0);
+    setBankroll(0);
+    const g = new BlackjackGame();
     g.newRound();
     expect(g.getState().chips).toBe(0);
   });
 
   test("isSessionOver returns true at 0 chips", () => {
-    const g = new BlackjackGame(0);
+    setBankroll(0);
+    const g = new BlackjackGame();
     expect(g.isSessionOver()).toBe(true);
   });
 
   test("isSessionOver returns true at win target", () => {
-    const g = new BlackjackGame(300);
+    setBankroll(WIN_TARGET);
+    const g = new BlackjackGame();
     expect(g.isSessionOver()).toBe(true);
   });
 
   test("isSessionOver returns false mid-session", () => {
-    const g = new BlackjackGame(100);
+    setBankroll(100);
+    const g = new BlackjackGame();
     expect(g.isSessionOver()).toBe(false);
   });
 
-  test("push returns bet", () => {
-    const g = new BlackjackGame(50);
+  test("bet comes off the bankroll while the round is live", () => {
+    setBankroll(50);
+    const g = new BlackjackGame();
     g.placeBet(25);
     expect(g.getState().chips).toBe(25);
+    expect(getBankroll()).toBe(25);
   });
 
   test("double down doubles bet and draws one card", () => {
-    const g = new BlackjackGame(100);
+    setBankroll(100);
+    const g = new BlackjackGame();
     g.placeBet(10);
     const state = g.getState();
     if (state.phase === "PLAYER_TURN" && g.canDoubleDown()) {
@@ -193,22 +225,25 @@ describe("BlackjackGame", () => {
       const s = g.getState();
       expect(s.bet).toBe(20);
       expect(s.chips).toBe(80);
+      expect(getBankroll()).toBe(80);
       expect(s.playerHand.length).toBe(3);
     }
   });
 
-  test("cannot double down without sufficient chips", () => {
-    const g = new BlackjackGame(15);
+  test("cannot double down without sufficient bankroll", () => {
+    setBankroll(15);
+    const g = new BlackjackGame();
     g.placeBet(10);
-    // chips = 5, bet = 10 — can't afford to double
+    // bankroll = 5, bet = 10 — can't afford to double
     if (g.getState().phase === "PLAYER_TURN") {
       expect(g.canDoubleDown()).toBe(false);
     }
   });
 
-  test("can only double down on hand values 8-11", () => {
+  test("can only double down on hand values 8-11 (base rules)", () => {
     for (let i = 0; i < 500; i++) {
-      const g = new BlackjackGame(100);
+      setBankroll(100);
+      const g = new BlackjackGame();
       g.placeBet(10);
       const s = g.getState();
       if (s.phase !== "PLAYER_TURN") continue;
@@ -226,7 +261,8 @@ describe("split", () => {
   function gameWithMatchingFirstCards(): BlackjackGame | null {
     // Run multiple times to get a splittable hand (same rank first two cards)
     for (let i = 0; i < 200; i++) {
-      const g = new BlackjackGame(100);
+      setBankroll(100);
+      const g = new BlackjackGame();
       g.placeBet(10);
       if (g.canSplit()) return g;
     }
@@ -234,14 +270,16 @@ describe("split", () => {
   }
 
   test("canSplit returns false before bet", () => {
+    setBankroll(100);
     const g = new BlackjackGame();
     expect(g.canSplit()).toBe(false);
   });
 
-  test("canSplit returns false without enough chips", () => {
-    const g = new BlackjackGame(10);
+  test("canSplit returns false without enough bankroll", () => {
+    setBankroll(10);
+    const g = new BlackjackGame();
     g.placeBet(10);
-    // chips = 0 after bet, can't cover split
+    // bankroll = 0 after bet, can't cover split
     if (g.getState().phase === "PLAYER_TURN") {
       expect(g.canSplit()).toBe(false);
     }
@@ -257,6 +295,7 @@ describe("split", () => {
     expect(s.splitHand!.length).toBe(2);
     expect([0, 1]).toContain(s.activeHand); // may auto-advance past BJ
     expect(s.chips).toBe(80); // 100 - 10 (bet) - 10 (split)
+    expect(getBankroll()).toBe(80);
     expect(s.splitBet).toBe(10);
   });
 
@@ -287,17 +326,16 @@ describe("split", () => {
     // hand 1 is an Ace (so hand 1 is a natural blackjack, hand 0 is not).
     // After standing on hand 0, the game must jump straight to DEALER_TURN —
     // not sit in PLAYER_TURN on a BJ hand with no controls.
-    const g = new BlackjackGame(100);
+    setBankroll(90); // as after a 10-chip bet came off a 100 bankroll
+    const g = new BlackjackGame();
     const state = g.getState() as {
       phase: string;
-      chips: number;
       bet: number;
       playerHand: PlayingCard[];
       dealerHand: PlayingCard[];
       holeRevealed: boolean;
     };
     state.phase = "PLAYER_TURN";
-    state.chips = 90;
     state.bet = 10;
     state.playerHand = [
       card(CardName.Ten, Suit.Hearts),
@@ -313,6 +351,7 @@ describe("split", () => {
 
     g.split();
     expect(g.getState().activeHand).toBe(0);
+    expect(getBankroll()).toBe(80); // split stake came off the bankroll
 
     g.stand();
     expect(g.getState().phase).toBe("DEALER_TURN");

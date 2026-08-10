@@ -1,0 +1,55 @@
+/* ── RED DOG ── */
+.reddog-table {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 18px 0 10px;
+}
+
+.reddog-cards {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  min-height: 100px;
+}
+
+.reddog-spread {
+  font-size: 0.9rem;
+  font-weight: 600;
+  opacity: 0.85;
+  min-height: 1.2em;
+}
+
+.reddog-bet-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.reddog-bet-btn {
+  min-width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  font-weight: 700;
+}
+
+.reddog-raise-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.message-bar.reddog-win {
+  color: #2ecc71;
+  font-weight: 700;
+}
+.message-bar.reddog-lose {
+  color: #c0392b;
+  font-weight: 700;
+}
+.message-bar.reddog-push {
+  color: #e8b019;
+  font-weight: 700;
+}
